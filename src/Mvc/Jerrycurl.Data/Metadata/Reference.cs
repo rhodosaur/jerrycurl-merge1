@@ -10,6 +10,7 @@ namespace Jerrycurl.Data.Metadata
         public ReferenceKey Key { get; set; }
         public ReferenceMetadata Metadata { get; set; }
         public ReferenceMetadata List { get; set; }
+        public int Priority { get; set; }
 
         IReferenceMetadata IReference.Metadata => this.Metadata;
         IReferenceMetadata IReference.List => this.List;

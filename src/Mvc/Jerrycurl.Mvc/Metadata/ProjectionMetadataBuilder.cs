@@ -68,11 +68,11 @@ namespace Jerrycurl.Mvc.Metadata
 
         private void CreateInputMetadata(IMetadataBuilderContext context, ProjectionMetadata metadata, IProjectionMetadata parent)
         {
-            if (parent != null)
+            if (parent?.Reference != null)
             {
-                IReferenceMetadata referenceMetadata = parent.Identity.Lookup<IReferenceMetadata>();
+                IEnumerable<IReference> references = parent.Reference.References.Where(r => r.HasFlag(ReferenceFlags.Foreign) && !r.HasFlag(ReferenceFlags.Self));
 
-                foreach (IReference reference in referenceMetadata.References.Where(r => r.HasFlag(ReferenceFlags.Foreign) && !r.HasFlag(ReferenceFlags.Self)))
+                foreach (IReference reference in references.OrderBy(r => r.Priority))
                 {
                     int valueIndex = reference.Key.Properties.IndexOf(m => m.Identity.Equals(metadata.Identity));
 

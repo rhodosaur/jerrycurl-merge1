@@ -9,5 +9,6 @@ namespace Jerrycurl.Data.Metadata
         IReference Other { get; }
         ReferenceFlags Flags { get; }
         IReferenceKey Key { get; }
+        int Priority { get; }
     }
 }

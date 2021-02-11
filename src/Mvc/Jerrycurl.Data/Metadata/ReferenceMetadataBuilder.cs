@@ -212,6 +212,28 @@ namespace Jerrycurl.Data.Metadata
             return false;
         }
 
+        private int GetPriority(Reference parent, Reference child)
+        {
+            if (parent.HasFlag(ReferenceFlags.One) && child.HasFlag(ReferenceFlags.Many))
+            {
+                if (parent.HasFlag(ReferenceFlags.Primary))
+                    return 1;
+                else if (parent.HasFlag(ReferenceFlags.Candidate))
+                    return 2;
+                else
+                    return 3;
+            }
+            else
+            {
+                if (child.HasFlag(ReferenceFlags.Primary))
+                    return 1;
+                else if (child.HasFlag(ReferenceFlags.Candidate))
+                    return 2;
+                else
+                    return 3;
+            }
+        }
+
         private IEnumerable<Reference> CreateParentReferences(ReferenceMetadata parent)
         {
             if (!parent.Keys.Value.Any())
@@ -230,14 +252,14 @@ namespace Jerrycurl.Data.Metadata
                     {
                         ReferenceMetadata childMetadata = childKey.Properties.First().Parent;
 
-                        Reference rightRef = new Reference()
+                        Reference childRef = new Reference()
                         {
                             Metadata = childMetadata,
                             Flags = ReferenceFlags.Child,
                             Key = childKey,
                         };
 
-                        Reference leftRef = new Reference()
+                        Reference parentRef = new Reference()
                         {
                             Metadata = parent,
                             Flags = ReferenceFlags.Parent | ReferenceFlags.One,
@@ -246,50 +268,52 @@ namespace Jerrycurl.Data.Metadata
 
                         if (childKey.HasFlag(ReferenceKeyFlags.Candidate))
                         {
-                            rightRef.Flags |= childKey.HasFlag(ReferenceKeyFlags.Primary) ? ReferenceFlags.Primary : ReferenceFlags.Candidate;
-                            leftRef.Flags |= ReferenceFlags.Foreign;
+                            childRef.Flags |= childKey.HasFlag(ReferenceKeyFlags.Primary) ? ReferenceFlags.Primary : ReferenceFlags.Candidate;
+                            parentRef.Flags |= ReferenceFlags.Foreign;
 
                             if (childKey.HasFlag(ReferenceKeyFlags.Primary))
-                                rightRef.Flags |= ReferenceFlags.Primary;
+                                childRef.Flags |= ReferenceFlags.Primary;
                         }
                         else
                         {
-                            rightRef.Flags |= ReferenceFlags.Foreign;
-                            leftRef.Flags |= parentKey.HasFlag(ReferenceKeyFlags.Primary) ? ReferenceFlags.Primary : ReferenceFlags.Candidate;
+                            childRef.Flags |= ReferenceFlags.Foreign;
+                            parentRef.Flags |= parentKey.HasFlag(ReferenceKeyFlags.Primary) ? ReferenceFlags.Primary : ReferenceFlags.Candidate;
                         }
 
                         if (childMetadata.Relation.HasFlag(RelationMetadataFlags.Item))
                         {
-                            rightRef.List = leftRef.List = childMetadata.Parent;
+                            childRef.List = parentRef.List = childMetadata.Parent;
 
                             if (this.IsOneType(childMetadata.Parent))
                             {
-                                leftRef.Flags &= ~ReferenceFlags.One;
-                                leftRef.Flags |= ReferenceFlags.Many;
-                                rightRef.Flags |= ReferenceFlags.One;
+                                parentRef.Flags &= ~ReferenceFlags.One;
+                                parentRef.Flags |= ReferenceFlags.Many;
+                                childRef.Flags |= ReferenceFlags.One;
                             }
                             else
-                                rightRef.Flags |= ReferenceFlags.Many;
+                                childRef.Flags |= ReferenceFlags.Many;
                         }
                         else if (this.HasOneAttribute(childMetadata))
                         {
-                            leftRef.Flags &= ~ReferenceFlags.One;
-                            leftRef.Flags |= ReferenceFlags.Many;
-                            rightRef.Flags |= ReferenceFlags.One;
+                            parentRef.Flags &= ~ReferenceFlags.One;
+                            parentRef.Flags |= ReferenceFlags.Many;
+                            childRef.Flags |= ReferenceFlags.One;
                         }
                         else
-                            rightRef.Flags |= ReferenceFlags.One;
+                            childRef.Flags |= ReferenceFlags.One;
 
                         if (childMetadata.Equals(parent))
                         {
-                            leftRef.Flags |= ReferenceFlags.Self | ReferenceFlags.Child;
-                            rightRef.Flags |= ReferenceFlags.Self | ReferenceFlags.Parent;
+                            parentRef.Flags |= ReferenceFlags.Self | ReferenceFlags.Child;
+                            childRef.Flags |= ReferenceFlags.Self | ReferenceFlags.Parent;
                         }
 
-                        leftRef.Other = rightRef;
-                        rightRef.Other = leftRef;
+                        parentRef.Priority = childRef.Priority = this.GetPriority(parentRef, childRef);
 
-                        references.Add(leftRef);
+                        parentRef.Other = childRef;
+                        childRef.Other = parentRef;
+
+                        references.Add(parentRef);
                     }
                 }
             }

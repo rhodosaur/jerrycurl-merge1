@@ -345,7 +345,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             IReferenceMetadata referenceMetadata = metadata.Identity.Lookup<IReferenceMetadata>();
 
             if (referenceMetadata != null)
-                return referenceMetadata.References.Where(IsValid).OrderBy(GetPriority);
+                return referenceMetadata.References.Where(IsValid).OrderBy(r => r.Priority);
 
             return Array.Empty<IReference>();
 
@@ -360,18 +360,6 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                     return false;
 
                 return true;
-            }
-
-            static int GetPriority(IReference reference)
-            {
-                if (reference.HasFlag(ReferenceFlags.One | ReferenceFlags.Primary))
-                    return 0;
-                else if (reference.HasFlag(ReferenceFlags.One | ReferenceFlags.Candidate))
-                    return 1;
-                else if (reference.HasFlag(ReferenceFlags.Many | ReferenceFlags.Foreign))
-                    return 2;
-                else
-                    return 3;
             }
         }
     }
