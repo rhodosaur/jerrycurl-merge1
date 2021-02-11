@@ -55,7 +55,7 @@
                 SqlServerPackageVersion=$(SqlServerPackageVersion);
                 SqlitePackageId=$(SqlitePackageId);
                 SqlitePackageVersion=$(SqlitePackageVersion);
-                SqlitePackageVersion_NetStandard21=$(SqlitePackageVersion_NetStandard21);
+                SqlitePackageVersion_net20=$(SqlitePackageVersion_net20);
                 OraclePackageId=$(OraclePackageId);
                 OraclePackageVersion=$(OraclePackageVersion);
                 MySqlPackageId=$(MySqlPackageId);
@@ -63,7 +63,7 @@
                 PostgresPackageId=$(PostgresPackageId);
                 PostgresPackageVersion=$(PostgresPackageVersion);
                 EntityFrameworkCorePackageVersion=$(EntityFrameworkCorePackageVersion);
-                EntityFrameworkCorePackageVersion_NetStandard21=$(EntityFrameworkCorePackageVersion_NetStandard21);
+                EntityFrameworkCorePackageVersion_net20=$(EntityFrameworkCorePackageVersion_net20);
                 JsonNetPackageVersion=$(JsonNetPackageVersion);
                 JsonPackageVersion=$(JsonPackageVersion);
                 CSharpPackageVersion=$(CSharpPackageVersion);

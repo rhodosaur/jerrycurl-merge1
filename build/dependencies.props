@@ -8,22 +8,22 @@
     </PropertyGroup>
 
     <PropertyGroup Label="NuGet Package Versions">
-        <OraclePackageVersion>2.19.31</OraclePackageVersion>
-        <SqlServerPackageVersion>1.1.0</SqlServerPackageVersion>
-        <MySqlPackageVersion>8.0.17</MySqlPackageVersion>
-        <PostgresPackageVersion>4.1.3.1</PostgresPackageVersion>
-        <SqlitePackageVersion>2.2.6</SqlitePackageVersion>
-        <EntityFrameworkCorePackageVersion>2.2.6</EntityFrameworkCorePackageVersion>
-        <JsonNetPackageVersion>12.0.2</JsonNetPackageVersion>
-        <JsonPackageVersion>4.6.0</JsonPackageVersion>
-        <MsBuildPackageVersion>16.0.461</MsBuildPackageVersion>
+        <OraclePackageVersion>2.19.91</OraclePackageVersion>
+        <SqlServerPackageVersion>2.0.1</SqlServerPackageVersion>
+        <MySqlPackageVersion>8.0.22</MySqlPackageVersion>
+        <PostgresPackageVersion>4.1.5</PostgresPackageVersion>
+        <SqlitePackageVersion>3.1.9</SqlitePackageVersion>
+        <EntityFrameworkCorePackageVersion>3.1.9</EntityFrameworkCorePackageVersion>
+        <JsonNetPackageVersion>12.0.3</JsonNetPackageVersion>
+        <JsonPackageVersion>4.7.2</JsonPackageVersion>
+        <MsBuildPackageVersion>16.7.0</MsBuildPackageVersion>
         <CSharpPackageVersion>4.5.0</CSharpPackageVersion>
         <AsyncInterfacesPackageVersion>1.1.1</AsyncInterfacesPackageVersion>
     </PropertyGroup>
 
-    <PropertyGroup Label="NuGet Package Versions (.NET Standard 2.1)">
-        <SqlitePackageVersion_NetStandard21>3.0.0</SqlitePackageVersion_NetStandard21>
-        <EntityFrameworkCorePackageVersion_NetStandard21>3.0.0</EntityFrameworkCorePackageVersion_NetStandard21>
+    <PropertyGroup Label="NuGet Package Versions (.NET Standard 2.0)">
+		<SqlitePackageVersion_net20>2.2.6</SqlitePackageVersion_net20>
+		<EntityFrameworkCorePackageVersion_net20>2.2.6</EntityFrameworkCorePackageVersion_net20>
     </PropertyGroup>
 
     <PropertyGroup Label="Target Versions">
@@ -39,8 +39,8 @@
         <CSharpTargetVersion>$(CSharpPackageVersion)</CSharpTargetVersion>
     </PropertyGroup>
 
-    <PropertyGroup Label="Target Versions (.NET Standard 2.1)" Condition="'$(TargetFramework)' == 'netstandard2.1' or '$(TargetFramework)' == 'netcoreapp3.0'">
-        <SqliteTargetVersion>$(SqlitePackageVersion_NetStandard21)</SqliteTargetVersion>
-        <EntityFrameworkCoreTargetVersion>$(EntityFrameworkCorePackageVersion_NetStandard21)</EntityFrameworkCoreTargetVersion>
+    <PropertyGroup Label="Target Versions (.NET Standard 2.0)" Condition="'$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp2.2'">
+        <SqliteTargetVersion>$(SqlitePackageVersion_net20)</SqliteTargetVersion>
+        <EntityFrameworkCoreTargetVersion>$(EntityFrameworkCorePackageVersion_net20)</EntityFrameworkCoreTargetVersion>
     </PropertyGroup>
 </Project>

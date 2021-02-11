@@ -7,11 +7,94 @@ using Jerrycurl.Data.Language;
 using Jerrycurl.Relations.Language;
 using System.Collections.Generic;
 using Jerrycurl.Data.Metadata;
+using System.Collections.Immutable;
 
 namespace Jerrycurl.Data.Test
 {
     public class Query2Tests
     {
+        public void Test_Insert_ManyToOne_List()
+        {
+            var store = DatabaseHelper.Default.Schemas2;
+
+            var data1 = new (int, int)[]
+            {
+                // BlogPost(Id, BlogId)
+                (1, 1),
+                (2, 1),
+                (3, 2),
+                (4, 4),
+            };
+            var data2 = new[] { 1, 2, 3 }; // Blog(Id)
+
+            var schema = store.GetSchema(typeof(List<BlogPostView>));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            buffer.Insert(data1,
+                ("Item.Item1", "Item.Id"),
+                ("Item.Item2", "Item.BlogId")
+            );
+
+            buffer.Insert(data2,
+                ("Item", "Item.Blog2.Item.Id")
+            );
+
+            var result = buffer.Commit<List<BlogPostView>>();
+
+            result.Count.ShouldBe(4);
+
+            result[0].Blog2.ShouldNotBeNull();
+            result[0].Blog2.HasValue.ShouldBeTrue();
+            result[0].Blog2.Value.Id.ShouldBe(1);
+            result[0].Blog2.ShouldBeSameAs(result[1].Blog2);
+
+            result[2].Blog2.ShouldNotBeNull();
+            result[2].Blog2.HasValue.ShouldBeTrue();
+            result[2].Blog2.Value.Id.ShouldBe(2);
+
+            result[3].Blog2.ShouldNotBeNull();
+            result[3].Blog2.HasValue.ShouldBeFalse();
+        }
+
+        public void Test_Insert_ManyToOne_Object()
+        {
+            var store = DatabaseHelper.Default.Schemas2;
+
+            var data1 = new[] { 2 }; // Blog(Id)
+            var data2 = new (int, int)[]
+            {
+                // BlogPost(Id, BlogId)
+                (2, 1),
+                (1, 2),
+            };
+            var data3 = new[] { 1 }; // Blog(Id)
+
+            var schema = store.GetSchema(typeof(List<BlogPostView>));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            buffer.Insert(data1,
+                ("Item", "Item.Blog1.Id")
+            );
+
+            buffer.Insert(data2,
+                ("Item.Item1", "Item.Id"),
+                ("Item.Item2", "Item.BlogId")
+            );
+
+            buffer.Insert(data3,
+                ("Item", "Item.Blog1.Id")
+            );
+
+            var result = buffer.Commit<List<BlogPostView>>();
+
+            result.Count.ShouldBe(2);
+
+            result[0].Blog1.ShouldBeNull();
+
+            result[1].Blog1.ShouldNotBeNull();
+            result[1].Blog1.Id.ShouldBe(2);
+        }
+
         public void Test_Insert_DualRecursiveTree()
         {
 

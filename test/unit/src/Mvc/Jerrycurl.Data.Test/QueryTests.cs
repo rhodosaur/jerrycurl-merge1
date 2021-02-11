@@ -480,8 +480,8 @@ namespace Jerrycurl.Data.Test
             result1.NotUsedOne.ShouldBeNull();
             result2.NotUsedOne.ShouldBeNull();
 
-            result1.NotUsedMany.ShouldBeEmpty();
-            result2.NotUsedMany.ShouldBeEmpty();
+            result1.NotUsedMany.ShouldBeNull();
+            result2.NotUsedMany.ShouldBeNull();
         }
 
         public async Task Test_Binding_UsingPrimaryHashJoins()

@@ -76,9 +76,9 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         private NewBinder CreateEmptyBinder()
         {
-            IBindingMetadata metadata = this.Schema.Require<IBindingMetadata>().Item;
+            IBindingMetadata metadata = this.Schema.Require<IBindingMetadata>();
 
-            return new NewBinder(metadata);
+            return new NewBinder(metadata.Item ?? metadata);
         }
     }
 }
