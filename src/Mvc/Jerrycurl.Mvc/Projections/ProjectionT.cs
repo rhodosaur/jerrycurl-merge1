@@ -7,19 +7,13 @@ namespace Jerrycurl.Mvc.Projections
 {
     public class Projection<TModel> : Projection, IProjection<TModel>
     {
-        public Projection(ProjectionIdentity identity, IProcContext context)
-            : base(identity, context)
-        {
-
-        }
-
         public Projection(IProjection projection)
             : base(projection)
         {
 
         }
 
-        internal Projection(ProjectionIdentity identity, IProcContext context, IProjectionMetadata metadata)
+        public Projection(ProjectionIdentity identity, IProcContext context, IProjectionMetadata metadata)
             : base(identity, context, metadata)
         {
 

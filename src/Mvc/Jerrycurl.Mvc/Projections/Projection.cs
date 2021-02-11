@@ -21,17 +21,12 @@ namespace Jerrycurl.Mvc.Projections
         public IProcContext Context { get; }
         public IProjectionOptions Options { get; }
 
-        public Projection(ProjectionIdentity identity, IProcContext context)
-            : this(identity, context, identity.Schema.Require<IProjectionMetadata>())
-        {
-
-        }
-
-        internal Projection(ProjectionIdentity identity, IProcContext context, IProjectionMetadata metadata)
+        public Projection(ProjectionIdentity identity, IProcContext context, IProjectionMetadata metadata)
         {
             this.Identity = identity ?? throw ProjectionException.ArgumentNull(nameof(identity), metadata);
             this.Context = context ?? throw ProjectionException.ArgumentNull(nameof(context), metadata);
             this.Metadata = metadata;
+            this.Data = ProjectionData.FromIdentity(identity);
             this.Options = ProjectionOptions.Default;
             this.Header = this.CreateDefaultHeader();
         }
@@ -57,7 +52,7 @@ namespace Jerrycurl.Mvc.Projections
             this.Identity = projection.Identity;
             this.Context = projection.Context;
             this.Metadata = metadata ?? throw ProjectionException.ArgumentNull(nameof(metadata), metadata);
-            this.Data = data ?? throw ProjectionException.ArgumentNull(nameof(data), metadata);
+            this.Data = data;
             this.Header = header ?? throw ProjectionException.ArgumentNull(nameof(header), metadata);
             this.Options = options ?? throw ProjectionException.ArgumentNull(nameof(options), metadata);
         }

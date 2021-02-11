@@ -47,7 +47,7 @@ namespace Jerrycurl.Mvc.Sql
             if (!attribute.Context.Domain.Dialect.Support.HasFlag(DialectSupport.InputParameters))
                 throw ProjectionException.ParametersNotSupported(attribute);
 
-            if (attribute.Data.Input != null)
+            if (attribute.Data?.Input != null)
             {
                 string paramName = attribute.Context.Lookup.Parameter(attribute.Identity, attribute.Data.Input);
                 string dialectName = attribute.Context.Domain.Dialect.Parameter(paramName);

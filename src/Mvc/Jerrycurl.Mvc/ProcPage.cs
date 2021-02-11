@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Jerrycurl.Mvc.Metadata;
 using Jerrycurl.Mvc.Projections;
 using Jerrycurl.Mvc.Sql;
 using Jerrycurl.Relations;
@@ -35,7 +36,8 @@ namespace Jerrycurl.Mvc
                 IField model = this.Context.Domain.Schemas.From(value);
 
                 ProjectionIdentity identity = new ProjectionIdentity(model);
-                Projection projection = new Projection(identity, this.Context);
+                IProjectionMetadata metadata = model.Identity.Schema.Require<IProjectionMetadata>();
+                Projection projection = new Projection(identity, this.Context, metadata);
 
                 this.Write(projection.Par());
             }

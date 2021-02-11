@@ -20,6 +20,7 @@ namespace Jerrycurl.Mvc.Projections
         {
             this.Identity = projection.Identity;
             this.Context = projection.Context;
+            this.Metadata = projection.Metadata;
             this.Data = projection.Data;
             this.Content = SqlContent.Empty;
         }
