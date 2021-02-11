@@ -16,6 +16,7 @@ namespace Jerrycurl.Relations
         public RelationHeader Header { get; }
         public IField2 Model => this.Source.Model;
         public IField2 Source { get; }
+        IRelationReader IRelation2.GetReader() => this.GetReader();
 
         public Relation2(IField2 source, RelationHeader header)
         {
@@ -23,8 +24,9 @@ namespace Jerrycurl.Relations
             this.Header = header ?? throw new ArgumentNullException(nameof(header));
         }
 
-        public IRelationReader GetReader() => new RelationReader(this);
-        public IDataReader GetDataReader() => null; // new RelationDataReader(this.GetReader(), null);
+        public RelationReader GetReader() => new RelationReader(this);
+        public IDataReader GetDataReader(IEnumerable<string> header) => new RelationDataReader(this.GetReader(), header);
+        public IDataReader GetDataReader() => this.GetDataReader(this.Header.Attributes.Select(a => a.Name));
 
         public IEnumerable<ITuple2> Body
         {
@@ -43,6 +45,8 @@ namespace Jerrycurl.Relations
             }
         }
 
+        public override string ToString() => this.Header.ToString();
+
 
         #region " Equality "
 
@@ -51,7 +55,5 @@ namespace Jerrycurl.Relations
         public override int GetHashCode() => HashCode.Combine(this.Source.Identity, this.Source.Model);
 
         #endregion
-
-        public override string ToString() => this.Header.ToString();
     }
 }

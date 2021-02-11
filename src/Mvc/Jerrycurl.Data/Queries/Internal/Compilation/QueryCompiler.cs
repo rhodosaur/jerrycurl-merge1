@@ -64,8 +64,8 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             {
                 return new BufferWriter()
                 {
-                    WriteAll = (buf, dr) => writeAllFunc(dr, buf.Slots, buf.Aggregate.Values, helpers, schemaType),
-                    WriteOne = (buf, dr) => writeOneFunc(dr, buf.Slots, buf.Aggregate.Values, helpers, schemaType),
+                    WriteAll = (buf, dr) => writeAllFunc(dr, buf.Slots, buf.Aggregate?.Values, helpers, schemaType),
+                    WriteOne = (buf, dr) => writeOneFunc(dr, buf.Slots, buf.Aggregate?.Values, helpers, schemaType),
                     Initialize = buf => initializeFunc(buf.Slots),
                 };
             }

@@ -47,6 +47,23 @@ namespace Jerrycurl.Relations
             return new RelationException2(fullMessage, innerException);
         }
 
+        internal static RelationException2 InvalidDataReaderHeader(RelationDataReader dataReader)
+        {
+            string dataHeader = string.Join(", ", dataReader.Header.Select(a => $"\"{a}\""));
+
+            return From(dataReader.InnerReader.Relation.Header, $"Degree does not match IDataReader({dataHeader}).");
+        }
+
+        internal static RelationException2 HeaderCannotBeEmpty(RelationDataReader dataReader, int emptyIndex)
+        {
+            return From(dataReader.InnerReader.Relation.Header, $"Name at index {emptyIndex} cannot be empty.");
+        }
+
+        internal static RelationException2 HeaderCannotHaveDupes(RelationDataReader dataReader, int dupeIndex)
+        {
+            return From(dataReader.InnerReader.Relation.Header, $"Name at index {dupeIndex} is already specified.");
+        }
+
         internal static RelationException2 CannotForwardQueue(IRelation2 relation2, IRelationQueue queue, Exception innerException)
             => From(relation2.Header, $"Cannot move cursor for '{queue.Metadata.Identity}'.", innerException);
 

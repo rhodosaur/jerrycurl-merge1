@@ -26,7 +26,7 @@ namespace Jerrycurl.Relations
         
         public RelationReader(IEnumerable<IRelation2> relations)
         {
-            this.enumerator = relations.GetEnumerator();
+            this.enumerator = relations?.GetEnumerator() ?? throw new ArgumentNullException(nameof(relations));
             this.NextResult();
         }
 

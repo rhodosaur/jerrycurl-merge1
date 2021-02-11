@@ -228,6 +228,9 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
         {
             IReferenceMetadata newMetadata = binder.Metadata.Identity.Lookup<IReferenceMetadata>();
 
+            if (newMetadata == null)
+                return;
+
             foreach (IReference reference in newMetadata.References.Where(r => r.HasFlag(ReferenceFlags.Parent) && this.IsValidReference(r)))
             {
                 KeyBinder joinKey = BindingHelper.FindParentKey(binder, reference);
@@ -257,7 +260,10 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             if (writer.Item is NewBinder binder)
             {
                 IReferenceMetadata metadata = writer.Item.Metadata.To<IReferenceMetadata>();
-                IReference reference = metadata.References.FirstOrDefault(r => r.HasFlag(ReferenceFlags.Child) && this.IsValidReference(r));
+                IReference reference = metadata?.References.FirstOrDefault(r => r.HasFlag(ReferenceFlags.Child) && this.IsValidReference(r));
+
+                if (reference == null)
+                    return;
 
                 KeyBinder joinKey = writer.JoinKey = BindingHelper.FindChildKey(binder, reference);
 

@@ -18,7 +18,7 @@ namespace Jerrycurl.Data.Commands
 
             adoCommand.CommandText = this.CommandText;
 
-            foreach (IDbDataParameter parameter in buffer.GetParameters(adoCommand))
+            foreach (IDbDataParameter parameter in buffer.Prepare(adoCommand))
                 adoCommand.Parameters.Add(parameter);
         }
     }

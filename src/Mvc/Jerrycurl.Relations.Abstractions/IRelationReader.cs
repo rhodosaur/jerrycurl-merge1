@@ -8,7 +8,6 @@ namespace Jerrycurl.Relations
     {
         IRelation2 Relation { get; }
         bool Read();
-        bool NextResult();
 
         void CopyTo(IField2[] target, int sourceIndex, int targetIndex, int length);
         void CopyTo(IField2[] target, int length);

@@ -57,11 +57,14 @@ namespace Jerrycurl.Data.Commands
             ColumnMetadata GetColumnInfo(int i) => new ColumnMetadata(dataReader.GetName(i), dataReader.GetFieldType(i), dataReader.GetDataTypeName(i), i);
         }
 
-        public IEnumerable<IDbDataParameter> GetParameters(IDbCommand adoCommand)
+        public IEnumerable<IDbDataParameter> Prepare(IDbCommand adoCommand)
+            => this.Prepare(() => adoCommand.CreateParameter());
+
+        public IEnumerable<IDbDataParameter> Prepare(Func<IDbDataParameter> parameterFactory)
         {
             foreach (FieldBuffer buffer in this.paramHeader.Values)
             {
-                IDbDataParameter adoParam = adoCommand.CreateParameter();
+                IDbDataParameter adoParam = parameterFactory();
 
                 adoParam.ParameterName = buffer.Parameter.Parameter.Name;
                 buffer.Parameter.Parameter?.Build(adoParam);

@@ -14,6 +14,7 @@ namespace Jerrycurl.Data.Queries
 {
     public sealed class ListBuffer<TItem> : IQueryBuffer
     {
+        public ISchemaStore Store { get; }
         public ISchema Schema { get; }
 
         AggregateBuffer IQueryBuffer.Aggregate => null;
@@ -21,9 +22,10 @@ namespace Jerrycurl.Data.Queries
 
         private ElasticArray slots;
 
-        public ListBuffer(ISchemaStore schemas)
+        public ListBuffer(ISchemaStore store)
         {
-            this.Schema = schemas?.GetSchema(typeof(IList<TItem>)) ?? throw new ArgumentNullException(nameof(schemas));
+            this.Store = store ?? throw new ArgumentNullException(nameof(store));
+            this.Schema = store.GetSchema(typeof(IList<TItem>));
             this.InitBuffer();
         }
 
