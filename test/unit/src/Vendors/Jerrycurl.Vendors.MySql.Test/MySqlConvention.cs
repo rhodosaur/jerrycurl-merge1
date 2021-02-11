@@ -1,5 +1,7 @@
 ﻿using Jerrycurl.Mvc;
 using Jerrycurl.Test;
+using Jerrycurl.Test.Extensions;
+using Jerrycurl.Test.Profiling;
 using MySql.Data.MySqlClient;
 
 namespace Jerrycurl.Vendors.MySql.Test
@@ -12,10 +14,11 @@ namespace Jerrycurl.Vendors.MySql.Test
         public override void Configure(DomainOptions options)
         {
             options.UseMySql(GetConnectionString());
+            options.UseProfiling();
             options.UseNewtonsoftJson();
         }
 
         public static string GetConnectionString() => GetEnvironmentVariable("JERRY_MYSQL_CONN");
-        public static MySqlConnection GetConnection() => new MySqlConnection(GetConnectionString());
+        public static ProfilingConnection GetConnection() => new ProfilingConnection(new MySqlConnection(GetConnectionString()));
     }
 }

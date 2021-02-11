@@ -1,5 +1,7 @@
 ﻿using Jerrycurl.Mvc;
 using Jerrycurl.Test;
+using Jerrycurl.Test.Extensions;
+using Jerrycurl.Test.Profiling;
 using Oracle.ManagedDataAccess.Client;
 
 namespace Jerrycurl.Vendors.Oracle.Test
@@ -12,10 +14,11 @@ namespace Jerrycurl.Vendors.Oracle.Test
         public override void Configure(DomainOptions options)
         {
             options.UseOracle(GetConnectionString());
+            options.UseProfiling();
             options.UseNewtonsoftJson();
         }
 
         public static string GetConnectionString() => GetEnvironmentVariable("JERRY_ORACLE_CONN");
-        public static OracleConnection GetConnection() => new OracleConnection(GetConnectionString());
+        public static ProfilingConnection GetConnection() => new ProfilingConnection(new OracleConnection(GetConnectionString()));
     }
 }

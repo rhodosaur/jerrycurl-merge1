@@ -14,8 +14,8 @@ namespace Jerrycurl.Relations.Test
     {
         public void Test_SchemaStore_CachesProperly()
         {
-            var store1 = DatabaseHelper.Default.GetSchemas(useSqlite: false);
-            var store2 = DatabaseHelper.Default.GetSchemas(useSqlite: false);
+            var store1 = DatabaseHelper.Default.GetStore();
+            var store2 = DatabaseHelper.Default.GetStore();
 
             var schema1_1 = store1.GetSchema(typeof(RootModel));
             var schema1_2 = store1.GetSchema(typeof(RootModel));
@@ -29,8 +29,8 @@ namespace Jerrycurl.Relations.Test
 
         public void Test_Schema_CachesProperly()
         {
-            var store1 = DatabaseHelper.Default.GetSchemas(useSqlite: false);
-            var store2 = DatabaseHelper.Default.GetSchemas(useSqlite: false);
+            var store1 = DatabaseHelper.Default.GetStore();
+            var store2 = DatabaseHelper.Default.GetStore();
 
             var schema1 = store1.GetSchema(typeof(RootModel));
             var schema2 = store2.GetSchema(typeof(RootModel));

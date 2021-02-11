@@ -641,9 +641,9 @@ namespace Jerrycurl.Data.Test
             result2.Capacity.ShouldNotBe(11);
         }
 
-        public void Test_Insert_ManyToOne_CustomList()
+        public void Test_Insert_OneToMany_CustomList()
         {
-            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false, contracts: new[] { new CustomContractResolver() });
+            var store = DatabaseHelper.Default.GetStore(contracts: new[] { new CustomContractResolver() });
             var schema = store.GetSchema(typeof(List<PriorityModel>));
             var buffer = new QueryBuffer(schema, QueryType.List);
 
@@ -685,7 +685,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Insert_Priority_Value()
         {
-            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false, contracts: new[] { new CustomContractResolver() });
+            var store = DatabaseHelper.Default.GetStore(contracts: new[] { new CustomContractResolver() });
             var schema = store.GetSchema(typeof(List<PriorityModel>));
             var buffer = new QueryBuffer(schema, QueryType.List);
 
@@ -835,7 +835,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Insert_CaseSensitive()
         {
-            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false, new DotNotation(StringComparer.Ordinal));
+            var store = DatabaseHelper.Default.GetStore(new DotNotation(StringComparer.Ordinal));
             var schema = store.GetSchema(typeof(IList<Blog>));
             var buffer = new QueryBuffer(schema, QueryType.List);
 

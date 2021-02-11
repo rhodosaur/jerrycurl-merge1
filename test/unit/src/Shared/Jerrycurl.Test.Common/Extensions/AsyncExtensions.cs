@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Jerrycurl.Test
+namespace Jerrycurl.Test.Extensions
 {
     public static class AsyncExtensions
     {

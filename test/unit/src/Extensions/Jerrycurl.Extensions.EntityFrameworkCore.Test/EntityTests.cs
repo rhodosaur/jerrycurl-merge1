@@ -17,7 +17,7 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Test
     {
         public void Test_EFCore_TableMetadata()
         {
-            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false, contracts: new[] { new EntityFrameworkCoreContractResolver(new EntityContext()) });
+            var store = DatabaseHelper.Default.GetStore(contracts: new[] { new EntityFrameworkCoreContractResolver(new EntityContext()) });
             var address = store.GetSchema<Address>().Lookup<ITableMetadata>();
             var addressView = store.GetSchema<AddressView>().Lookup<ITableMetadata>();
 
@@ -32,7 +32,7 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Test
 
         public void Test_EfCore_ReferenceMetadata()
         {
-            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false, contracts: new[] { new EntityFrameworkCoreContractResolver(new EntityContext()) });
+            var store = DatabaseHelper.Default.GetStore(contracts: new[] { new EntityFrameworkCoreContractResolver(new EntityContext()) });
             var schema = store.GetSchema<List<Order>>();
 
             var orderRefs = schema.Require<IReferenceMetadata>("Item").References;

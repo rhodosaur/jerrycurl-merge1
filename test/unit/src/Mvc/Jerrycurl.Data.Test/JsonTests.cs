@@ -18,7 +18,7 @@ namespace Jerrycurl.Data.Test
     {
         public void Test_Update_Json()
         {
-            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false);
+            var store = DatabaseHelper.Default.GetStore();
 
             store.Use(new JsonBindingContractResolver(new JsonSerializerOptions()));
 
@@ -55,7 +55,7 @@ namespace Jerrycurl.Data.Test
         public void Test_Insert_Json()
         {
             var options = new JsonSerializerOptions();
-            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false);
+            var store = DatabaseHelper.Default.GetStore();
             store.Use(new JsonBindingContractResolver(options));
 
             var data = "{ \"Id\": 12, \"Title\": \"Hello World!\" }";
@@ -97,7 +97,7 @@ namespace Jerrycurl.Data.Test
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 IgnoreNullValues = true,
             };
-            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false);
+            var store = DatabaseHelper.Default.GetStore();
 
             store.Use(new JsonBindingContractResolver(options));
 
@@ -119,7 +119,7 @@ namespace Jerrycurl.Data.Test
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 IgnoreNullValues = true,
             };
-            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false);
+            var store = DatabaseHelper.Default.GetStore();
 
             store.Use(new JsonBindingContractResolver(options));
 
@@ -141,7 +141,7 @@ namespace Jerrycurl.Data.Test
         public void Test_Insert_JsonElement()
         {
             var options = new JsonSerializerOptions();
-            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false);
+            var store = DatabaseHelper.Default.GetStore();
             store.Use(new JsonBindingContractResolver(options));
 
             var data = "{ \"Id\": 12, \"Title\": \"Hello World!\" }";
@@ -167,7 +167,7 @@ namespace Jerrycurl.Data.Test
         public void Test_Insert_JsonDocument()
         {
             var options = new JsonSerializerOptions();
-            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false);
+            var store = DatabaseHelper.Default.GetStore();
             store.Use(new JsonBindingContractResolver(options));
 
             var data = "{ \"Id\": 12, \"Title\": \"Hello World!\" }";

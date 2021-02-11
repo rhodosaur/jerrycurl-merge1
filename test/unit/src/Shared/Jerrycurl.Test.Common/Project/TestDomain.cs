@@ -11,12 +11,12 @@ namespace Jerrycurl.Test.Project
         {
             Type conventionType = Assembly.GetEntryAssembly().GetExportedTypes().FirstOrDefault(this.IsValidDatabaseConvention);
 
-            if (conventionType == null)
-                throw new InvalidOperationException("DatabaseConvention implementation not found.");
+            if (conventionType != null)
+            {
+                DatabaseConvention database = (DatabaseConvention)Activator.CreateInstance(conventionType);
 
-            DatabaseConvention database = (DatabaseConvention)Activator.CreateInstance(conventionType);
-
-            database.Configure(options);
+                database.Configure(options);
+            }
         }
 
         private bool IsValidDatabaseConvention(Type type)

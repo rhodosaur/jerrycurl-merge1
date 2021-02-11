@@ -422,7 +422,7 @@ namespace Jerrycurl.Relations.Test
 
         public void Test_Select_Adjacent_CrossJoin()
         {
-            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false);
+            var store = DatabaseHelper.Default.GetStore();
             var data = new XModel()
             {
                 Xs = new List<int>() { 1, 2, 3, 4 },
@@ -559,7 +559,7 @@ namespace Jerrycurl.Relations.Test
 
         public void Test_Select_Adjacent_CrossJoin_Cache()
         {
-            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false);
+            var store = DatabaseHelper.Default.GetStore();
             var data = new XModel()
             {
                 Xs = new List<int>() { 1, 2 },

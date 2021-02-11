@@ -1,5 +1,7 @@
 ﻿using Jerrycurl.Mvc;
 using Jerrycurl.Test;
+using Jerrycurl.Test.Extensions;
+using Jerrycurl.Test.Profiling;
 using Npgsql;
 
 namespace Jerrycurl.Vendors.Postgres.Test
@@ -12,10 +14,11 @@ namespace Jerrycurl.Vendors.Postgres.Test
         public override void Configure(DomainOptions options)
         {
             options.UsePostgres(GetConnectionString());
+            options.UseProfiling();
             options.UseNewtonsoftJson();
         }
 
         public static string GetConnectionString() => GetEnvironmentVariable("JERRY_POSTGRES_CONN");
-        public static NpgsqlConnection GetConnection() => new NpgsqlConnection(GetConnectionString());
+        public static ProfilingConnection GetConnection() => new ProfilingConnection(new NpgsqlConnection(GetConnectionString()));
     }
 }

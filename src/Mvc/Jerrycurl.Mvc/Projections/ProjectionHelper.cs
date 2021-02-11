@@ -15,8 +15,7 @@ namespace Jerrycurl.Mvc.Projections
     {
         public static ITableMetadata GetTableMetadata(IProjection projection) => GetTableMetadata(projection.Metadata);
         public static ITableMetadata GetTableMetadata(IProjectionAttribute attribute) => GetTableMetadata(attribute.Metadata);
-        public static ITableMetadata GetTableMetadata(IProjectionMetadata metadata)
-            => GetPreferredTableMetadata(metadata)?.Table ?? throw ProjectionException.TableNotFound(metadata);
+        public static ITableMetadata GetTableMetadata(IProjectionMetadata metadata) => GetPreferredTableMetadata(metadata)?.Table;
         public static ITableMetadata GetColumnMetadata(IProjectionAttribute attribute)
             => attribute.Metadata.Column ?? attribute.Metadata.Item?.Column ?? throw ProjectionException.ColumnNotFound(attribute.Metadata);
 
@@ -27,7 +26,7 @@ namespace Jerrycurl.Mvc.Projections
             else if (metadata.Item.Table != null)
                 return metadata.Item;
 
-            return null;
+            throw ProjectionException.TableNotFound(metadata);
         }
 
         public static IProjectionMetadata GetMetadataFromRelativeLambda(IProjection projection, LambdaExpression expression)

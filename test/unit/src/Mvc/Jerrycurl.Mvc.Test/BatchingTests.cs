@@ -13,16 +13,15 @@ namespace Jerrycurl.Mvc.Test
 
         public void Test_SqlBuffer_Batching()
         {
-            PageDescriptor page = this.locator.FindPage("../Commands/Batching/BatchedCommand.cssql", typeof(LocatorAccessor));
-            ProcFactory factory = this.engine.Proc(page, new ProcArgs(typeof(object), typeof(object)));
+            var page = this.locator.FindPage("../Commands/Batching/BatchedCommand.cssql", typeof(LocatorAccessor));
+            var factory = this.engine.Proc(page, new ProcArgs(typeof(object), typeof(object)));
 
-            IProcResult result = factory(null);
+            var result = factory(null);
+            var serializer = result.Buffer as ISqlSerializer<Command>;
 
-            ISqlSerializer<Command> serializer = result.Buffer as ISqlSerializer<Command>;
-
-            IList<Command> batchedBySql = serializer.Serialize(new SqlOptions() { MaxSql = 1 }).ToList();
-            IList<Command> batchedByParams = serializer.Serialize(new SqlOptions() { MaxParameters = 2 }).ToList();
-            IList<Command> notBatched = serializer.Serialize(new SqlOptions()).ToList();
+            var batchedBySql = serializer.Serialize(new SqlOptions() { MaxSql = 1 }).ToList();
+            var batchedByParams = serializer.Serialize(new SqlOptions() { MaxParameters = 2 }).ToList();
+            var notBatched = serializer.Serialize(new SqlOptions()).ToList();
 
             batchedBySql.ShouldNotBeNull();
             batchedByParams.ShouldNotBeNull();
@@ -32,8 +31,8 @@ namespace Jerrycurl.Mvc.Test
             batchedByParams.Count.ShouldBe(10);
             notBatched.Count.ShouldBe(1);
 
-            string joinedSql = string.Join("", batchedBySql.Select(d => d.CommandText));
-            string joinedParams = string.Join("", batchedByParams.Select(d => d.CommandText));
+            var joinedSql = string.Join("", batchedBySql.Select(d => d.CommandText));
+            var joinedParams = string.Join("", batchedByParams.Select(d => d.CommandText));
 
             notBatched.First().CommandText.ShouldBe(joinedSql);
             notBatched.First().CommandText.ShouldBe(joinedParams);
