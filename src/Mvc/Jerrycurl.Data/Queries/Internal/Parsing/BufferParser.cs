@@ -100,7 +100,8 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 if (!writer.Metadata.HasFlag(BindingMetadataFlags.Model) || writer.Metadata.HasFlag(BindingMetadataFlags.List))
                     writer.Slot = this.AddSlot(tree, writer.Metadata, writer.JoinKey);
 
-                tree.Lists.Add(writer);
+                if (!writer.Metadata.HasFlag(BindingMetadataFlags.Model))
+                    tree.Lists.Add(writer);
             }
 
             tree.Lists = tree.Lists.OrderByDescending(w => w.Depth).ThenByDescending(GetNameDepth).ToList();

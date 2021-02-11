@@ -31,43 +31,24 @@ namespace Jerrycurl.Data.Metadata
 
         }
 
-        #region " Exception helpers "
 
-        public static BindingException FromReference(Type schemaType, string propertyName, string foreignPropertyName, string message = null, Exception innerException = null)
-        {
-            string fullMessage = $"Unable to bind join between '{propertyName}' and '{foreignPropertyName}' in model '{schemaType.GetSanitizedFullName()}'.";
-
-            if (message != null || innerException?.Message != null)
-                fullMessage += $" {message ?? innerException?.Message}";
-
-            return new BindingException(fullMessage, innerException);
-        }
-
-        public static BindingException FromProperty(Type schemaType, string propertyName, string message = null, Exception innerException = null)
+        public static BindingException Create(MetadataIdentity metadata, string message = null, Exception innerException = null)
         {
             message ??= innerException?.Message;
 
-            if (schemaType != null && message != null)
-                message = $"Unable to bind to \"{propertyName}\" in model {schemaType.GetSanitizedName()}. {message}";
-            else if (schemaType != null && message == null)
-                message = $"Unable to bind to \"{propertyName}\" in model {schemaType.GetSanitizedName()}.";
-            else if (message != null)
-                message = $"Unable to bind to \"{propertyName}\". {message}";
-            else
-                message = $"Unable to bind property \"{propertyName}\".";
+            if (message != null)
+                return new BindingException($"Cannot bind to {metadata}: {message}", innerException);
 
-            return new BindingException(message, innerException);
+            return new BindingException($"Cannot bind to {metadata}.", innerException);
         }
 
-        public static BindingException FromMetadata(IBindingMetadata metadata, string message = null, Exception innerException = null) => FromProperty(metadata.Identity.Schema.Model, metadata.Identity.Name, message, innerException);
-        public static BindingException FromProperty(string propertyName, string message = null, Exception innerException = null) => FromProperty(null, propertyName, message, innerException);
+        internal static BindingException IsReadOnly(IBindingMetadata metadata)
+            => Create(metadata.Identity, message: "Data is read-only.");
 
         internal static BindingException InvalidCast(IBindingMetadata metadata, Exception innerException)
-            => new BindingException($"Unable to bind to {metadata.Identity}: {innerException.Message}", innerException);
+            => Create(metadata.Identity, innerException: innerException);
 
         internal static BindingException NoValidReference(MetadataIdentity from, MetadataIdentity to)
-            => throw new BindingException($"No valid reference found between {from} and {to}. Please specify matching [Key] and [Ref] annotations to map across one-to-many boundaries.");
-
-        #endregion
+            => new BindingException($"No valid reference found between {from} and {to}. Please specify matching [Key] and [Ref] annotations to map across one-to-many boundaries.");
     }
 }

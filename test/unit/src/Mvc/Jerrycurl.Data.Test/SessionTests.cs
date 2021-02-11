@@ -21,7 +21,7 @@ namespace Jerrycurl.Data.Test
             QueryOptions options = new QueryOptions()
             {
                 ConnectionFactory = () => connection,
-                Schemas = DatabaseHelper.Default.Schemas,
+                Store = DatabaseHelper.Default.Store,
             };
 
             await using (var ado = new AsyncSession(options.ConnectionFactory, null))
@@ -44,7 +44,7 @@ namespace Jerrycurl.Data.Test
             QueryOptions options = new QueryOptions()
             {
                 ConnectionFactory = () => connection,
-                Schemas = DatabaseHelper.Default.Schemas,
+                Store = DatabaseHelper.Default.Store,
             };
 
             using (var ado = new SyncSession(options.ConnectionFactory, options.Filters))
@@ -69,7 +69,7 @@ namespace Jerrycurl.Data.Test
             QueryOptions options = new QueryOptions()
             {
                 ConnectionFactory = () => connection,
-                Schemas = DatabaseHelper.Default.Schemas,
+                Store = DatabaseHelper.Default.Store,
             };
 
             Should.Throw<InvalidOperationException>(() =>
@@ -129,13 +129,13 @@ namespace Jerrycurl.Data.Test
                 QueryOptions options1 = new QueryOptions()
                 {
                     ConnectionFactory = () => connection1,
-                    Schemas = DatabaseHelper.Default.Schemas,
+                    Store = DatabaseHelper.Default.Store,
                 };
 
                 QueryOptions options2 = new QueryOptions()
                 {
                     ConnectionFactory = () => connection2,
-                    Schemas = DatabaseHelper.Default.Schemas,
+                    Store = DatabaseHelper.Default.Store,
                 };
 
                 QueryEngine engine1 = new QueryEngine(options1);

@@ -19,7 +19,7 @@ namespace Jerrycurl.Data.Test
     {
         public void Test_Empty_ObjectAndList()
         {
-            var store = DatabaseHelper.Default.Schemas2;
+            var store = DatabaseHelper.Default.Store;
             var schema1 = store.GetSchema(typeof(Blog));
             var schema2 = store.GetSchema(typeof(IList<Blog>));
 
@@ -35,7 +35,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Read_NullableSet()
         {
-            var store = DatabaseHelper.Default.Schemas2;
+            var store = DatabaseHelper.Default.Store;
             var data = new int?[] { 1, 2, null };
 
             using var dataReader = store.From(data).Select("Item").As("Item");
@@ -48,7 +48,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Read_IntegerSet()
         {
-            var store = DatabaseHelper.Default.Schemas2;
+            var store = DatabaseHelper.Default.Store;
             var data = new[] { 1, 2, 3, 4, 5, 6 };
 
             using var dataReader = store.From(data).Select("Item").As("Item");
@@ -61,7 +61,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Insert_ManyToOne_List()
         {
-            var store = DatabaseHelper.Default.Schemas2;
+            var store = DatabaseHelper.Default.Store;
 
             var data1 = new (int, int)[]
             {
@@ -104,7 +104,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Insert_ManyToOne_Object()
         {
-            var store = DatabaseHelper.Default.Schemas2;
+            var store = DatabaseHelper.Default.Store;
 
             var data1 = new[] { 2 }; // Blog(Id)
             var data2 = new (int, int)[]
@@ -143,7 +143,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Insert_DualRecursiveTree()
         {
-            var store = DatabaseHelper.Default.Schemas2;
+            var store = DatabaseHelper.Default.Store;
             var schema = store.GetSchema(typeof(IList<BlogCategory>));
             var buffer = new QueryBuffer(schema, QueryType.List);
 
@@ -225,7 +225,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Aggregate_PrimaryKey()
         {
-            var store = DatabaseHelper.Default.Schemas2;
+            var store = DatabaseHelper.Default.Store;
             var schema = store.GetSchema(typeof(Blog));
             var buffer = new QueryBuffer(schema, QueryType.Aggregate);
 
@@ -238,7 +238,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Aggregate_NonPrimary()
         {
-            var store = DatabaseHelper.Default.Schemas2;
+            var store = DatabaseHelper.Default.Store;
             var schema = store.GetSchema(typeof(Blog));
             var buffer = new QueryBuffer(schema, QueryType.Aggregate);
 
@@ -252,7 +252,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Insert_One()
         {
-            var store = DatabaseHelper.Default.Schemas2;
+            var store = DatabaseHelper.Default.Store;
             
             var data = new (int, string)[]
             {
@@ -277,7 +277,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Insert_OneToMany_NonPrimary()
         {
-            var store = DatabaseHelper.Default.Schemas2;
+            var store = DatabaseHelper.Default.Store;
 
             var data1 = new (int?, string)[]
             {
@@ -325,7 +325,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Insert_NonMatching()
         {
-            var store = DatabaseHelper.Default.Schemas2;
+            var store = DatabaseHelper.Default.Store;
             var schema1 = store.GetSchema(typeof(Blog));
             var schema2 = store.GetSchema(typeof(List<Blog>));
             var buffer1 = new QueryBuffer(schema1, QueryType.List);
@@ -343,7 +343,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Aggregate_NonMatching()
         {
-            var store = DatabaseHelper.Default.Schemas2;
+            var store = DatabaseHelper.Default.Store;
             var schema1 = store.GetSchema(typeof(Blog));
             var schema2 = store.GetSchema(typeof(List<Blog>));
             var buffer1 = new QueryBuffer(schema1, QueryType.Aggregate);
@@ -361,7 +361,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Insert_EmptySet()
         {
-            var store = DatabaseHelper.Default.Schemas2;
+            var store = DatabaseHelper.Default.Store;
             var schema1 = store.GetSchema(typeof(Blog));
             var schema2 = store.GetSchema(typeof(List<Blog>));
             var buffer1 = new QueryBuffer(schema1, QueryType.List);
@@ -396,7 +396,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Insert_CaseInsensitive()
         {
-            var store = DatabaseHelper.Default.Schemas2;
+            var store = DatabaseHelper.Default.Store;
             var schema = store.GetSchema(typeof(IList<Blog>));
             var buffer = new QueryBuffer(schema, QueryType.List);
 
@@ -410,7 +410,7 @@ namespace Jerrycurl.Data.Test
 
         public async Task Test_Insert_OneToMany_NonPrimary_Async()
         {
-            var store = DatabaseHelper.Default.Schemas2;
+            var store = DatabaseHelper.Default.Store;
 
             var data1 = new (int?, string)[]
             {
@@ -458,7 +458,7 @@ namespace Jerrycurl.Data.Test
 
         public async Task Test_Insert_OneToMany_Async()
         {
-            var store = DatabaseHelper.Default.Schemas2;
+            var store = DatabaseHelper.Default.Store;
             var data1 = new (int, string)[]
             {
                 ( 1, "Blog 1" ),
@@ -531,7 +531,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Insert_OneToMany()
         {
-            var store = DatabaseHelper.Default.Schemas2;
+            var store = DatabaseHelper.Default.Store;
             var data1 = new (int, string)[]
             {
                 ( 1, "Blog 1" ),
@@ -604,7 +604,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Insert_NonPrimaryKeys()
         {
-            var store = DatabaseHelper.Default.Schemas;
+            var store = DatabaseHelper.Default.Store;
             var data = new (int?, string)[]
             {
                 ( null, "Blog 1" ),
@@ -629,7 +629,7 @@ namespace Jerrycurl.Data.Test
 
         public async Task Test_Insert_NonPrimaryKeys_Async()
         {
-            var store = DatabaseHelper.Default.Schemas;
+            var store = DatabaseHelper.Default.Store;
             var data = new (int?, string)[]
             {
                 ( null, "Blog 1" ),
@@ -654,7 +654,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Insert_PrimaryKeys()
         {
-            var store = DatabaseHelper.Default.Schemas;
+            var store = DatabaseHelper.Default.Store;
             var data = new (int?, string)[]
             {
                 ( null, "Blog 1" ),
@@ -677,7 +677,7 @@ namespace Jerrycurl.Data.Test
 
         public async Task Test_Insert_PrimaryKeys_Async()
         {
-            var store = DatabaseHelper.Default.Schemas;
+            var store = DatabaseHelper.Default.Store;
             var data = new (int?, string)[]
             {
                 ( null, "Blog 1" ),
@@ -700,7 +700,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Insert_DynamicResult()
         {
-            var store = DatabaseHelper.Default.Schemas;
+            var store = DatabaseHelper.Default.Store;
             var data = new int?[] { 1, 2, null };
 
             var schema1 = store.GetSchema(typeof(object));
@@ -723,18 +723,29 @@ namespace Jerrycurl.Data.Test
             result2.Select(d => (int?)d).ShouldBe(new int?[] { 1, 2, null });
         }
 
+        public void Test_Aggregate_InvalidDataType()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(Blog));
+            var buffer = new QueryBuffer(schema, QueryType.Aggregate);
+
+            //Should.Throw<BindingException>(() => buffer.Insert("Text", ("", "Id"))); // compile time
+            Should.Throw<BindingException>(() => buffer.Insert((object)12, ("", "Title"))); // runtime
+        }
+
         public void Test_Insert_InvalidDataType()
         {
-            var store = DatabaseHelper.Default.Schemas;
+            var store = DatabaseHelper.Default.Store;
             var schema = store.GetSchema(typeof(Blog));
             var buffer = new QueryBuffer(schema, QueryType.List);
 
-            Should.Throw<BindingException>(() => buffer.Insert("Text", ("", "Id")));
+            Should.Throw<BindingException>(() => buffer.Insert("Text", ("", "Id"))); // compile time
+            Should.Throw<BindingException>(() => buffer.Insert((object)12, ("", "Title"))); // runtime
         }
 
         public void Test_Insert_ThrowingProperty()
         {
-            var store = DatabaseHelper.Default.Schemas;
+            var store = DatabaseHelper.Default.Store;
             var schema = store.GetSchema(typeof(Blog));
             var buffer = new QueryBuffer(schema, QueryType.List);
 
@@ -743,7 +754,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Aggregate_Dynamic()
         {
-            var store = DatabaseHelper.Default.Schemas;
+            var store = DatabaseHelper.Default.Store;
             var data = (3, "L3");
 
             var schema = store.GetSchema(typeof(object));
@@ -766,7 +777,7 @@ namespace Jerrycurl.Data.Test
         }
         public void Test_Insert_DynamicGraph()
         {
-            var store = DatabaseHelper.Default.Schemas;
+            var store = DatabaseHelper.Default.Store;
             var data = new (int, string)[]
             {
                 (1, "L1"),

@@ -14,7 +14,7 @@ namespace Jerrycurl.Data.Test
     {
         public void Test_ReferenceMetadata_Keys()
         {
-            var store = DatabaseHelper.Default.Schemas;
+            var store = DatabaseHelper.Default.Store;
             var schema = store.GetSchema<Blog>();
 
             var blogKeys = schema.Require<IReferenceMetadata>().Keys;
@@ -35,7 +35,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_ReferenceMetadata_References()
         {
-            var store = DatabaseHelper.Default.Schemas;
+            var store = DatabaseHelper.Default.Store;
             var schema = store.GetSchema<Blog>();
 
             var blogRefs = schema.Require<IReferenceMetadata>().References;

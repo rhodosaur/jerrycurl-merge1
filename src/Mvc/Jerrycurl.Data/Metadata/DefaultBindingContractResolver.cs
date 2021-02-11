@@ -12,7 +12,7 @@ namespace Jerrycurl.Data.Metadata
 {
     public class DefaultBindingContractResolver : IBindingContractResolver
     {
-        private readonly Type[] intTypes = new[] { typeof(byte), typeof(sbyte), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(char) };
+        private readonly Type[] intTypes = new[] { typeof(int), typeof(long), typeof(short), typeof(char), typeof(byte), typeof(sbyte), typeof(ushort), typeof(uint), typeof(ulong) };
         private readonly Type[] decTypes = new[] { typeof(float), typeof(double), typeof(decimal) };
 
         public int Priority => 0;
@@ -253,34 +253,32 @@ namespace Jerrycurl.Data.Metadata
 
             Stack<ConditionalExpression> conditions = new Stack<ConditionalExpression>();
 
-            void addTypeIsCondition(Type testType, Expression newValue)
-            {
-                Expression typeIs = Expression.TypeIs(value, testType);
-
-                if (newValue.Type.IsValueType)
-                    newValue = this.GetConvertExpression(newValue, typeof(object));
-
-                conditions.Push(Expression.Condition(typeIs, newValue, value));
-            }
-
             if (this.IsNumberType(valueInfo.Metadata.Type))
             {
-                foreach (Type numberType in this.GetNumberTypes().Where(t => t != valueInfo.Metadata.Type))
+                List<Type> testTypes = this.GetNumberTypes().Where(t => t != valueInfo.Metadata.Type).ToList();
+
+                testTypes.Insert(0, valueInfo.Metadata.Type);
+
+                foreach (Type numberType in testTypes)
                 {
                     Expression unboxedValue = this.GetConvertExpression(value, numberType);
                     Expression castValue = this.GetConvertExpression(unboxedValue, valueInfo.Metadata.Type);
 
-                    addTypeIsCondition(numberType, castValue);
+                    AddTypeIsExpression(numberType, castValue);
                 }
             }
             else if (valueInfo.Metadata.Type == typeof(bool))
             {
+                List<Type> testTypes = this.GetNumberTypes().Where(t => t != valueInfo.Metadata.Type).ToList();
+
+                testTypes.Insert(0, typeof(bool));
+
                 foreach (Type numberType in this.GetNumberTypes())
                 {
                     Expression unboxedValue = this.GetConvertExpression(value, numberType);
                     Expression boolValue = Expression.NotEqual(unboxedValue, Expression.Default(numberType));
 
-                    addTypeIsCondition(numberType, boolValue);
+                    AddTypeIsExpression(numberType, boolValue);
                 }
             }
 
@@ -292,16 +290,26 @@ namespace Jerrycurl.Data.Metadata
                 Expression isNull = this.GetIsNullExpression(valueInfo);
                 Expression defaultValue = Expression.Default(valueInfo.Metadata.Type);
 
-                if (valueInfo.Metadata.Type.IsValueType || defaultValue.Type != value.Type)
+                if (valueInfo.Metadata.Type.IsValueType && Nullable.GetUnderlyingType(valueInfo.Metadata.Type) == null)
                     defaultValue = this.GetConvertExpression(defaultValue, typeof(object));
 
                 value = Expression.Condition(isNull, defaultValue, value);
             }
 
-            if (value.Type != valueInfo.Metadata.Type)
+            if (!valueInfo.Metadata.Type.IsAssignableFrom(value.Type))
                 value = this.GetConvertExpression(value, valueInfo.Metadata.Type);
 
             return value;
+
+            void AddTypeIsExpression(Type testType, Expression newValue)
+            {
+                Expression typeIs = Expression.TypeIs(value, testType);
+
+                if (newValue.Type.IsValueType)
+                    newValue = this.GetConvertExpression(newValue, typeof(object));
+
+                conditions.Push(Expression.Condition(typeIs, newValue, value));
+            }
         }
 
         private Expression GetIsNullExpression(IBindingValueInfo valueInfo)

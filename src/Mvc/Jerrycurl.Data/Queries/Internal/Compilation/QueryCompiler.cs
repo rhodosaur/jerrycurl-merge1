@@ -255,10 +255,13 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
         #endregion
 
         #region " Keys "
-        private Expression GetKeyInitValueExpression(ValueBinder binder)
+        private Expression GetKeyInitValueExpression(ValueBinder binder, bool useTryCatch = true)
         {
             Expression value = this.GetValueExpression(binder);
             Expression convertedValue = this.GetConvertExpression(value, binder);
+
+            if (useTryCatch)
+                convertedValue = this.GetTryCatchExpression(binder, convertedValue);
 
             if (binder.CanBeDbNull)
             {
@@ -326,9 +329,9 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
             if (primaryKey != null)
             {
-                Expression isMissingKey = this.GetOrConditionExpression(primaryKey.Values, this.GetIsDbNullExpression);
+                Expression missingKey = this.GetOrConditionExpression(primaryKey.Values, this.GetIsDbNullExpression);
 
-                return Expression.Condition(isMissingKey, Expression.Default(block.Type), block);
+                return Expression.Condition(missingKey, Expression.Default(block.Type), block);
             }
 
             return block;
@@ -382,10 +385,10 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             {
                 value = this.GetValueExpression(binder);
                 value = this.GetConvertExpression(value, binder);
-            }
 
-            if (useTryCatch)
-                value = this.GetTryCatchExpression(binder, value);
+                if (useTryCatch)
+                    value = this.GetTryCatchExpression(binder, value);
+            }
 
             return Expression.Condition(isDbNull, nullValue, Expression.Convert(value, typeof(object)));
         }
@@ -398,16 +401,14 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             {
                 value = this.GetValueExpression(binder);
                 value = this.GetConvertExpression(value, binder);
+                value = this.GetTryCatchExpression(binder, value);
             }
 
-            if (value.Type != binder.Metadata.Type)
-                value = Expression.Convert(value, binder.Metadata.Type);
+            //if (!this.IsAssignableFrom(binder.Metadata.Type, value.Type))
+            //    value = Expression.Convert(value, binder.Metadata.Type);
 
             if (canBeDbNull)
                 value = Expression.Condition(isDbNull, Expression.Default(binder.Metadata.Type), value);
-
-            if (useTryCatch)
-                value = this.GetTryCatchExpression(binder, value);
 
             return value;
         }
@@ -421,7 +422,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             Expression memberInit = Expression.MemberInit(newExpression, binder.Properties.Select(b =>
             {
                 if (!b.Metadata.HasFlag(BindingMetadataFlags.Writable))
-                    throw BindingException.FromMetadata(b.Metadata, "Cannot bind to read-only property.");
+                    throw BindingException.IsReadOnly(b.Metadata);
 
                 Expression value = this.GetBinderExpression(b);
 
@@ -546,8 +547,8 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
         {
             Type targetType = binder.KeyType ?? binder.Metadata.Type;
 
-            if (value.Type != targetType)
-                value = Expression.Convert(value, targetType);
+            if (!this.IsAssignableFrom(targetType, value.Type))
+                Expression.Convert(value, targetType);
 
             if (UseTryCatchExpressions)
                 value = this.GetTryCatchExpression(binder, value);
@@ -564,7 +565,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             {
                 SourceType = value.Type,
                 TargetType = targetType,
-                CanBeNull = (!value.Type.IsValueType || Nullable.GetUnderlyingType(value.Type) != null),
+                CanBeNull = false,
                 CanBeDbNull = false,
                 Metadata = binder.Metadata,
                 Value = variable,
@@ -713,6 +714,8 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
             return expr;
         }
+
+        private bool IsAssignableFrom(Type left, Type right) => left.IsAssignableFrom(right);
 
         private bool IsRunningNetFramework() => RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework");
 

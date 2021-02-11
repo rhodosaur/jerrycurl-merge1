@@ -42,7 +42,7 @@ namespace Jerrycurl.Mvc
             QueryOptions queryOptions = new QueryOptions()
             {
                 ConnectionFactory = result.Domain.ConnectionFactory,
-                Schemas = result.Domain.Schemas,
+                Store = result.Domain.Schemas,
                 Filters = options.Filters,
             };
 
@@ -76,7 +76,7 @@ namespace Jerrycurl.Mvc
             QueryOptions queryOptions = new QueryOptions()
             {
                 ConnectionFactory = result.Domain.ConnectionFactory,
-                Schemas = result.Domain.Schemas,
+                Store = result.Domain.Schemas,
                 Filters = options.Filters,
             };
 
@@ -110,7 +110,7 @@ namespace Jerrycurl.Mvc
             QueryOptions queryOptions = new QueryOptions()
             {
                 ConnectionFactory = result.Domain.ConnectionFactory,
-                Schemas = result.Domain.Schemas,
+                Store = result.Domain.Schemas,
                 Filters = options.Filters,
             };
 
@@ -143,7 +143,7 @@ namespace Jerrycurl.Mvc
             QueryOptions queryOptions = new QueryOptions()
             {
                 ConnectionFactory = result.Domain.ConnectionFactory,
-                Schemas = result.Domain.Schemas,
+                Store = result.Domain.Schemas,
                 Filters = options.Filters,
             };
 
@@ -188,7 +188,7 @@ namespace Jerrycurl.Mvc
             QueryOptions queryOptions = new QueryOptions()
             {
                 ConnectionFactory = result.Domain.ConnectionFactory,
-                Schemas = result.Domain.Schemas,
+                Store = result.Domain.Schemas,
                 Filters = options.Filters,
             };
 
@@ -235,7 +235,7 @@ namespace Jerrycurl.Mvc
             QueryOptions queryOptions = new QueryOptions()
             {
                 ConnectionFactory = result.Domain.ConnectionFactory,
-                Schemas = result.Domain.Schemas,
+                Store = result.Domain.Schemas,
                 Filters = options.Filters,
             };
 
@@ -377,7 +377,7 @@ namespace Jerrycurl.Mvc
             QueryOptions queryOptions = new QueryOptions()
             {
                 ConnectionFactory = result.Domain.ConnectionFactory,
-                Schemas = result.Domain.Schemas,
+                Store = result.Domain.Schemas,
                 Filters = options.Filters,
             };
 
@@ -412,7 +412,7 @@ namespace Jerrycurl.Mvc
             QueryOptions queryOptions = new QueryOptions()
             {
                 ConnectionFactory = result.Domain.ConnectionFactory,
-                Schemas = result.Domain.Schemas,
+                Store = result.Domain.Schemas,
                 Filters = options.Filters,
             };
 

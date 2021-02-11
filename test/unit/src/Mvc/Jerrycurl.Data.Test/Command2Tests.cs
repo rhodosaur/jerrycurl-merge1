@@ -17,9 +17,22 @@ namespace Jerrycurl.Data.Test
 {
     public class Command2Tests
     {
+        public void Test_Update_InvalidDataType()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var data = new Blog();
+            var target = store.From(data).Lookup("Id");
+            var buffer = new CommandBuffer(store);
+
+            buffer.Add(new ColumnBinding(target, "C0"));
+
+            buffer.Update("Text", ("", "C0"));
+            buffer.Update((object)"Text", ("", "C0"));
+        }
+
         public void Test_Update_Missing()
         {
-            var store = DatabaseHelper.Default.Schemas2;
+            var store = DatabaseHelper.Default.Store;
             var target = store.From<Blog>(null).Lookup("Id");
             var buffer = new CommandBuffer(store);
 
@@ -31,7 +44,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Update_CaseInsensitive()
         {
-            var store = DatabaseHelper.Default.Schemas2;
+            var store = DatabaseHelper.Default.Store;
             var data = new Blog();
             var target = store.From(data).Lookup("Id");
             var buffer = new CommandBuffer(store);
@@ -45,7 +58,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Update_Parameter_Propagation()
         {
-            var store = DatabaseHelper.Default.Schemas2;
+            var store = DatabaseHelper.Default.Store;
             var data1 = new Blog();
             var data2 = new Blog();
             var target1 = store.From(data1).Lookup("Id");
@@ -72,7 +85,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Update_Indexer()
         {
-            var store = DatabaseHelper.Default.Schemas2;
+            var store = DatabaseHelper.Default.Store;
             var data1 = new List<int>() { 1, 2, 3 };
             var data2 = new[] { 4, 5, 6 };
             var target1 = store.From(data1).Select("Item").Body.Skip(1).First()[0];
@@ -91,7 +104,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Update_Priority()
         {
-            var store = DatabaseHelper.Default.Schemas;
+            var store = DatabaseHelper.Default.Store;
             var data = new Blog();
             var target = store.From(data).Lookup("Id");
 
@@ -108,7 +121,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Update_FromParameter()
         {
-            var store = DatabaseHelper.Default.Schemas;
+            var store = DatabaseHelper.Default.Store;
             var data = new Blog();
             var targets = store.From(data).Lookup("Id", "Title");
 
@@ -130,7 +143,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Update_FromColumn()
         {
-            var store = DatabaseHelper.Default.Schemas;
+            var store = DatabaseHelper.Default.Store;
             var sourceData = new Blog() { Id = 12, Title = "Blog!" };
             var targetData = new Blog();
 
@@ -157,7 +170,7 @@ namespace Jerrycurl.Data.Test
 
         public async Task Test_Update_FromColumn_Async()
         {
-            var store = DatabaseHelper.Default.Schemas;
+            var store = DatabaseHelper.Default.Store;
             var sourceData = new Blog() { Id = 12, Title = "Blog!" };
             var targetData = new Blog();
 
@@ -184,7 +197,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Update_FromCascade_Cyclic()
         {
-            var store = DatabaseHelper.Default.Schemas;
+            var store = DatabaseHelper.Default.Store;
             var data1 = new Blog();
             var data2 = new Blog();
             var data3 = new Blog();
@@ -212,7 +225,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Update_FromCascadingParameter()
         {
-            var store = DatabaseHelper.Default.Schemas;
+            var store = DatabaseHelper.Default.Store;
             var data1 = new Blog();
             var data2 = new Blog();
             var data3 = new Blog();

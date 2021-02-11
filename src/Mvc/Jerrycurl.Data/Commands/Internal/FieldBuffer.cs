@@ -47,7 +47,7 @@ namespace Jerrycurl.Data.Commands.Internal
             if (this.Target != null && this.Read(out object value))
             {
                 MetadataIdentity metadata = this.Target.Identity.Metadata;
-                ColumnMetadata column = this.Column?.Info;
+                ColumnMetadata column = this.Column?.Metadata;
                 BufferConverter converter = CommandCache.GetConverter(metadata, column);
 
                 this.Target.Update(converter(value));

@@ -22,15 +22,15 @@ namespace Jerrycurl.Test
 
         public static DatabaseHelper Default { get; } = new DatabaseHelper();
 
-        public SchemaStore Schemas { get; set; }
-        public SchemaStore Schemas2 { get; set; }
+        public SchemaStore Store { get; set; }
+        public SchemaStore SqliteStore { get; set; }
         public QueryOptions QueryOptions { get; set; }
         public CommandOptions CommandOptions { get; set; }
 
         public DatabaseHelper()
         {
-            this.Schemas = this.GetSchemas();
-            this.Schemas2 = this.GetSchemas(useSqlite: false);
+            this.Store = this.GetSchemas(useSqlite: false);
+            this.SqliteStore = this.GetSchemas(useSqlite: true);
             this.QueryOptions = this.GetQueryOptions();
             this.CommandOptions = this.GetCommandOptions();
         }
@@ -49,12 +49,12 @@ namespace Jerrycurl.Test
             return store;
         }
 
-        public QueryOptions GetQueryOptions(SchemaStore schemas = null)
+        public QueryOptions GetQueryOptions(SchemaStore store = null)
         {
             return new QueryOptions()
             {
                 ConnectionFactory = () => new ProfilingConnection(new SqliteConnection(TestDbConnectionString)),
-                Schemas = schemas ?? this.Schemas,
+                Store = store ?? this.SqliteStore,
             };
         }
 
@@ -101,6 +101,6 @@ namespace Jerrycurl.Test
             => this.Model(model).Select(header);
 
         public IField Model<T>(T model = default)
-            => this.Schemas.From(model);
+            => this.Store.From(model);
     }
 }

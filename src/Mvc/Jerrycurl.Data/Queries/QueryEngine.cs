@@ -27,10 +27,10 @@ namespace Jerrycurl.Data.Queries
             if (queries == null)
                 throw new ArgumentNullException(nameof(queries));
 
-            if (this.Options.Schemas == null)
+            if (this.Options.Store == null)
                 throw new InvalidOperationException("No schema store found.");
 
-            ISchema schema = this.Options.Schemas.GetSchema(typeof(TResult));
+            ISchema schema = this.Options.Store.GetSchema(typeof(TResult));
             QueryBuffer buffer = new QueryBuffer(schema, queryType);
 
             using ISyncSession connection = this.Options.GetSyncSession();
@@ -52,10 +52,10 @@ namespace Jerrycurl.Data.Queries
             if (queries == null)
                 throw new ArgumentNullException(nameof(queries));
 
-            if (this.Options.Schemas == null)
+            if (this.Options.Store == null)
                 throw new InvalidOperationException("No schema builder found.");
 
-            ISchema schema = this.Options.Schemas.GetSchema(typeof(TResult));
+            ISchema schema = this.Options.Store.GetSchema(typeof(TResult));
             QueryBuffer buffer = new QueryBuffer(schema, queryType);
 
             await using IAsyncSession connection = this.Options.GetAsyncSession();
@@ -78,7 +78,7 @@ namespace Jerrycurl.Data.Queries
             if (queries == null)
                 throw new ArgumentNullException(nameof(queries));
 
-            if (this.Options.Schemas == null)
+            if (this.Options.Store == null)
                 throw new InvalidOperationException("No schema builder found.");
 
             await using IAsyncSession connection = this.Options.GetAsyncSession();
@@ -86,7 +86,7 @@ namespace Jerrycurl.Data.Queries
             foreach (IBatch batch in this.FilterBatches(queries))
             {
                 await foreach (DbDataReader dataReader in connection.ExecuteAsync(batch, cancellationToken).ConfigureAwait(false))
-                    yield return new QueryReader(this.Options.Schemas, dataReader);
+                    yield return new QueryReader(this.Options.Store, dataReader);
             }
         }
 
@@ -109,7 +109,7 @@ namespace Jerrycurl.Data.Queries
             if (queries == null)
                 throw new ArgumentNullException(nameof(queries));
 
-            if (this.Options.Schemas == null)
+            if (this.Options.Store == null)
                 throw new InvalidOperationException("No schema builder found.");
 
             using ISyncSession connection = this.Options.GetSyncSession();
@@ -117,7 +117,7 @@ namespace Jerrycurl.Data.Queries
             foreach (IBatch batch in this.FilterBatches(queries))
             {
                 foreach (IDataReader reader in connection.Execute(batch))
-                    yield return new QueryReader(this.Options.Schemas, reader);
+                    yield return new QueryReader(this.Options.Store, reader);
             }
         }
 

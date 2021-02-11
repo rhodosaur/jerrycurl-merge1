@@ -66,7 +66,7 @@ namespace Jerrycurl.Data.Commands
                     names.Add(new ColumnName(metadata, columnInfo));
                     bufferList.Add(buffer);
 
-                    buffer.Column.Info = columnInfo;
+                    buffer.Column.Metadata = columnInfo;
                 }
             }
 

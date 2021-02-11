@@ -14,11 +14,48 @@ using System.Text.Json;
 using Jerrycurl.Relations.Language;
 using Microsoft.Data.Sqlite;
 using Jerrycurl.Extensions.Json.Metadata;
+using Jerrycurl.Data.Commands;
 
 namespace Jerrycurl.Data.Test
 {
     public class JsonTests
     {
+        public void Test_Update_Json()
+        {
+            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false);
+
+            store.AddContract(new JsonBindingContractResolver(new JsonSerializerOptions()));
+
+            var json = "{ \"Id\": 12, \"Title\": \"Hello World!\" }";
+            var data1 = new JsonBlog();
+            var data2 = new JsonBlog();
+            var target1 = store.From(data1).Lookup("Blog");
+            var target2 = store.From(data2).Lookup("Blog");
+            var buffer = new CommandBuffer(store);
+
+            buffer.Add(new ColumnBinding(target1, "B0"));
+            buffer.Add(new ParameterBinding(target2, "P0"));
+
+            var parameters = buffer.Prepare(() => new MockParameter());
+
+            parameters[0].Value = json;
+
+            buffer.Update(json, ("", "B0"));
+
+            data1.Blog.ShouldBeNull();
+            data2.Blog.ShouldBeNull();
+
+            buffer.Commit();
+
+            data1.Blog.ShouldNotBeNull();
+            data1.Blog.Id.ShouldBe(12);
+            data1.Blog.Title.ShouldBe("Hello World!");
+
+            data2.Blog.ShouldNotBeNull();
+            data2.Blog.Id.ShouldBe(12);
+            data2.Blog.Title.ShouldBe("Hello World!");
+        }
+
         public void Test_Insert_Json()
         {
             var options = new JsonSerializerOptions();
@@ -43,7 +80,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Insert_Json_NoContract()
         {
-            var store = DatabaseHelper.Default.Schemas2;
+            var store = DatabaseHelper.Default.Store;
             var data = "{ \"Id\": 12 }";
 
             var schema = store.GetSchema(typeof(JsonBlog));

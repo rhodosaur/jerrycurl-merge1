@@ -52,7 +52,7 @@ namespace Jerrycurl.Test
             QueryOptions options = new QueryOptions()
             {
                 ConnectionFactory = this.Factory,
-                Schemas = DatabaseHelper.Default.Schemas,
+                Store = DatabaseHelper.Default.Store,
             };
 
             Query query = new Query() { QueryText = this.selectSql };

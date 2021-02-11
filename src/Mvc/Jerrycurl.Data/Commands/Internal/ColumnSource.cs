@@ -5,8 +5,8 @@ namespace Jerrycurl.Data.Commands.Internal
 {
     internal class ColumnSource : IFieldSource
     {
-        public ColumnMetadata Info { get; set; }
+        public ColumnMetadata Metadata { get; set; }
         public object Value { get; set; } = DBNull.Value;
-        public bool HasChanged => (this.Info != null);
+        public bool HasChanged => (this.Metadata != null);
     }
 }

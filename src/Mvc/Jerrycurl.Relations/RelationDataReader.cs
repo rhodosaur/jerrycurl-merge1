@@ -79,7 +79,7 @@ namespace Jerrycurl.Relations
         {
             if (this.InnerReader[i].Type == FieldType.Missing)
                 return true;
-            else if (this.InnerReader[i].Data.Value == null)
+            else if (this.InnerReader[i].Snapshot == null)
                 return true;
 
             return false;

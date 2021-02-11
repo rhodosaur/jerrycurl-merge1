@@ -22,9 +22,6 @@ namespace Jerrycurl.Data.Commands.Internal.Caching
             if (metadata == null)
                 throw new ArgumentNullException(nameof(metadata));
 
-            if (column == null)
-                throw new ArgumentNullException(nameof(column));
-
             this.Columns = new List<ColumnName>() { new ColumnName(metadata, column) };
         }
 
