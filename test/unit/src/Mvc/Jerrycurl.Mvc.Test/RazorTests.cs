@@ -143,7 +143,8 @@ namespace Jerrycurl.Mvc.Test
             var sql = runner.Sql(run);
 
             sql.ShouldBe(@"T0.""Id"" AS ""Item.Id"",
-T0.""Title"" AS ""Item.Title""");
+T0.""Title"" AS ""Item.Title"",
+T0.""AuthorId"" AS ""Item.AuthorId""");
         }
     }
 }

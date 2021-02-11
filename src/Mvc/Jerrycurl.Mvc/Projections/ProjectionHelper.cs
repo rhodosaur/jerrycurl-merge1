@@ -29,6 +29,9 @@ namespace Jerrycurl.Mvc.Projections
             throw ProjectionException.TableNotFound(metadata);
         }
 
+        public static IJsonMetadata GetJsonMetadata(IProjectionMetadata metadata)
+            => metadata.Identity.Lookup<IJsonMetadata>() ?? throw ProjectionException.JsonNotFound(metadata);
+
         public static IProjectionMetadata GetMetadataFromRelativeLambda(IProjection projection, LambdaExpression expression)
         {
             if (expression == null)
