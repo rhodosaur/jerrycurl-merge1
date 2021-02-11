@@ -6,6 +6,7 @@ using System.Linq;
 using System;
 using Jerrycurl.Data.Test.Models.Custom;
 using Jerrycurl.Test.Models.Database;
+using Jerrycurl.Data.Test.Models.Views;
 
 namespace Jerrycurl.Data.Test
 {
@@ -14,7 +15,7 @@ namespace Jerrycurl.Data.Test
         public void Test_ReferenceMetadata_Keys()
         {
             var store = DatabaseHelper.Default.Store;
-            var schema1 = store.GetSchema<Blog>();
+            var schema1 = store.GetSchema<BlogView>();
             var schema2 = store.GetSchema<SecondaryModel>();
 
             var parentKeys1 = schema1.Require<IReferenceMetadata>().Keys;
@@ -38,7 +39,7 @@ namespace Jerrycurl.Data.Test
         public void Test_ReferenceMetadata_References()
         {
             var store = DatabaseHelper.Default.Store;
-            var schema1 = store.GetSchema<Blog>();
+            var schema1 = store.GetSchema<BlogView>();
             var schema2 = store.GetSchema<SecondaryModel>();
 
             var parentRefs1 = schema1.Require<IReferenceMetadata>().References;
