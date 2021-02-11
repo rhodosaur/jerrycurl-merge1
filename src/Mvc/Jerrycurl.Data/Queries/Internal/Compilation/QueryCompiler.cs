@@ -278,10 +278,9 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
             if (isNullVars.Any())
             {
-                Expression isNull = this.GetAndConditionExpression(isNullVars);
-                Expression setNull = Expression.Assign(binder.Array, Expression.Constant(null, binder.Array.Type));
+                Expression notNull = Expression.Not(this.GetOrConditionExpression(isNullVars));
 
-                getOrAdd = Expression.IfThenElse(isNull, setNull, getOrAdd);
+                getOrAdd = Expression.IfThen(notNull, getOrAdd);
             }
 
             return getOrAdd;
@@ -563,7 +562,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             }
             catch (Exception ex)
             {
-                throw BindingException.FromProperty(binder.Metadata.Identity.Name, ex.Message, ex);
+                throw BindingException.InvalidCast(binder.Metadata, ex);
             }
 
             if (convertedValue == null || object.ReferenceEquals(convertedValue, variable))

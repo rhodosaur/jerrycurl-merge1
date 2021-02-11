@@ -29,7 +29,10 @@ namespace Jerrycurl.Data.Commands
             foreach (IBatch batch in this.GetBufferedCommands(commands, buffer))
             {
                 foreach (IDataReader reader in session.Execute(batch))
-                    buffer.Update(reader);
+                {
+                    if (reader.Read())
+                        buffer.Update(reader);
+                }
             }
 
             buffer.Commit();
@@ -45,7 +48,10 @@ namespace Jerrycurl.Data.Commands
             foreach (IBatch batch in this.GetBufferedCommands(commands, buffer))
             {
                 await foreach (DbDataReader dataReader in session.ExecuteAsync(batch, cancellationToken).ConfigureAwait(false))
-                    buffer.Update(dataReader);
+                {
+                    if (await dataReader.ReadAsync().ConfigureAwait(false))
+                        buffer.Update(dataReader);
+                }
             }
 
             buffer.Commit();

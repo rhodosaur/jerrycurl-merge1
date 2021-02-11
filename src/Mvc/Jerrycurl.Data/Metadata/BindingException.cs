@@ -47,19 +47,24 @@ namespace Jerrycurl.Data.Metadata
             message ??= innerException?.Message;
 
             if (schemaType != null && message != null)
-                message = $"Unable to bind to property '{propertyName}' in model '{schemaType.GetSanitizedFullName()}'. {message}";
+                message = $"Unable to bind to \"{propertyName}\" in model {schemaType.GetSanitizedName()}. {message}";
             else if (schemaType != null && message == null)
-                message = $"Unable to bind to property '{propertyName}' in model '{schemaType.GetSanitizedFullName()}'.";
+                message = $"Unable to bind to \"{propertyName}\" in model {schemaType.GetSanitizedName()}.";
             else if (message != null)
-                message = $"Unable to bind to property '{propertyName}'. {message}";
+                message = $"Unable to bind to \"{propertyName}\". {message}";
             else
-                message = $"Unable to bind property '{propertyName}'.";
+                message = $"Unable to bind property \"{propertyName}\".";
 
             return new BindingException(message, innerException);
         }
 
         public static BindingException FromMetadata(IBindingMetadata metadata, string message = null, Exception innerException = null) => FromProperty(metadata.Identity.Schema.Model, metadata.Identity.Name, message, innerException);
         public static BindingException FromProperty(string propertyName, string message = null, Exception innerException = null) => FromProperty(null, propertyName, message, innerException);
+
+        internal static BindingException InvalidCast(IBindingMetadata metadata, Exception innerException)
+        {
+            return new BindingException($"Unable to bind to {metadata.Identity}: {innerException.Message}", innerException);
+        }
 
         #endregion
     }
