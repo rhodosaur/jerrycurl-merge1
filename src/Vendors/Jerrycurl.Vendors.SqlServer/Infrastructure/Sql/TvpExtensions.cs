@@ -18,14 +18,14 @@ namespace Jerrycurl.Mvc.Sql.SqlServer
         public static IProjectionAttribute TvpName(this IProjection projection)
         {
             if (projection.Data == null)
-                throw ProjectionException.ValueNotFound(projection);
-            else if (!projection.Attributes.Any())
-                throw ProjectionException.FromProjection(projection, "No attributes found.");
+                throw new ProjectionException($"No value information found for {projection.Metadata.Identity}.");
+            else if (!projection.Any())
+                throw new ProjectionException($"No attributes found for {projection.Metadata.Identity}.");
 
-            RelationHeader header = new RelationHeader(projection.Source.Identity.Schema, projection.Attributes.Select(a => a.Metadata.Relation).ToList());
-            Relation relation = new Relation(projection.Source, header);
+            RelationHeader header = new RelationHeader(projection.Metadata.Identity.Schema, projection.Header.Select(a => a.Metadata.Relation).ToList());
+            Relation relation = new Relation(projection.Data.Input, header);
 
-            string paramName = projection.Context.Lookup.Custom("TP", projection.Identity, metadata: projection.Metadata.Identity, field: projection.Source);
+            string paramName = projection.Context.Lookup.Custom("TP", projection.Identity, metadata: projection.Metadata.Identity, value: projection.Data.Input);
             string dialectName = projection.Context.Domain.Dialect.Parameter(paramName);
 
             return projection.Attr().Append(dialectName).Append(new TableValuedParameter(paramName, relation));
