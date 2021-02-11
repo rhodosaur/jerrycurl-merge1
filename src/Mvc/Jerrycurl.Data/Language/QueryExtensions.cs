@@ -46,6 +46,18 @@ namespace Jerrycurl.Data.Language
         #endregion
 
         #region " Insert "
+        public static void InsertAll(this QueryBuffer buffer, IDataReader dataReader)
+        {
+            if (buffer == null)
+                throw new ArgumentNullException(nameof(buffer));
+
+            do
+            {
+                buffer.Insert(dataReader);
+            }
+            while (dataReader.NextResult());
+        }
+
         public static QueryBuffer Insert(this QueryBuffer buffer, IRelation relation, params string[] targetHeader)
             => buffer.Insert(relation, (IEnumerable<string>)targetHeader);
         public static QueryBuffer Insert(this QueryBuffer buffer, IRelation relation, IEnumerable<IRelationMetadata> targetHeader)
@@ -138,6 +150,18 @@ namespace Jerrycurl.Data.Language
         #endregion
 
         #region " InsertAsync "
+        public static async Task InsertAllAsync(this QueryBuffer buffer, DbDataReader dataReader, CancellationToken cancellationToken = default)
+        {
+            if (buffer == null)
+                throw new ArgumentNullException(nameof(buffer));
+
+            do
+            {
+                await buffer.InsertAsync(dataReader, cancellationToken).ConfigureAwait(false);
+            }
+            while (await dataReader.NextResultAsync().ConfigureAwait(false));
+        }
+
         public static Task<QueryBuffer> InsertAsync(this QueryBuffer buffer, IRelation relation, params string[] targetHeader)
             => buffer.InsertAsync(relation, (IEnumerable<string>)targetHeader);
         public static Task<QueryBuffer> InsertAsync(this QueryBuffer buffer, IRelation relation, IEnumerable<IRelationMetadata> targetHeader)

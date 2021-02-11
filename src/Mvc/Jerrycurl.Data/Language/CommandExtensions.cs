@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Jerrycurl.Data.Commands;
 using Jerrycurl.Relations;
@@ -34,6 +35,18 @@ namespace Jerrycurl.Data.Language
 
         #endregion
         #region " Update "
+        public static void UpdateAll(this CommandBuffer buffer, IDataReader dataReader)
+        {
+            if (buffer == null)
+                throw new ArgumentNullException(nameof(buffer));
+
+            do
+            {
+                buffer.Update(dataReader);
+            }
+            while (dataReader.NextResult());
+        }
+
         public static CommandBuffer Update(this CommandBuffer buffer, IRelation relation, params string[] targetHeader)
             => buffer.Update(relation, (IEnumerable<string>)targetHeader);
 
@@ -139,6 +152,18 @@ namespace Jerrycurl.Data.Language
         #endregion
 
         #region " UpdateAsync "
+        public static async Task UpdateAllAsync(this CommandBuffer buffer, DbDataReader dataReader, CancellationToken cancellationToken = default)
+        {
+            if (buffer == null)
+                throw new ArgumentNullException(nameof(buffer));
+
+            do
+            {
+                await buffer.UpdateAsync(dataReader, cancellationToken).ConfigureAwait(false);
+            }
+            while (await dataReader.NextResultAsync().ConfigureAwait(false));
+        }
+
         public static Task<CommandBuffer> UpdateAsync(this CommandBuffer buffer, IRelation relation, params string[] targetHeader)
             => buffer.UpdateAsync(relation, (IEnumerable<string>)targetHeader);
 
