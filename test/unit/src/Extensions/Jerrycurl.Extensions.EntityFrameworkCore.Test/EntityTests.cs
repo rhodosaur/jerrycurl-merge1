@@ -1,15 +1,19 @@
 ﻿using System.Collections.Generic;
 using Jerrycurl.Extensions.EntityFrameworkCore.Test.Entities;
 using Jerrycurl.Mvc.Sql;
+using Jerrycurl.Test;
 using Jerrycurl.Test.Project.Accessors;
 using Jerrycurl.Test.Project.Models;
 using Shouldly;
+using Jerrycurl.Relations.Language;
+using Jerrycurl.Data.Metadata;
+using System.Linq;
 
 namespace Jerrycurl.Extensions.EntityFrameworkCore.Test
 {
     public class EntityTests
     {
-        public void Test_Query_OneToMany_FromEfMetadata()
+        public void Test_EfCore_Query_OneToMany()
         {
             Runnable<object, Order> table = new Runnable<object, Order>();
 

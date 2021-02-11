@@ -6,7 +6,7 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Test.Entities
     {
         public Order()
         {
-            OrderLine = new HashSet<OrderLine>();
+            this.OrderLine = new HashSet<OrderLine>();
         }
 
         public int Id { get; set; }

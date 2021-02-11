@@ -69,6 +69,14 @@ namespace Jerrycurl.Relations.Language
         public static void Update<T>(this IField field, T value)
             => field.Update(value);
 
+        public static TMetadata Lookup<TModel, TMetadata>(this ISchemaStore store)
+            where TMetadata : IMetadata
+            => store.GetSchema(typeof(TModel)).Lookup<TMetadata>();
+
+        public static TMetadata Lookup<TModel, TMetadata>(this ISchemaStore store, string name)
+            where TMetadata : IMetadata
+            => store.GetSchema(typeof(TModel)).Lookup<TMetadata>(name);
+
         public static IField Lookup<TModel>(this ISchemaStore store, TModel model, string attributeName)
             => new Model(store.GetSchema(typeof(TModel)), model).Lookup(attributeName);
 

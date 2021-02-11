@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Jerrycurl.Extensions.EntityFrameworkCore.Metadata.Builders;
+﻿using Jerrycurl.Extensions.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore;
 
 namespace Jerrycurl.Mvc
 {

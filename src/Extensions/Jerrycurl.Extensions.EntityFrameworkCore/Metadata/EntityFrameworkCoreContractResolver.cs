@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Jerrycurl.Extensions.EntityFrameworkCore.Metadata.Builders
+namespace Jerrycurl.Extensions.EntityFrameworkCore.Metadata
 {
     public class EntityFrameworkCoreContractResolver : IRelationContractResolver
     {

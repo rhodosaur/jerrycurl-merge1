@@ -6,8 +6,8 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Test.Entities
     {
         public Address()
         {
-            OrderBillingAddress = new HashSet<Order>();
-            OrderShippingAddress = new HashSet<Order>();
+            this.OrderBillingAddress = new HashSet<Order>();
+            this.OrderShippingAddress = new HashSet<Order>();
         }
 
         public int Id { get; set; }

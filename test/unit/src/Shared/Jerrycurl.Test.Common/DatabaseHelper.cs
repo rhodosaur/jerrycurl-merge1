@@ -39,8 +39,9 @@ namespace Jerrycurl.Test
             RelationMetadataBuilder relationBuilder = new RelationMetadataBuilder();
             BindingMetadataBuilder bindingBuilder = new BindingMetadataBuilder();
             ReferenceMetadataBuilder referenceBuilder = new ReferenceMetadataBuilder();
+            TableMetadataBuilder tableBuilder = new TableMetadataBuilder();
 
-            SchemaStore store = new SchemaStore(notation ?? new DotNotation(), relationBuilder, bindingBuilder, referenceBuilder);
+            SchemaStore store = new SchemaStore(notation ?? new DotNotation(), relationBuilder, bindingBuilder, referenceBuilder, tableBuilder);
 
             if (useSqlite)
                 bindingBuilder.Add(new SqliteContractResolver());
@@ -54,6 +55,9 @@ namespace Jerrycurl.Test
 
                     if (contract is IBindingContractResolver bindingResolver)
                         bindingBuilder.Add(bindingResolver);
+
+                    if (contract is ITableContractResolver tableResolver)
+                        tableBuilder.Add(tableResolver);
                 }
             }
 
