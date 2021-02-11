@@ -22,7 +22,8 @@ namespace Jerrycurl.Mvc.Sql.SqlServer
             else if (!projection.Attributes.Any())
                 throw ProjectionException.FromProjection(projection, "No attributes found.");
 
-            Relation relation = new Relation(projection.Source, projection.Attributes.Select(a => a.Metadata.Identity));
+            RelationHeader header = new RelationHeader(projection.Source.Identity.Schema, projection.Attributes.Select(a => new RelationAttribute(a.Metadata.Relation)).ToList());
+            Relation2 relation = new Relation2(projection.Source, header);
 
             string paramName = projection.Context.Lookup.Custom("TP", projection.Identity, metadata: projection.Metadata.Identity, field: projection.Source);
             string dialectName = projection.Context.Domain.Dialect.Parameter(paramName);
