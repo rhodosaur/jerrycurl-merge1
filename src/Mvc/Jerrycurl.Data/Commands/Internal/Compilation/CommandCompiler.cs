@@ -56,6 +56,10 @@ namespace Jerrycurl.Data.Commands.Internal.Compilation
                 {
                     value = binding.Value?.Convert?.Invoke(valueInfo) ?? inputParam;
                 }
+                catch (BindingException)
+                {
+                    throw;
+                }
                 catch (Exception ex)
                 {
                     throw BindingException.InvalidCast(binding, ex);
