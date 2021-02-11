@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using Jerrycurl.Collections;
 using Jerrycurl.Reflection;
-using Jerrycurl.Relations.Metadata.Contracts;
 
 namespace Jerrycurl.Relations.Metadata
 {

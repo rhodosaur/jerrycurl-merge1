@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Jerrycurl.Reflection;
 
-namespace Jerrycurl.Relations.Metadata.Contracts
+namespace Jerrycurl.Relations.Metadata
 {
     public class DefaultRelationContractResolver : IRelationContractResolver
     {

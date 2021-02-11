@@ -17,7 +17,6 @@ namespace Jerrycurl.Relations.Internal.Queues
         public TItem Current => this.innerEnumerator.Current;
         public RelationQueueItem<TList> CurrentItem => this.innerQueue.Peek();
         public int Index => this.CurrentItem.Index;
-        public int Depth { get; set; }
         public RelationQueueType Type { get; }
         public IRelationMetadata Metadata { get; }
         public FieldArray Cache { get; private set; }
@@ -31,15 +30,6 @@ namespace Jerrycurl.Relations.Internal.Queues
             this.Type = queueType;
         }
 
-        private void Debug(RelationQueueItem<TList> item, string s)
-        {
-            if (item.List == null)
-                return;
-
-            return;
-
-            Console.WriteLine(s + ": " + string.Join(", ", item.List));
-        }
         public void Enqueue(RelationQueueItem<TList> item)
         {
             if (this.IsCached)

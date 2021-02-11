@@ -4,15 +4,13 @@
     {
         public object Relation { get; }
         public int Index { get; }
-        public int Depth { get; }
         public object Parent => null;
         public object Value { get; }
 
-        public FieldData(object relation, int index, int depth)
+        public FieldData(object relation, int index)
         {
             this.Relation = relation;
             this.Index = index;
-            this.Depth = depth;
         }
 
         public FieldData(object value)

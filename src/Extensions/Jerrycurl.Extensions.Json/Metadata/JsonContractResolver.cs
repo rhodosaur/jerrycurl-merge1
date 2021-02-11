@@ -3,7 +3,7 @@ using System;
 using System.Reflection;
 using System.Text.Json;
 
-namespace Jerrycurl.Extensions.Json.Metadata.Contracts
+namespace Jerrycurl.Extensions.Json.Metadata
 {
     public class JsonContractResolver : IJsonContractResolver
     {

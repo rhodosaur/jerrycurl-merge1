@@ -70,7 +70,7 @@ namespace Jerrycurl.Mvc.Projections
         {
             if (metadata.HasFlag(RelationMetadataFlags.List) && metadata.Item.HasFlag(TableMetadataFlags.Column))
                 return new[] { metadata.Item };
-            if (metadata.HasFlag(RelationMetadataFlags.List) && metadata.Item.HasFlag(TableMetadataFlags.Table))
+            else if (metadata.HasFlag(RelationMetadataFlags.List) && metadata.Item.HasFlag(TableMetadataFlags.Table))
                 return metadata.Item.Properties.Where(a => a.HasFlag(TableMetadataFlags.Column));
             else if (metadata.HasFlag(TableMetadataFlags.Table))
                 return metadata.Properties.Where(a => a.HasFlag(TableMetadataFlags.Column));

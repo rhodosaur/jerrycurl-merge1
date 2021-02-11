@@ -381,13 +381,12 @@ namespace Jerrycurl.Relations.Internal.Compilation
 
             Expression relation = this.GetFieldDataExpression(writer, "List", nameof(IFieldData.Relation));
             Expression index = this.GetFieldDataExpression(writer, "Index", nameof(IFieldData.Index));
-            Expression depth = this.GetFieldDataExpression(writer, "Depth", nameof(IFieldData.Depth));
             Expression binder = this.GetBinderExpression(writer);
             Expression isReadOnly = this.GetFieldIsReadOnlyExpression(writer);
             
             Expression name = this.GetFieldNameExpression(writer);
             Expression metadata = this.GetMetadataExpression(writer);
-            Expression data = Expression.New(newData, relation, index, depth, parentValue, value, binder);
+            Expression data = Expression.New(newData, relation, index, parentValue, value, binder);
 
             return Expression.New(newField, name, metadata, data, Arguments.Model, isReadOnly);
         }
@@ -402,11 +401,10 @@ namespace Jerrycurl.Relations.Internal.Compilation
 
             Expression relation = this.GetFieldDataExpression(writer, "List", nameof(IFieldData.Relation));
             Expression index = this.GetFieldDataExpression(writer, "Index", nameof(IFieldData.Index));
-            Expression depth = this.GetFieldDataExpression(writer, "Depth", nameof(IFieldData.Depth));
 
             Expression name = this.GetFieldNameExpression(writer);
             Expression metadata = this.GetMetadataExpression(writer);
-            Expression data = Expression.New(newData, relation, index, depth);
+            Expression data = Expression.New(newData, relation, index);
 
             return Expression.New(newField, name, metadata, data, Arguments.Model);
         }

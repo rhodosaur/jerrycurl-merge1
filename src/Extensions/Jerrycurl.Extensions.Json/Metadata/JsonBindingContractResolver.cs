@@ -9,7 +9,7 @@ using Jerrycurl.Data.Metadata.Annotations;
 using Jerrycurl.Mvc.Metadata.Annotations;
 using Jerrycurl.Reflection;
 
-namespace Jerrycurl.Extensions.Json.Metadata.Contracts
+namespace Jerrycurl.Extensions.Json.Metadata
 {
     public class JsonBindingContractResolver : IBindingContractResolver
     {
