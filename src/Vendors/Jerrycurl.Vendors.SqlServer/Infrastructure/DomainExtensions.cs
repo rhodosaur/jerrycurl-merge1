@@ -14,12 +14,14 @@ namespace Jerrycurl.Mvc
         /// </summary>
         /// <param name="options">A <see cref="DomainOptions"/> instance from the <see cref="IDomain.Configure(DomainOptions)"/> method.</param>
         /// <param name="connectionString">Connection string specifying the details of the connection.</param>
-        public static void UseSqlServer(this DomainOptions options, string connectionString)
+        public static DomainOptions UseSqlServer(this DomainOptions options, string connectionString)
         {
             options.ConnectionFactory = () => new SqlConnection(connectionString);
             options.Use(new SqlServerContractResolver());
             options.Sql ??= new SqlOptions();
             options.Sql.MaxParameters = 2098;
+
+            return options;
         }
     }
 }

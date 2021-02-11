@@ -11,11 +11,13 @@ namespace Jerrycurl.Mvc
         /// </summary>
         /// <param name="options">A <see cref="DomainOptions"/> instance from the <see cref="IDomain.Configure(DomainOptions)"/> method.</param>
         /// <param name="connectionString">Connection string specifying the details of the connection.</param>
-        public static void UseMySql(this DomainOptions options, string connectionString)
+        public static DomainOptions UseMySql(this DomainOptions options, string connectionString)
         {
             options.ConnectionFactory = () => new MySqlConnection(connectionString);
             options.Use(new MySqlContractResolver());
             options.Dialect = new MySqlDialect();
+
+            return options;
         }
     }
 }

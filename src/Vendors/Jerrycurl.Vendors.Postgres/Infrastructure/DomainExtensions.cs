@@ -11,11 +11,13 @@ namespace Jerrycurl.Mvc
         /// </summary>
         /// <param name="options">A <see cref="DomainOptions"/> instance from the <see cref="IDomain.Configure(DomainOptions)"/> method.</param>
         /// <param name="connectionString">Connection string specifying the details of the connection.</param>
-        public static void UsePostgres(this DomainOptions options, string connectionString)
+        public static DomainOptions UsePostgres(this DomainOptions options, string connectionString)
         {
             options.ConnectionFactory = () => new NpgsqlConnection(connectionString);
             options.Dialect = new PostgresDialect();
             options.Use(new PostgresContractResolver());
+
+            return options;
         }
     }
 }

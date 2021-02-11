@@ -12,12 +12,14 @@ namespace Jerrycurl.Mvc
         /// </summary>
         /// <param name="options">A <see cref="DomainOptions"/> instance from the <see cref="IDomain.Configure(DomainOptions)"/> method.</param>
         /// <param name="connectionString">Connection string specifying the details of the connection.</param>
-        public static void UseOracle(this DomainOptions options, string connectionString)
+        public static DomainOptions UseOracle(this DomainOptions options, string connectionString)
         {
             options.ConnectionFactory = () => new OracleConnection(connectionString);
             options.Use(new OracleContractResolver());
             options.Sql.Filters.Add(new OracleLongFilter());
             options.Dialect = new OracleDialect();
+
+            return options;
         }
     }
 }

@@ -10,10 +10,12 @@ namespace Jerrycurl.Mvc
         /// </summary>
         /// <param name="options">A <see cref="DomainOptions"/> instance from the <see cref="IDomain.Configure(DomainOptions)"/> method.</param>
         /// <param name="connectionString">Connection string specifying the details of the connection.</param>
-        public static void UseSqlite(this DomainOptions options, string connectionString)
+        public static DomainOptions UseSqlite(this DomainOptions options, string connectionString)
         {
             options.ConnectionFactory = () => new SqliteConnection(connectionString);
             options.Use(new SqliteContractResolver());
+
+            return options;
         }
     }
 }

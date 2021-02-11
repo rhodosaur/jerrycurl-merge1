@@ -8,11 +8,13 @@ namespace Jerrycurl.Test.Extensions
 {
     public static class DomainExtensions
     {
-        public static void UseProfiling(this DomainOptions options)
+        public static DomainOptions UseProfiling(this DomainOptions options)
         {
             Func<IDbConnection> innerConnection = options.ConnectionFactory;
 
             options.ConnectionFactory = () => new ProfilingConnection((DbConnection)innerConnection());
+
+            return options;
         }
     }
 }
