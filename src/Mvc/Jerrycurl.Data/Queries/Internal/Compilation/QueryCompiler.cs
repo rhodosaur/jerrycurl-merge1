@@ -12,6 +12,7 @@ using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Reflection;
 using Jerrycurl.Data.Queries.Internal.IO;
 using Jerrycurl.Data.Queries.Internal.Caching;
+using System.Collections;
 
 namespace Jerrycurl.Data.Queries.Internal.Compilation
 {
@@ -196,8 +197,10 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 else
                 {
                     Expression list = Expression.Convert(arrayIndex, writer.Metadata.Composition.Construct.Type);
+                    Expression isNotNull = Expression.ReferenceNotEqual(arrayIndex, Expression.Constant(null));
+                    Expression callAdd = Expression.Call(list, writer.Metadata.Composition.Add, value);
 
-                    writeItem = Expression.Call(list, writer.Metadata.Composition.Add, value);
+                    writeItem = Expression.IfThen(isNotNull, callAdd);
                 }
             }
 

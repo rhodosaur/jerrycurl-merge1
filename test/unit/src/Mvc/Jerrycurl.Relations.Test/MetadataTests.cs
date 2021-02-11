@@ -10,7 +10,40 @@ namespace Jerrycurl.Relations.Test
 {
     public class MetadataTests
     {
-        public void Test_MetadataBuilder_DisallowsRecursiveCalls()
+        public void Test_SchemaStore_CachesProperly()
+        {
+            SchemaStore store1 = DatabaseHelper.Default.GetSchemas(useSqlite: false);
+            SchemaStore store2 = DatabaseHelper.Default.GetSchemas(useSqlite: false);
+
+            var schema1_1 = store1.GetSchema(typeof(RootModel));
+            var schema1_2 = store1.GetSchema(typeof(RootModel));
+            var schema2_1 = store2.GetSchema(typeof(RootModel));
+            var schema2_2 = store2.GetSchema(typeof(RootModel));
+
+            schema1_1.ShouldBeSameAs(schema1_2);
+            schema2_1.ShouldBeSameAs(schema2_2);
+            schema1_1.ShouldNotBeSameAs(schema2_1);
+        }
+
+        public void Test_Schema_CachesProperly()
+        {
+            SchemaStore store1 = DatabaseHelper.Default.GetSchemas(useSqlite: false);
+            SchemaStore store2 = DatabaseHelper.Default.GetSchemas(useSqlite: false);
+
+            var schema1 = store1.GetSchema(typeof(RootModel));
+            var schema2 = store2.GetSchema(typeof(RootModel));
+
+            var metadata1_1 = schema1.Lookup<IRelationMetadata>(nameof(RootModel.IntValue));
+            var metadata1_2 = schema1.Lookup<IRelationMetadata>(nameof(RootModel.IntValue));
+            var metadata2_1 = schema2.Lookup<IRelationMetadata>(nameof(RootModel.IntValue));
+            var metadata2_2 = schema2.Lookup<IRelationMetadata>(nameof(RootModel.IntValue));
+
+            metadata1_1.ShouldBeSameAs(metadata1_2);
+            metadata2_1.ShouldBeSameAs(metadata2_2);
+            metadata1_1.ShouldNotBeSameAs(metadata2_1);
+        }
+
+        public void Test_SchemaStore_DisallowsRecursiveCalls()
         {
             SchemaStore store = new SchemaStore(new DotNotation(StringComparer.Ordinal)) { new RecursiveMetadataBuilder() };
 

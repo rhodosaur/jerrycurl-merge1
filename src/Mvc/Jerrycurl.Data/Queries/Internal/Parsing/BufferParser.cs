@@ -114,7 +114,12 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 }
 
                 if (!this.IsPrincipalSet(itemNode.Metadata))
+                {
                     this.AddChildKey(writer);
+
+                    if (writer.JoinKey == null)
+                        throw new BindingException($"Cannot join {itemNode.Identity}, no valid reference found.");
+                }
                 else if (this.IsAggregateSet(writer.Metadata))
                     tree.AggregateNames.Add(new AggregateName(writer.Metadata.Identity.Name, isPrincipal: true));
 
@@ -125,7 +130,6 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                     writer.BufferIndex = this.Buffer.GetChildIndex(writer.JoinKey.Metadata);
                     writer.IsOneToMany = this.HasOneAttribute(writer.JoinKey.Metadata);
                 }
-                    
 
                 tree.Lists.Add(writer);
             }

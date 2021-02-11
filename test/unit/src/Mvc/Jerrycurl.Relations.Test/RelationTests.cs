@@ -323,7 +323,7 @@ namespace Jerrycurl.Relations.Test
             rel11.Column().Select(f => (int?)f.Snapshot).ShouldBe(new int?[] { 1 });
         }
 
-        public void Test_Select_OneToOneOuterJoin()
+        public void Test_Select_OneToOne_OuterJoin()
         {
             RootModel model = new RootModel() { IntValue = 1 };
             ITuple tuple = DatabaseHelper.Default.Relation(model, "IntValue", "Complex.Complex.Value").Row();
@@ -334,7 +334,7 @@ namespace Jerrycurl.Relations.Test
             tuple[1].Snapshot.ShouldBeNull();
         }
 
-        public void Test_Select_OneToManyInnerJoin()
+        public void Test_Select_OneToMany_InnerJoin()
         {
             List<RootModel> model = new List<RootModel>()
             {
@@ -453,6 +453,69 @@ namespace Jerrycurl.Relations.Test
             Should.Throw<RelationException>(() => rel2.Scalar());
         }
 
+        public void Test_Select_CrossJoinCaching()
+        {
+            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false);
+            var model = new List<XModel>()
+            {
+                new XModel()
+                {
+                    Xs = new List<int>() { 1, 2, 3 },
+                    Ys = new List<int>() { 4, 5, 6 },
+                    Zs = new List<XModel.NestedZ>()
+                    {
+                        new XModel.NestedZ()
+                        {
+                            Values = new List<int>() { 7, 8, 9 },
+                        },
+                        new XModel.NestedZ()
+                        {
+                            Values = new List<int>() { 10, 11, 12 },
+                        },
+                    }
+                },
+                new XModel()
+                {
+                    Xs = new List<int>() { 10, 20 },
+                    Ys = new List<int>() { 40, 50 },
+                    Zs = new List<XModel.NestedZ>()
+                    {
+                        new XModel.NestedZ()
+                        {
+                            Values = new List<int>() { 70, 80, 90 },
+                        },
+                        new XModel.NestedZ()
+                        {
+                            Values = new List<int>() { 10, 11, 12 },
+                        },
+                    }
+                },
+            };
+
+            var relation = store.From(model).Select("Item.Xs.Item", "Item.Ys.Item", "Item.Zs.Item.Values.Item");
+            var data = relation.Body.ToArray();
+
+            data.Length.ShouldBe(3 * 3 + 2 * 2);
+
+            data[0].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 4 });
+            data[1].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 5 });
+            data[2].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 6 });
+
+            data[3].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 4 });
+            data[4].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 5 });
+            data[5].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 6 });
+
+            data[6].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 4 });
+            data[7].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 5 });
+            data[8].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 6 });
+
+            data[9].Select(f => (int)f.Snapshot).ShouldBe(new[] { 10, 40 });
+            data[10].Select(f => (int)f.Snapshot).ShouldBe(new[] { 10, 50 });
+
+            data[11].Select(f => (int)f.Snapshot).ShouldBe(new[] { 20, 40 });
+            data[12].Select(f => (int)f.Snapshot).ShouldBe(new[] { 20, 50 });
+
+        }
         public void Test_Select_RecursiveBreadthFirst()
         {
             List<RecursiveModel> model = new List<RecursiveModel>()

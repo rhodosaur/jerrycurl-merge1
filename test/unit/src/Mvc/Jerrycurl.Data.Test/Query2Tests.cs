@@ -55,7 +55,7 @@ namespace Jerrycurl.Data.Test
             result[0].Posts[1].Headline.ShouldBe("Post 1.2");
 
             result[1].Id2.ShouldBe(0);
-            result[1].Title.ShouldBe("Blog 1");
+            result[1].Title.ShouldBe("Blog 2");
 
             result[1].Posts.ShouldBeNull();
         }
