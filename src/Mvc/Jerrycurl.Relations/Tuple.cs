@@ -1,31 +1,29 @@
 ﻿using Jerrycurl.Diagnostics;
-using Jerrycurl.Relations.Language;
 using Jerrycurl.Text;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Text;
 using HashCode = Jerrycurl.Diagnostics.HashCode;
 
 namespace Jerrycurl.Relations
 {
     [DebuggerDisplay("{ToString(),nq}")]
-    internal class Tuple2 : ITuple2
+    internal class Tuple : ITuple
     {
-        private readonly IField2[] buffer;
+        private readonly IField[] buffer;
 
         public int Degree { get; }
         public int Count => this.Degree;
 
-        public Tuple2(IField2[] buffer)
+        public Tuple(IField[] buffer)
         {
             this.buffer = buffer ?? throw new ArgumentNullException(nameof(buffer));
             this.Degree = buffer.Length;
         }
 
-        public IField2 this[int index]
+        public IField this[int index]
         {
             get
             {
@@ -38,9 +36,9 @@ namespace Jerrycurl.Relations
             }
         }
 
-        public bool Equals(ITuple2 other) => Equality.CombineAll(this, other);
+        public bool Equals(ITuple other) => Equality.CombineAll(this, other);
 
-        public IEnumerator<IField2> GetEnumerator()
+        public IEnumerator<IField> GetEnumerator()
         {
             for (int i = 0; i < this.Degree; i++)
                 yield return this[i];
@@ -48,11 +46,11 @@ namespace Jerrycurl.Relations
 
         IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 
-        public override bool Equals(object obj) => (obj is ITuple2 tup && this.Equals(tup));
+        public override bool Equals(object obj) => (obj is ITuple tup && this.Equals(tup));
 
         public override int GetHashCode() => HashCode.CombineAll(this.buffer);
 
-        internal static string Format(IEnumerable<IField2> fields)
+        internal static string Format(IEnumerable<IField> fields)
         {
             StringBuilder s = new StringBuilder();
 

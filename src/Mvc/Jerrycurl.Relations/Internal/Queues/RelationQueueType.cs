@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Jerrycurl.Relations.Internal.Queues
+﻿namespace Jerrycurl.Relations.Internal.Queues
 {
     internal enum RelationQueueType
     {

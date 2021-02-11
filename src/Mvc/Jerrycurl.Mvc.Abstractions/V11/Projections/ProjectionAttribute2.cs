@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Jerrycurl.Mvc.Metadata;
+﻿using Jerrycurl.Mvc.Metadata;
 using Jerrycurl.Relations;
 
 namespace Jerrycurl.Mvc.V11.Projections

@@ -16,7 +16,7 @@ namespace Jerrycurl.Mvc.Sql
         {
             ISchema modelSchema = projection.Context.Domain.Schemas.GetSchema(model?.GetType() ?? typeof(object));
             IProjectionMetadata modelMetadata = modelSchema.Require<IProjectionMetadata>();
-            IField2 field = new Model2(modelSchema, model);
+            IField field = new Model(modelSchema, model);
 
             IProjectionIdentity modelIdentity = new ProjectionIdentity(field);
 

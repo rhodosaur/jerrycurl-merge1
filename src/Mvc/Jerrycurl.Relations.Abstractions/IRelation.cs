@@ -1,17 +1,16 @@
 ﻿using System.Collections.Generic;
-using System.Data;
 using System.Data.Common;
 
 namespace Jerrycurl.Relations
 {
-    public interface IRelation2
+    public interface IRelation
     {
         RelationHeader Header { get; }
-        IField2 Source { get; }
+        IField Source { get; }
         IRelationReader GetReader();
         DbDataReader GetDataReader(IEnumerable<string> header);
         DbDataReader GetDataReader();
 
-        IEnumerable<ITuple2> Body { get; }
+        IEnumerable<ITuple> Body { get; }
     }
 }

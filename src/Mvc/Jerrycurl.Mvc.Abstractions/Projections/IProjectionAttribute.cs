@@ -13,7 +13,7 @@ namespace Jerrycurl.Mvc.Projections
         IProcContext Context { get; }
         IProjectionMetadata Metadata { get; }
         ISqlContent Content { get; }
-        Func<IField2> Field { get; }
+        Func<IField> Field { get; }
 
         IProjectionAttribute Append(IEnumerable<IParameter> parameters);
         IProjectionAttribute Append(IEnumerable<IUpdateBinding> bindings);
@@ -23,6 +23,6 @@ namespace Jerrycurl.Mvc.Projections
 
         IProjectionAttribute With(IProjectionMetadata metadata = null,
                                   ISqlContent content = null,
-                                  Func<IField2> field = null);
+                                  Func<IField> field = null);
     }
 }

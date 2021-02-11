@@ -2,25 +2,21 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using Jerrycurl.Diagnostics;
-using Jerrycurl.Relations.Internal.Caching;
-using Jerrycurl.Relations.Metadata;
 using HashCode = Jerrycurl.Diagnostics.HashCode;
 
 namespace Jerrycurl.Relations
 {
-    public class Relation2 : IRelation2
+    public class Relation : IRelation
     {
         public RelationHeader Header { get; }
-        public IField2 Model => this.Source.Model;
-        public IField2 Source { get; }
+        public IField Model => this.Source.Model;
+        public IField Source { get; }
 
-        IRelationReader IRelation2.GetReader() => this.GetReader();
+        IRelationReader IRelation.GetReader() => this.GetReader();
 
-        public Relation2(IField2 source, RelationHeader header)
+        public Relation(IField source, RelationHeader header)
         {
             this.Source = source ?? throw new ArgumentNullException(nameof(source));
             this.Header = header ?? throw new ArgumentNullException(nameof(header));
@@ -30,7 +26,7 @@ namespace Jerrycurl.Relations
         public DbDataReader GetDataReader(IEnumerable<string> header) => new RelationDataReader(this.GetReader(), header);
         public DbDataReader GetDataReader() => this.GetDataReader(this.Header.Attributes.Select(a => a.Name));
 
-        public IEnumerable<ITuple2> Body
+        public IEnumerable<ITuple> Body
         {
             get
             {
@@ -38,11 +34,11 @@ namespace Jerrycurl.Relations
 
                 while (reader.Read())
                 {
-                    IField2[] buffer = new IField2[reader.Degree];
+                    IField[] buffer = new IField[reader.Degree];
 
                     reader.CopyTo(buffer, buffer.Length);
 
-                    yield return new Tuple2(buffer);
+                    yield return new Tuple(buffer);
                 }
             }
         }
@@ -52,8 +48,8 @@ namespace Jerrycurl.Relations
 
         #region " Equality "
 
-        public bool Equals(IField2 other) => Equality.Combine(this.Source, other, m => m.Identity, m => m.Model);
-        public override bool Equals(object obj) => (obj is IField2 other && this.Equals(other));
+        public bool Equals(IField other) => Equality.Combine(this.Source, other, m => m.Identity, m => m.Model);
+        public override bool Equals(object obj) => (obj is IField other && this.Equals(other));
         public override int GetHashCode() => HashCode.Combine(this.Source.Identity, this.Source.Model);
 
         #endregion

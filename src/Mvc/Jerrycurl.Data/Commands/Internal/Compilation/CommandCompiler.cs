@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 using Jerrycurl.Data.Commands.Internal.Caching;
 using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Queries.Internal;
-using Jerrycurl.Relations;
 using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Data.Commands.Internal.Compilation

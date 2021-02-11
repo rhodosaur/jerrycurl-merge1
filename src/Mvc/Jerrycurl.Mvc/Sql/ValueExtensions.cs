@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.InteropServices.ComTypes;
 using Jerrycurl.Mvc.Projections;
 using Jerrycurl.Relations;
-using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Mvc.Sql
 {
@@ -19,16 +17,16 @@ namespace Jerrycurl.Mvc.Sql
             IEnumerable<RelationAttribute> attributes = new[] { projection.Metadata.Relation }.Concat(projection.Attributes.Select(a => a.Metadata.Relation)).Select(m => new RelationAttribute(m));
             RelationHeader header = new RelationHeader(projection.Source.Identity.Schema, attributes.ToList());
 
-            Relation2 relation = new Relation2(projection.Source, header);
+            Relation relation = new Relation(projection.Source, header);
             IProjectionAttribute[] attributes2 = projection.Attributes.ToArray();
 
             return new ProjectionValues<TModel>(projection.Context, projection.Identity, InnerVals());
 
             IEnumerable<IProjection<TModel>> InnerVals()
             {
-                foreach (ITuple2 tuple in relation.Body)
+                foreach (ITuple tuple in relation.Body)
                 {
-                    IField2 field = tuple[0];
+                    IField field = tuple[0];
                     IProjectionAttribute[] newAttributes = attributes2.Select((a, i) => a.With(field: () => tuple[i + 1])).ToArray();
 
                     yield return projection.With(attributes: newAttributes, field: field);

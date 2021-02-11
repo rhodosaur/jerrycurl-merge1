@@ -1,5 +1,4 @@
-﻿using Jerrycurl.Reflection;
-using System;
+﻿using System;
 using System.Runtime.Serialization;
 
 namespace Jerrycurl.Relations.Metadata

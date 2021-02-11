@@ -2,13 +2,8 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Schema;
 using Jerrycurl.Collections;
 using Jerrycurl.Data.Commands.Internal;
 using Jerrycurl.Data.Commands.Internal.Caching;
@@ -17,13 +12,12 @@ using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Sessions;
 using Jerrycurl.Relations;
 using Jerrycurl.Relations.Metadata;
-using Microsoft.Win32.SafeHandles;
 
 namespace Jerrycurl.Data.Commands
 {
     public sealed class CommandBuffer
     {
-        private readonly Dictionary<IField2, FieldBuffer> fieldBuffers = new Dictionary<IField2, FieldBuffer>();
+        private readonly Dictionary<IField, FieldBuffer> fieldBuffers = new Dictionary<IField, FieldBuffer>();
         private readonly Dictionary<string, FieldBuffer> columnHeader = new Dictionary<string, FieldBuffer>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, FieldBuffer> paramHeader = new Dictionary<string, FieldBuffer>(StringComparer.OrdinalIgnoreCase);
 
@@ -122,7 +116,7 @@ namespace Jerrycurl.Data.Commands
             }
         }
 
-        private bool TryReadValue(IField2 field, out object value)
+        private bool TryReadValue(IField field, out object value)
         {
             value = null;
 
@@ -134,9 +128,9 @@ namespace Jerrycurl.Data.Commands
             return false;
         }
 
-        internal FieldBuffer GetBuffer(IField2 target) => this.fieldBuffers.GetValueOrDefault(target);
-        internal IEnumerable<IFieldSource> GetSources(IField2 target) => this.GetBuffer(target)?.GetSources() ?? Array.Empty<IFieldSource>();
-        internal IEnumerable<IFieldSource> GetChanges(IField2 target) => this.GetBuffer(target)?.GetChanges() ?? Array.Empty<IFieldSource>();
+        internal FieldBuffer GetBuffer(IField target) => this.fieldBuffers.GetValueOrDefault(target);
+        internal IEnumerable<IFieldSource> GetSources(IField target) => this.GetBuffer(target)?.GetSources() ?? Array.Empty<IFieldSource>();
+        internal IEnumerable<IFieldSource> GetChanges(IField target) => this.GetBuffer(target)?.GetChanges() ?? Array.Empty<IFieldSource>();
 
         private int GetFieldCount(IDataReader dataReader)
         {
@@ -150,7 +144,7 @@ namespace Jerrycurl.Data.Commands
                 buffer.Bind();
         }
 
-        public void Add(IParameter parameter, IField2 target)
+        public void Add(IParameter parameter, IField target)
         {
             this.Add(parameter);
             this.Add(new ParameterBinding(target, parameter.Name));

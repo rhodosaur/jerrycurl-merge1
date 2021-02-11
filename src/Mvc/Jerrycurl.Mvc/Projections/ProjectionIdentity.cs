@@ -6,7 +6,7 @@ namespace Jerrycurl.Mvc.Projections
 {
     public class ProjectionIdentity : IProjectionIdentity
     {
-        public IField2 Field { get; }
+        public IField Field { get; }
         public ISchema Schema { get; }
 
         public ProjectionIdentity(ISchema schema)
@@ -14,7 +14,7 @@ namespace Jerrycurl.Mvc.Projections
             this.Schema = schema ?? throw new ArgumentNullException(nameof(schema));
         }
 
-        public ProjectionIdentity(IField2 field)
+        public ProjectionIdentity(IField field)
         {
             this.Field = field ?? throw new ArgumentNullException(nameof(field));
             this.Schema = field.Metadata.Identity.Schema;

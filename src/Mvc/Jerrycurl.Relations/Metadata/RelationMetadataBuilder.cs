@@ -4,10 +4,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using Jerrycurl.Collections;
-using Jerrycurl.Diagnostics;
 using Jerrycurl.Reflection;
 using Jerrycurl.Relations.Metadata.Contracts;
-using HashCode = Jerrycurl.Diagnostics.HashCode;
 
 namespace Jerrycurl.Relations.Metadata
 {

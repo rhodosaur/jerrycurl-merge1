@@ -4,7 +4,6 @@ using Jerrycurl.Mvc.Projections;
 using Jerrycurl.Mvc.Sql;
 using Jerrycurl.Relations;
 using Jerrycurl.Relations.Language;
-using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Mvc
 {
@@ -33,7 +32,7 @@ namespace Jerrycurl.Mvc
                 w.WriteTo(this.Context.Execution.Buffer);
             else
             {
-                IField2 model = this.Context.Domain.Schemas.From(value);
+                IField model = this.Context.Domain.Schemas.From(value);
 
                 ProjectionIdentity identity = new ProjectionIdentity(model);
                 Projection projection = new Projection(identity, this.Context);

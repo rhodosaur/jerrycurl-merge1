@@ -1,14 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Jerrycurl.Relations;
-using Jerrycurl.Data.Commands;
+﻿using System.Threading.Tasks;
 using Shouldly;
-using Jerrycurl.Data.Test.Models;
 using Jerrycurl.Test;
-using Jerrycurl.Data.Sessions;
-using Jerrycurl.Relations.Metadata;
-using Jerrycurl.Relations.Language;
 using Jerrycurl.Data.Test.Model;
 using Jerrycurl.Data.Queries;
 using Jerrycurl.Data.Language;

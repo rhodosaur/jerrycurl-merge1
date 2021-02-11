@@ -1,15 +1,9 @@
 ﻿using Jerrycurl.Collections;
 using Jerrycurl.Data.Metadata;
-using Jerrycurl.Data.Queries.Internal.Caching;
 using Jerrycurl.Data.Queries.Internal.Extensions;
-using Jerrycurl.Diagnostics;
 using Jerrycurl.Relations.Metadata;
 using System;
-using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using HashCode = Jerrycurl.Diagnostics.HashCode;
 
 namespace Jerrycurl.Data.Queries.Internal.Caching
 {

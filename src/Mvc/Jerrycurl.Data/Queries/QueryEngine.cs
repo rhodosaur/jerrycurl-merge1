@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Jerrycurl.Collections;
 using System.Data.Common;
 using System.Threading;
-using Jerrycurl.Data.Queries.Internal;
 using System.Runtime.CompilerServices;
 using Jerrycurl.Data.Sessions;
 

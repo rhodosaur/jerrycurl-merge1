@@ -4,10 +4,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using HashCode = Jerrycurl.Diagnostics.HashCode;
 
 namespace Jerrycurl.Relations
 {
@@ -55,7 +51,7 @@ namespace Jerrycurl.Relations
         {
             get
             {
-                if (this.InnerReader[i].Type == FieldType2.Missing)
+                if (this.InnerReader[i].Type == FieldType.Missing)
                     return DBNull.Value;
 
                 return this.InnerReader[i].Snapshot;
@@ -81,7 +77,7 @@ namespace Jerrycurl.Relations
 
         public override bool IsDBNull(int i)
         {
-            if (this.InnerReader[i].Type == FieldType2.Missing)
+            if (this.InnerReader[i].Type == FieldType.Missing)
                 return true;
             else if (this.InnerReader[i].Data.Value == null)
                 return true;

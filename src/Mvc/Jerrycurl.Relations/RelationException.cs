@@ -1,5 +1,4 @@
-﻿using Jerrycurl.Reflection;
-using Jerrycurl.Relations.Internal.Queues;
+﻿using Jerrycurl.Relations.Internal.Queues;
 using Jerrycurl.Relations.Metadata;
 using System;
 using System.Collections.Generic;
@@ -64,7 +63,7 @@ namespace Jerrycurl.Relations
             return From(dataReader.InnerReader.Relation.Header, $"Name at index {dupeIndex} is already specified.");
         }
 
-        internal static RelationException2 CannotForwardQueue(IRelation2 relation2, IRelationQueue queue, Exception innerException)
+        internal static RelationException2 CannotForwardQueue(IRelation relation2, IRelationQueue queue, Exception innerException)
             => From(relation2.Header, $"Cannot move cursor for '{queue.Metadata.Identity}'.", innerException);
 
         internal static RelationException2 Unreachable(MetadataIdentity source, RelationHeader header, IEnumerable<IRelationMetadata> attributes)

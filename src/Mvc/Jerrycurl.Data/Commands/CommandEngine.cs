@@ -4,12 +4,9 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Jerrycurl.Collections;
-using Jerrycurl.Relations.Metadata;
-using Jerrycurl.Data.Commands.Internal;
 using System.Data.Common;
 using System.Threading;
 using Jerrycurl.Data.Sessions;
-using System.IO;
 
 namespace Jerrycurl.Data.Commands
 {

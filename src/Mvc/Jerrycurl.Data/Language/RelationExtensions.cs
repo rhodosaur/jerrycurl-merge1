@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Text;
 using Jerrycurl.Data.Commands;
 using Jerrycurl.Data.Queries;
 using Jerrycurl.Data.Sessions;
@@ -12,7 +11,7 @@ namespace Jerrycurl.Data.Language
 {
     public static class RelationExtensions
     {
-        public static Query ToQuery(this IRelation2 relation, string queryText)
+        public static Query ToQuery(this IRelation relation, string queryText)
         {
             return new Query()
             {
@@ -21,7 +20,7 @@ namespace Jerrycurl.Data.Language
             };
         }
 
-        public static Command ToCommand(this IRelation2 relation, string commandText)
+        public static Command ToCommand(this IRelation relation, string commandText)
         {
             return new Command()
             {
@@ -30,7 +29,7 @@ namespace Jerrycurl.Data.Language
             };
         }
 
-        public static Command ToCommand(this IRelation2 relation, Func<IList<IParameter>, string> textBuilder)
+        public static Command ToCommand(this IRelation relation, Func<IList<IParameter>, string> textBuilder)
         {
             ParameterStore2 store = new ParameterStore2();
 
@@ -51,25 +50,25 @@ namespace Jerrycurl.Data.Language
             return command;
         }
 
-        public static IDataReader As(this IRelation2 relation, IEnumerable<string> header)
+        public static IDataReader As(this IRelation relation, IEnumerable<string> header)
             => relation.GetDataReader(header);
 
-        public static IDataReader As(this IRelation2 relation, params string[] header)
+        public static IDataReader As(this IRelation relation, params string[] header)
             => relation.GetDataReader(header);
 
-        public static IList<IParameter> ToParameters(this IField2 source, params string[] header)
+        public static IList<IParameter> ToParameters(this IField source, params string[] header)
             => source.Select(header).ToParameters();
 
-        public static IList<IParameter> ToParameters(this IField2 source, IEnumerable<string> header)
+        public static IList<IParameter> ToParameters(this IField source, IEnumerable<string> header)
             => source.Select(header).ToParameters();
 
-        public static IList<IParameter> ToParameters(this ITuple2 tuple)
+        public static IList<IParameter> ToParameters(this ITuple tuple)
             => new ParameterStore2().Add(tuple);
 
-        public static IList<IParameter> ToParameters(this IRelation2 relation)
+        public static IList<IParameter> ToParameters(this IRelation relation)
             => new ParameterStore2().Add(relation);
 
-        public static IParameter ToParameter(this IField2 field, string parameterName)
+        public static IParameter ToParameter(this IField field, string parameterName)
             => new Parameter(parameterName, field);
     }
 }

@@ -1,28 +1,19 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data.Common;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Text.RegularExpressions;
 using Jerrycurl.Collections;
 using Jerrycurl.Relations.Internal.Queues;
 using Jerrycurl.Relations.Internal.IO;
 using Jerrycurl.Relations.Metadata;
-using Jerrycurl.Relations.Internal;
 using Jerrycurl.Reflection;
 
 namespace Jerrycurl.Relations.Internal.Compilation
 {
     internal class RelationCompiler
     {
-        private delegate void BufferInternalWriter(IField2[] fields, IRelationQueue[] queues, IField2 source, IField2 model, DotNotation notation, Delegate[] binders, IRelationMetadata[] metadata);
+        private delegate void BufferInternalWriter(IField[] fields, IRelationQueue[] queues, IField source, IField model, DotNotation notation, Delegate[] binders, IRelationMetadata[] metadata);
 
         public BufferWriter Compile(BufferTree tree)
         {
@@ -271,7 +262,7 @@ namespace Jerrycurl.Relations.Internal.Compilation
 
         private Expression GetReadExpression(SourceReader reader)
         {
-            Expression data = Expression.Property(Arguments.Source, nameof(IField2.Data));
+            Expression data = Expression.Property(Arguments.Source, nameof(IField.Data));
             Expression value = Expression.Property(data, nameof(IFieldData.Value));
 
             return Expression.Convert(value, reader.Metadata.Type);
@@ -281,11 +272,11 @@ namespace Jerrycurl.Relations.Internal.Compilation
 
         #region " Inputs "
         private Expression GetSourceNameExpression()
-            => Expression.Property(Expression.Property(Arguments.Source, nameof(IField2.Identity)), nameof(FieldIdentity.Name));
+            => Expression.Property(Expression.Property(Arguments.Source, nameof(IField.Identity)), nameof(FieldIdentity.Name));
 
         private Expression GetSourceValueExpression()
         {
-            Expression data = Expression.Property(Arguments.Source, nameof(IField2.Data));
+            Expression data = Expression.Property(Arguments.Source, nameof(IField.Data));
 
             return Expression.Property(data, nameof(IFieldData.Value));
         }
@@ -327,7 +318,7 @@ namespace Jerrycurl.Relations.Internal.Compilation
                 return this.GetQueuePropertyExpression(writer.Queue, queueProperty);
             else
             {
-                Expression data = Expression.Property(Arguments.Source, nameof(IField2.Data));
+                Expression data = Expression.Property(Arguments.Source, nameof(IField.Data));
 
                 return Expression.Property(data, dataProperty);
             }
@@ -338,7 +329,7 @@ namespace Jerrycurl.Relations.Internal.Compilation
             if (parentValue == null)
                 return Arguments.Source;
 
-            Type fieldType = typeof(Field2<,>).MakeGenericType(value.Type, parentValue.Type);
+            Type fieldType = typeof(Field<,>).MakeGenericType(value.Type, parentValue.Type);
             Type dataType = typeof(FieldData<,>).MakeGenericType(value.Type, parentValue.Type);
 
             ConstructorInfo newField = fieldType.GetConstructors()[0];
@@ -359,7 +350,7 @@ namespace Jerrycurl.Relations.Internal.Compilation
 
         private Expression GetNewMissingExpression(FieldWriter writer)
         {
-            Type fieldType = typeof(Missing2<>).MakeGenericType(writer.Metadata.Type);
+            Type fieldType = typeof(Missing<>).MakeGenericType(writer.Metadata.Type);
             Type dataType = typeof(FieldData);
 
             ConstructorInfo newField = fieldType.GetConstructors()[0];
@@ -473,9 +464,9 @@ namespace Jerrycurl.Relations.Internal.Compilation
 
         private static class Arguments
         {
-            public static ParameterExpression Fields { get; } = Expression.Parameter(typeof(IField2[]), "fields");
-            public static ParameterExpression Model { get; } = Expression.Parameter(typeof(IField2), "model");
-            public static ParameterExpression Source { get; } = Expression.Parameter(typeof(IField2), "source");
+            public static ParameterExpression Fields { get; } = Expression.Parameter(typeof(IField[]), "fields");
+            public static ParameterExpression Model { get; } = Expression.Parameter(typeof(IField), "model");
+            public static ParameterExpression Source { get; } = Expression.Parameter(typeof(IField), "source");
             public static ParameterExpression Metadata { get; } = Expression.Parameter(typeof(IRelationMetadata[]), "metadata");
             public static ParameterExpression Notation { get; } = Expression.Parameter(typeof(DotNotation), "notation");
             public static ParameterExpression Binders { get; } = Expression.Parameter(typeof(Delegate[]), "binders");

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Jerrycurl.Data.Metadata;
 
 namespace Jerrycurl.Data.Commands.Internal

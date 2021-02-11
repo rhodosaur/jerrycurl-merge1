@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Jerrycurl.Data.Metadata.Annotations;
 
 namespace Jerrycurl.Data.Test.Models
 {

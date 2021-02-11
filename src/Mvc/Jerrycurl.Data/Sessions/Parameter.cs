@@ -1,6 +1,5 @@
 ﻿using Jerrycurl.Data.Metadata;
 using Jerrycurl.Relations;
-using Jerrycurl.Relations.Metadata;
 using System;
 using System.Data;
 
@@ -9,9 +8,9 @@ namespace Jerrycurl.Data.Sessions
     public class Parameter : IParameter
     {
         public string Name { get; }
-        public IField2 Source { get; }
+        public IField Source { get; }
 
-        public Parameter(string name, IField2 field = null)
+        public Parameter(string name, IField field = null)
         {
             this.Name = name ?? throw new ArgumentNullException(nameof(name));
             this.Source = field;

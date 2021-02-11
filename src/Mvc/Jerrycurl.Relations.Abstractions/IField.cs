@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Relations
 {
-    public interface IField2 : IEquatable<IField2>
+    public interface IField : IEquatable<IField>
     {
         FieldIdentity Identity { get; }
         object Snapshot { get; }
-        IField2 Model { get; }
-        FieldType2 Type { get; }
+        IField Model { get; }
+        FieldType Type { get; }
         IRelationMetadata Metadata { get; }
         IFieldData Data { get; }
         bool HasChanged { get; }

@@ -7,16 +7,11 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using Jerrycurl.Collections;
 using Jerrycurl.Data.Metadata;
-using Jerrycurl.Data.Queries.Internal.Extensions;
 using Jerrycurl.Data.Queries.Internal.Parsing;
 using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Reflection;
 using Jerrycurl.Data.Queries.Internal.Binding;
-using System.Xml.XPath;
-using System.Xml;
-using System.Diagnostics;
 using Jerrycurl.Data.Queries.Internal.Caching;
-using System.Net.Http.Headers;
 
 namespace Jerrycurl.Data.Queries.Internal.Compilation
 {

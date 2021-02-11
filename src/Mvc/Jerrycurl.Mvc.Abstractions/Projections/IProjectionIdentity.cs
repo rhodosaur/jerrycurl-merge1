@@ -6,7 +6,7 @@ namespace Jerrycurl.Mvc.Projections
 {
     public interface IProjectionIdentity : IEquatable<IProjectionIdentity>
     {
-        IField2 Field { get; }
+        IField Field { get; }
         ISchema Schema { get; }
     }
 }

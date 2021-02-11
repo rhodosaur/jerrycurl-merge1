@@ -1,36 +1,32 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
 using Jerrycurl.Relations.Internal.Caching;
 using Jerrycurl.Relations.Internal.Compilation;
 using Jerrycurl.Relations.Internal.Queues;
-using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Relations
 {
     public class RelationReader : IRelationReader
     {
-        public IRelation2 Relation => this.enumerator.Current;
+        public IRelation Relation => this.enumerator.Current;
         public int Degree { get; private set; }
         internal RelationBuffer Buffer { get; private set; }
 
-        int ITuple2.Degree => this.Degree;
-        int IReadOnlyCollection<IField2>.Count => this.Degree;
+        int ITuple.Degree => this.Degree;
+        int IReadOnlyCollection<IField>.Count => this.Degree;
 
-        private readonly IEnumerator<IRelation2> enumerator;
+        private readonly IEnumerator<IRelation> enumerator;
         private int currentIndex;
         private Func<bool> readFactory;
         
-        public RelationReader(IEnumerable<IRelation2> relations)
+        public RelationReader(IEnumerable<IRelation> relations)
         {
             this.enumerator = relations?.GetEnumerator() ?? throw new ArgumentNullException(nameof(relations));
             this.NextResult();
         }
 
-        public RelationReader(IRelation2 relation)
+        public RelationReader(IRelation relation)
             : this(new[] { relation })
         {
             
@@ -52,14 +48,14 @@ namespace Jerrycurl.Relations
             return false;
         }
 
-        public void CopyTo(IField2[] target, int sourceIndex, int targetIndex, int length)
+        public void CopyTo(IField[] target, int sourceIndex, int targetIndex, int length)
             => Array.Copy(this.Buffer.Fields, sourceIndex, target, targetIndex, length);
 
 
-        public void CopyTo(IField2[] target, int length)
+        public void CopyTo(IField[] target, int length)
             => Array.Copy(this.Buffer.Fields, target, length);
 
-        public IField2 this[int index]
+        public IField this[int index]
         {
             get
             {
@@ -141,12 +137,12 @@ namespace Jerrycurl.Relations
             }
         }
 
-        public IEnumerator<IField2> GetEnumerator()
-            => ((IEnumerable<IField2>)this.Buffer?.Fields).GetEnumerator();
+        public IEnumerator<IField> GetEnumerator()
+            => ((IEnumerable<IField>)this.Buffer?.Fields).GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator()
             => this.GetEnumerator();
 
-        public override string ToString() => Tuple2.Format(this);
+        public override string ToString() => Tuple.Format(this);
     }
 }

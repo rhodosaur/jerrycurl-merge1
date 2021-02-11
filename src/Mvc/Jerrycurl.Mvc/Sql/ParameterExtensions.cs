@@ -47,7 +47,7 @@ namespace Jerrycurl.Mvc.Sql
             if (!attribute.Context.Domain.Dialect.Support.HasFlag(DialectSupport.InputParameters))
                 throw ProjectionException.FromProjection(attribute, $"Dialect '{attribute.Context.Domain.Dialect.GetType().Name}' does not support input parameters.");
 
-            IField2 value = attribute.Field?.Invoke();
+            IField value = attribute.Field?.Invoke();
 
             if (value != null)
             {

@@ -11,7 +11,6 @@ using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace Jerrycurl.Test
@@ -94,10 +93,10 @@ namespace Jerrycurl.Test
         public IAsyncEnumerable<TItem> EnumerateAsync<TItem>(string sql) => this.Queries.EnumerateAsync<TItem>(new Query() { QueryText = sql });
 
 
-        public IRelation2 Relation<T>(T model = default, params string[] header)
+        public IRelation Relation<T>(T model = default, params string[] header)
             => this.Model(model).Select(header);
 
-        public IField2 Model<T>(T model = default)
+        public IField Model<T>(T model = default)
             => this.Schemas.From(model);
     }
 }

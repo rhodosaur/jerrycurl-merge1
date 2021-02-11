@@ -3,8 +3,6 @@ using Jerrycurl.Mvc.Metadata;
 using Jerrycurl.Mvc.Projections;
 using Jerrycurl.Relations;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace Jerrycurl.Mvc.Sql
@@ -53,7 +51,7 @@ namespace Jerrycurl.Mvc.Sql
             return projection.Metadata.Identity.Schema.Require<IProjectionMetadata>(fullName);
         }
 
-        public static IField2 GetFieldValue(IProjectionAttribute attribute)
+        public static IField GetFieldValue(IProjectionAttribute attribute)
         {
             if (attribute.Field == null)
                 throw ProjectionException.ValueNotFound(attribute);

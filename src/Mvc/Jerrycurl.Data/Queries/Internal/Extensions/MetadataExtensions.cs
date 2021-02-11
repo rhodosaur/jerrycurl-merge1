@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Jerrycurl.Data.Metadata;
+﻿using Jerrycurl.Data.Metadata;
 using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Data.Queries.Internal.Extensions

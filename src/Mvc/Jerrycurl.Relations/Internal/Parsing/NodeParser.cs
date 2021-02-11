@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
-using System.Reflection;
 using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Relations.Internal.Parsing

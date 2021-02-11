@@ -1,5 +1,4 @@
-﻿using Jerrycurl.Data.Metadata;
-using Jerrycurl.Reflection;
+﻿using Jerrycurl.Reflection;
 using System;
 using System.Runtime.Serialization;
 

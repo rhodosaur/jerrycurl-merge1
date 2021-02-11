@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Security.Cryptography;
-using System.Text;
 using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Relations.Language
@@ -25,21 +21,21 @@ namespace Jerrycurl.Relations.Language
         public static RelationHeader Select(this ISchema schema, params string[] header)
             => schema.Select((IEnumerable<string>)header);
 
-        public static IRelation2 Select(this IField2 source, IEnumerable<string> header)
-            => new Relation2(source, source.Identity.Schema.Select(header));
+        public static IRelation Select(this IField source, IEnumerable<string> header)
+            => new Relation(source, source.Identity.Schema.Select(header));
 
-        public static IRelation2 Select(this IField2 source, params string[] header)
-            => new Relation2(source, source.Identity.Schema.Select(header));
+        public static IRelation Select(this IField source, params string[] header)
+            => new Relation(source, source.Identity.Schema.Select(header));
 
-        public static ITuple2 Lookup(this IField2 source, IEnumerable<string> header)
+        public static ITuple Lookup(this IField source, IEnumerable<string> header)
             => source.Select(header).Body.FirstOrDefault();
 
-        public static ITuple2 Lookup(this IField2 source, params string[] header)
+        public static ITuple Lookup(this IField source, params string[] header)
             => source.Select(header).Body.FirstOrDefault();
 
-        public static IField2 Lookup(this IField2 source, string attributeName)
+        public static IField Lookup(this IField source, string attributeName)
         {
-            IRelation2 relation = source.Select(attributeName);
+            IRelation relation = source.Select(attributeName);
 
             using IRelationReader reader = relation.GetReader();
 
@@ -49,14 +45,14 @@ namespace Jerrycurl.Relations.Language
             return null;
         }
 
-        public static IRelation2 From(this RelationHeader header, object model)
-            => header.From(new Model2(header.Schema, model));
+        public static IRelation From(this RelationHeader header, object model)
+            => header.From(new Model(header.Schema, model));
 
-        public static IRelation2 From(this RelationHeader header, IField2 source)
-            => new Relation2(source, header);
+        public static IRelation From(this RelationHeader header, IField source)
+            => new Relation(source, header);
 
-        public static IField2 From<TModel>(this ISchemaStore store, TModel model)
-            => new Model2(store.GetSchema(typeof(TModel)), model);
+        public static IField From<TModel>(this ISchemaStore store, TModel model)
+            => new Model(store.GetSchema(typeof(TModel)), model);
 
         public static RelationHeader<TModel> As<TModel>(this ISchema schema)
             => new RelationHeader<TModel>(schema);
@@ -67,10 +63,10 @@ namespace Jerrycurl.Relations.Language
         public static RelationHeader<TModel> For<TModel>(this ISchemaStore store)
             => new RelationHeader<TModel>(store.GetSchema(typeof(TModel)));
 
-        public static void Update<T>(this IField2 field, Func<T, T> valueFactory)
+        public static void Update<T>(this IField field, Func<T, T> valueFactory)
             => field.Update(valueFactory((T)field.Snapshot));
 
-        public static void Update<T>(this IField2 field, T value)
+        public static void Update<T>(this IField field, T value)
             => field.Update(value);
     }
 }

@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Jerrycurl.Data.Commands;
 using Jerrycurl.Data.Queries;
-using Jerrycurl.Data.Sessions;
 using Jerrycurl.Relations;
 using Jerrycurl.Relations.Language;
 
@@ -17,10 +13,10 @@ namespace Jerrycurl.Data.Language
     public static class BufferExtensions
     {
         #region " Insert "
-        public static void Insert(this IQueryBuffer buffer, IRelation2 relation, params string[] insertHeader)
+        public static void Insert(this IQueryBuffer buffer, IRelation relation, params string[] insertHeader)
             => buffer.Insert(relation, (IEnumerable<string>)insertHeader);
 
-        public static void Insert(this IQueryBuffer buffer, IRelation2 relation, IEnumerable<string> insertHeader)
+        public static void Insert(this IQueryBuffer buffer, IRelation relation, IEnumerable<string> insertHeader)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
@@ -30,7 +26,7 @@ namespace Jerrycurl.Data.Language
             buffer.Insert(dataReader);
         }
 
-        public static void Insert(this IQueryBuffer buffer, IRelation2 relation)
+        public static void Insert(this IQueryBuffer buffer, IRelation relation)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
@@ -51,7 +47,7 @@ namespace Jerrycurl.Data.Language
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
 
-            IRelation2 relation = buffer.Store.From(data).Select(selectHeader);
+            IRelation relation = buffer.Store.From(data).Select(selectHeader);
 
             buffer.Insert(relation);
         }
@@ -72,17 +68,17 @@ namespace Jerrycurl.Data.Language
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
 
-            IRelation2 relation = buffer.Store.From(data).Select(selectHeader);
+            IRelation relation = buffer.Store.From(data).Select(selectHeader);
 
             buffer.Insert(relation, insertHeader);
         }
         #endregion
 
         #region " InsertAsync "
-        public static Task InsertAsync(this IQueryBuffer buffer, IRelation2 relation, params string[] insertHeader)
+        public static Task InsertAsync(this IQueryBuffer buffer, IRelation relation, params string[] insertHeader)
             => buffer.InsertAsync(relation, (IEnumerable<string>)insertHeader);
 
-        public static async Task InsertAsync(this IQueryBuffer buffer, IRelation2 relation, IEnumerable<string> insertHeader)
+        public static async Task InsertAsync(this IQueryBuffer buffer, IRelation relation, IEnumerable<string> insertHeader)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
@@ -92,7 +88,7 @@ namespace Jerrycurl.Data.Language
             await buffer.InsertAsync(dataReader);
         }
 
-        public static async Task InsertAsync(this IQueryBuffer buffer, IRelation2 relation)
+        public static async Task InsertAsync(this IQueryBuffer buffer, IRelation relation)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
@@ -113,7 +109,7 @@ namespace Jerrycurl.Data.Language
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
 
-            IRelation2 relation = buffer.Store.From(data).Select(selectHeader);
+            IRelation relation = buffer.Store.From(data).Select(selectHeader);
 
             await buffer.InsertAsync(relation);
         }
@@ -134,7 +130,7 @@ namespace Jerrycurl.Data.Language
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
 
-            IRelation2 relation = buffer.Store.From(data).Select(selectHeader);
+            IRelation relation = buffer.Store.From(data).Select(selectHeader);
 
             await buffer.InsertAsync(relation, insertHeader);
         }

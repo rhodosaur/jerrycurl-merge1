@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using Jerrycurl.Relations;
 
 namespace Jerrycurl.Mvc.V11.Projections

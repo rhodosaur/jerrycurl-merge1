@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Jerrycurl.Data.Queries.Internal.Caching;
 using Jerrycurl.Relations.Metadata;
 

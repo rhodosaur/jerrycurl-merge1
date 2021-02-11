@@ -18,7 +18,7 @@ namespace Jerrycurl.Mvc.Projections
         public IProcContext Context { get; }
         public IEnumerable<IProjectionAttribute> Attributes { get; }
         public IProjectionOptions Options { get; }
-        public IField2 Source { get; }
+        public IField Source { get; }
 
         public Projection(IProjectionIdentity identity, IProcContext context)
         {
@@ -53,7 +53,7 @@ namespace Jerrycurl.Mvc.Projections
             this.Source = projection.Source;
         }
 
-        protected Projection(IProjection projection, IProjectionMetadata metadata, IEnumerable<IProjectionAttribute> attributes, IField2 field, IProjectionOptions options)
+        protected Projection(IProjection projection, IProjectionMetadata metadata, IEnumerable<IProjectionAttribute> attributes, IField field, IProjectionOptions options)
         {
             if (projection == null)
                 throw ProjectionException.ArgumentNull(nameof(projection));
@@ -82,21 +82,21 @@ namespace Jerrycurl.Mvc.Projections
         private IEnumerable<IProjectionAttribute> CreateDefaultAttributes(IProjectionMetadata metadata)
         {
             IEnumerable<IProjectionMetadata> attributes = this.SelectAttributes(metadata);
-            IEnumerable<Func<IField2>> fields = attributes.Select(_ => (Func<IField2>)null);
-            IField2 source = this.Source;
+            IEnumerable<Func<IField>> fields = attributes.Select(_ => (Func<IField>)null);
+            IField source = this.Source;
 
             if (source != null)
             {
-                Lazy<ITuple2> tuple = new Lazy<ITuple2>(() =>
+                Lazy<ITuple> tuple = new Lazy<ITuple>(() =>
                 {
                     IReadOnlyList<RelationAttribute> relationAttributes = attributes.Select(m => new RelationAttribute(m.Relation)).ToList();
                     RelationHeader relationHeader = new RelationHeader(source.Identity.Schema, relationAttributes);
-                    Relation2 relation = new Relation2(source, relationHeader);
+                    Relation relation = new Relation(source, relationHeader);
 
                     return relation.Row();
                 });
 
-                fields = attributes.Select((_, i) => new Func<IField2>(() => tuple.Value[i]));
+                fields = attributes.Select((_, i) => new Func<IField>(() => tuple.Value[i]));
             }
 
             foreach (var (m, f) in attributes.Zip(fields))
@@ -130,12 +130,12 @@ namespace Jerrycurl.Mvc.Projections
 
         public IProjection With(IProjectionMetadata metadata = null,
                                 IEnumerable<IProjectionAttribute> attributes = null,
-                                IField2 field = null,
+                                IField field = null,
                                 IProjectionOptions options = null)
         {
             IProjectionMetadata newMetadata = metadata ?? this.Metadata;
             IEnumerable<IProjectionAttribute> newAttributes = attributes ?? (newMetadata != this.Metadata ? this.CreateDefaultAttributes(newMetadata) : this.Attributes);
-            IField2 newField = field ?? this.Source;
+            IField newField = field ?? this.Source;
             IProjectionOptions newOptions = options ?? this.Options;
 
             return new Projection(this, newMetadata, newAttributes, newField, newOptions);

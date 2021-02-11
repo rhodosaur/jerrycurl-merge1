@@ -12,10 +12,10 @@ namespace Jerrycurl.Mvc
         public string Prefix { get; }
         public IProjectionIdentity Identity { get; }
         public MetadataIdentity Metadata { get; }
-        public IField2 Field { get; }
+        public IField Field { get; }
         public bool HasValue { get; }
 
-        public ProcLookupKey(string prefix, IProjectionIdentity identity, MetadataIdentity metadata, IField2 field)
+        public ProcLookupKey(string prefix, IProjectionIdentity identity, MetadataIdentity metadata, IField field)
         {
             this.Prefix = prefix;
             this.Identity = identity;

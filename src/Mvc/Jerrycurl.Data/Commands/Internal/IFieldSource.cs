@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Jerrycurl.Data.Commands.Internal
+﻿namespace Jerrycurl.Data.Commands.Internal
 {
     internal interface IFieldSource
     {

@@ -1,6 +1,6 @@
 ﻿namespace Jerrycurl.Relations
 {
-    public enum FieldType2
+    public enum FieldType
     {
         Model = 0,
         Value = 1,

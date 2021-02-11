@@ -6,15 +6,15 @@ namespace Jerrycurl.Data.Commands
     public class ColumnBinding : IUpdateBinding
     {
         public string ColumnName { get; }
-        public IField2 Target { get; }
+        public IField Target { get; }
 
-        public ColumnBinding(IField2 target, string columnName)
+        public ColumnBinding(IField target, string columnName)
         {
             this.ColumnName = columnName ?? throw new ArgumentNullException(nameof(columnName));
             this.Target = target ?? throw new ArgumentNullException(nameof(target));
         }
 
-        public ColumnBinding(IField2 target)
+        public ColumnBinding(IField target)
         {
             this.Target = target ?? throw new ArgumentNullException(nameof(target));
             this.ColumnName = this.Target.Identity.Name;

@@ -1,9 +1,4 @@
-﻿using Jerrycurl.Data.Metadata;
-using Jerrycurl.Reflection;
-using System.Linq;
-using System.Linq.Expressions;
-
-namespace Jerrycurl.Data.Queries.Internal.Parsing
+﻿namespace Jerrycurl.Data.Queries.Internal.Parsing
 {
     internal static class NodeValidator
     {

@@ -14,7 +14,7 @@ namespace Jerrycurl.Mvc.Projections
 
         public IProjectionMetadata Metadata { get; }
         public ISqlContent Content { get; }
-        public Func<IField2> Field { get; }
+        public Func<IField> Field { get; }
 
         public ProjectionAttribute(IProjection projection)
         {
@@ -25,7 +25,7 @@ namespace Jerrycurl.Mvc.Projections
             this.Field = this.GetValueFactory(projection.Source);
         }
 
-        protected ProjectionAttribute(IProjectionAttribute attribute, IProjectionMetadata metadata, ISqlContent content, Func<IField2> field)
+        protected ProjectionAttribute(IProjectionAttribute attribute, IProjectionMetadata metadata, ISqlContent content, Func<IField> field)
         {
             if (attribute == null)
                 throw ProjectionException.ArgumentNull(nameof(attribute), this);
@@ -37,7 +37,7 @@ namespace Jerrycurl.Mvc.Projections
             this.Field = field;
         }
 
-        private Func<IField2> GetValueFactory(IField2 source)
+        private Func<IField> GetValueFactory(IField source)
         {
             if (source == null)
                 return null;
@@ -45,7 +45,7 @@ namespace Jerrycurl.Mvc.Projections
                 return () => source;
 
             RelationHeader header = new RelationHeader(source.Identity.Schema, new[] { new RelationAttribute(this.Metadata.Relation) });
-            Relation2 relation = new Relation2(source, header);
+            Relation relation = new Relation(source, header);
 
             return () => relation.Scalar();
         }
@@ -59,11 +59,11 @@ namespace Jerrycurl.Mvc.Projections
         public IProjectionAttribute Append(params IParameter[] parameter) => this.With(content: this.Content.Append(parameter));
         public IProjectionAttribute Append(params IUpdateBinding[] bindings) => this.With(content: this.Content.Append(bindings));
 
-        public IProjectionAttribute With(IProjectionMetadata metadata = null, ISqlContent content = null, Func<IField2> field = null)
+        public IProjectionAttribute With(IProjectionMetadata metadata = null, ISqlContent content = null, Func<IField> field = null)
         {
             IProjectionMetadata newMetadata = metadata ?? this.Metadata;
             ISqlContent newContent = content ?? this.Content;
-            Func<IField2> newField = field ?? (metadata != newMetadata ? this.GetValueFactory(this.Field?.Invoke()) : this.Field);
+            Func<IField> newField = field ?? (metadata != newMetadata ? this.GetValueFactory(this.Field?.Invoke()) : this.Field);
 
             return new ProjectionAttribute(this, newMetadata, newContent, newField);
         }

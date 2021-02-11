@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Jerrycurl.Collections;
 using Jerrycurl.Data.Commands.Internal.Caching;
 using Jerrycurl.Data.Commands.Internal.Compilation;
@@ -13,7 +11,7 @@ namespace Jerrycurl.Data.Commands.Internal
 {
     internal class FieldBuffer
     {
-        public IField2 Target { get; set; }
+        public IField Target { get; set; }
         public ParameterSource Parameter { get; set; }
         public ColumnSource Column { get; set; }
         public CascadeSource Cascade { get; set; }

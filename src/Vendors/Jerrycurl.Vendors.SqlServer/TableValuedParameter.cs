@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Xml;
-using System.Xml.Linq;
 using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Sessions;
 using Jerrycurl.Relations;
@@ -22,11 +20,11 @@ namespace Jerrycurl.Vendors.SqlServer
     public class TableValuedParameter : IParameter
     {
         public string Name { get; }
-        public IRelation2 Relation { get; }
+        public IRelation Relation { get; }
 
-        IField2 IParameter.Source => null;
+        IField IParameter.Source => null;
 
-        public TableValuedParameter(string name, IRelation2 relation)
+        public TableValuedParameter(string name, IRelation relation)
         {
             this.Name = name ?? throw new ArgumentNullException(nameof(name));
             this.Relation = relation ?? throw new ArgumentNullException(nameof(relation));
@@ -38,7 +36,7 @@ namespace Jerrycurl.Vendors.SqlServer
 
             sqlParam.ParameterName = this.Name;
 
-            Action<SqlParameter, IRelation2> binder = TvpCache.Binders.GetOrAdd(this.Relation.Header, key =>
+            Action<SqlParameter, IRelation> binder = TvpCache.Binders.GetOrAdd(this.Relation.Header, key =>
             {
                 GetHeadingMetadata(key, out IBindingMetadata[] bindingMetadata, out ITableMetadata[] columnMetadata);
 
@@ -73,9 +71,9 @@ namespace Jerrycurl.Vendors.SqlServer
         }
 
         [Obsolete("Use RelationReader?")]
-        private static void BindParameter(SqlParameter sqlParam, string tvpName, string[] columnNames, BindingParameterConverter[] converters, IRelation2 relation)
+        private static void BindParameter(SqlParameter sqlParam, string tvpName, string[] columnNames, BindingParameterConverter[] converters, IRelation relation)
         {
-            ITuple2 refTuple = relation.Row();
+            ITuple refTuple = relation.Row();
 
             IEnumerable<SqlDataRecord> iterator()
             {
@@ -83,7 +81,7 @@ namespace Jerrycurl.Vendors.SqlServer
 
                 yield return buffer;
 
-                foreach (ITuple2 tuple in relation.Body.Skip(1))
+                foreach (ITuple tuple in relation.Body.Skip(1))
                 {
                     SetSqlBufferValues(buffer, tuple, converters);
 
@@ -100,7 +98,7 @@ namespace Jerrycurl.Vendors.SqlServer
             sqlParam.TypeName = tvpName;
         }
 
-        private static SqlDataRecord CreateSqlBuffer(string[] columnNames, ITuple2 tuple)
+        private static SqlDataRecord CreateSqlBuffer(string[] columnNames, ITuple tuple)
         {
             object[] values = new object[tuple.Degree];
             SqlMetaData[] metadata = new SqlMetaData[tuple.Degree];
@@ -125,7 +123,7 @@ namespace Jerrycurl.Vendors.SqlServer
         }
 
         [Obsolete("Use Snapshot or Data.Value?")]
-        private static void SetSqlBufferValues(SqlDataRecord buffer, ITuple2 tuple, BindingParameterConverter[] converters)
+        private static void SetSqlBufferValues(SqlDataRecord buffer, ITuple tuple, BindingParameterConverter[] converters)
         {
             for (int i = 0; i < buffer.FieldCount; i++)
             {
