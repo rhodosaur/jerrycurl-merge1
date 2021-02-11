@@ -18,123 +18,75 @@ namespace Jerrycurl.Data.Queries
         public ISchema Schema { get; }
         public QueryType Type { get; }
 
-        AggregateBuffer IQueryBuffer.Aggregate => this.aggregate;
-        ElasticArray IQueryBuffer.Slots => this.slots;
+        ElasticArray IQueryBuffer.AggregateData => this.aggregateData;
+        ElasticArray IQueryBuffer.ListData => this.listData;
+        List<AggregateAttribute> IQueryBuffer.AggregateHeader => this.aggregateHeader;
 
-        private AggregateBuffer aggregate;
-        private ElasticArray slots;
-
-        private Action<IDataReader> innerInsert;
-        private Func<DbDataReader, CancellationToken, Task> innerInsertAsync;
-        private Func<object> innerCommit;
+        private ElasticArray aggregateData;
+        private ElasticArray listData;
+        private List<AggregateAttribute> aggregateHeader;
 
         public QueryBuffer(ISchema schema, QueryType type)
         {
             this.Schema = schema ?? throw new ArgumentNullException(nameof(schema));
             this.Type = type;
 
-            this.InitFactories();
             this.Flush();
         }
 
         private void Flush()
         {
-            this.slots = new ElasticArray();
+            this.listData = new ElasticArray();
 
             if (this.Type == QueryType.Aggregate)
-                this.aggregate = new AggregateBuffer(this.Schema);
-        }
-
-        private void InitFactories()
-        {
-            switch (this.Type)
             {
-                case QueryType.List:
-                    this.innerInsert = this.ListInsert;
-                    this.innerInsertAsync = this.ListInsertAsync;
-                    this.innerCommit = this.ListCommit;
-                    break;
-                case QueryType.Aggregate:
-                    this.innerInsert = this.AggregateInsert;
-                    this.innerInsertAsync = this.AggregateInsertAsync;
-                    this.innerCommit = this.AggregateCommit;
-                    break;
-                default:
-                    throw QueryException.InvalidQueryType(this.Type);
+                this.aggregateData = new ElasticArray();
+                this.aggregateHeader = new List<AggregateAttribute>();
             }
         }
 
-        public void Insert(IDataReader dataReader) => this.innerInsert(dataReader);
-        public Task InsertAsync(DbDataReader dataReader, CancellationToken cancellationToken = default) => this.innerInsertAsync(dataReader, cancellationToken);
-        public object Commit() => this.innerCommit();
-
-        #region " Aggregate "
-        private void AggregateInsert(IDataReader dataReader)
-        {
-            BufferWriter writer = QueryCache.GetAggregateWriter(this.Schema, dataReader);
-
-            writer.WriteAll(this, dataReader);
-        }
-
-        private async Task AggregateInsertAsync(DbDataReader dataReader, CancellationToken cancellationToken)
-        {
-            BufferWriter writer = QueryCache.GetAggregateWriter(this.Schema, dataReader);
-
-            writer.Initialize(this);
-
-            while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
-                writer.WriteOne(this, dataReader);
-        }
-
-
-        private object AggregateCommit()
+        public object Commit()
         {
             try
             {
-                QueryCacheKey<AggregateName> cacheKey = this.aggregate.ToCacheKey();
-                AggregateReader reader = QueryCache.GetAggregateReader(cacheKey);
-
-                return reader(this);
+                return this.Type switch
+                {
+                    QueryType.List => this.CommitList(),
+                    QueryType.Aggregate => this.CommitAggregate(),
+                    _ => throw new InvalidOperationException(),
+                };
             }
             finally
             {
                 this.Flush();
             }
-        }
-        #endregion
 
-        #region " List "
-
-        private void ListInsert(IDataReader dataReader)
-        {
-            BufferWriter writer = QueryCache.GetListWriter(this.Schema, dataReader);
-
-            writer.WriteAll(this, dataReader);
         }
 
-        private async Task ListInsertAsync(DbDataReader dataReader, CancellationToken cancellationToken)
+        public void Insert(IDataReader dataReader)
         {
-            BufferWriter writer = QueryCache.GetListWriter(this.Schema, dataReader);
+            ListFactory factory = QueryCache.GetListFactory(this.Schema, this.Type, dataReader);
 
-            writer.Initialize(this);
+            factory.WriteAll(this, dataReader);
+        }
+
+        public async Task InsertAsync(DbDataReader dataReader, CancellationToken cancellationToken)
+        {
+            ListFactory factory = QueryCache.GetListFactory(this.Schema, this.Type, dataReader);
+
+            factory.Initialize(this);
 
             while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
-                writer.WriteOne(this, dataReader);
+                factory.WriteOne(this, dataReader);
         }
 
-        private object ListCommit()
+
+        private object CommitAggregate()
         {
-            try
-            {
-                return this.slots[0];
-            }
-            finally
-            {
-                this.Flush();
-            }
+            AggregateFactory factory = QueryCache.GetAggregateFactory(this.Schema, this.aggregateHeader);
+
+            return factory(this);
         }
-
-        #endregion
-
+        private object CommitList() => this.listData[0];
     }
 }

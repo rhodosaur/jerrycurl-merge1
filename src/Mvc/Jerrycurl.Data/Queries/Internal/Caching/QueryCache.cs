@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -6,72 +7,77 @@ using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Queries;
 using Jerrycurl.Data.Queries.Internal.Caching;
 using Jerrycurl.Data.Queries.Internal.Compilation;
+using Jerrycurl.Data.Queries.Internal.IO;
 using Jerrycurl.Data.Queries.Internal.Parsing;
 using Jerrycurl.Relations.Metadata;
-using AggregateCacheKey = Jerrycurl.Data.Queries.Internal.Caching.QueryCacheKey<Jerrycurl.Data.Queries.Internal.Caching.AggregateName>;
-using ColumnCacheKey = Jerrycurl.Data.Queries.Internal.Caching.QueryCacheKey<Jerrycurl.Data.Queries.Internal.Caching.ColumnName>;
+using AggregateCacheKey = Jerrycurl.Data.Queries.Internal.Caching.QueryCacheKey<Jerrycurl.Data.Queries.Internal.Caching.AggregateAttribute>;
+using ColumnCacheKey = Jerrycurl.Data.Queries.Internal.Caching.QueryCacheKey<Jerrycurl.Data.Queries.Internal.Caching.ColumnAttribute>;
 
 namespace Jerrycurl.Data.Queries.Internal.Caching
 {
     internal class QueryCache
     {
-        private static readonly ConcurrentDictionary<ColumnCacheKey, object> enumerateReaders = new ConcurrentDictionary<ColumnCacheKey, object>();
-        private static readonly ConcurrentDictionary<ColumnCacheKey, BufferWriter> listWriters = new ConcurrentDictionary<ColumnCacheKey, BufferWriter>();
-        private static readonly ConcurrentDictionary<ColumnCacheKey, BufferWriter> aggregrateWriters = new ConcurrentDictionary<ColumnCacheKey, BufferWriter>();
-        private static readonly ConcurrentDictionary<AggregateCacheKey, object> aggregateReaders = new ConcurrentDictionary<AggregateCacheKey, object>();
+        private static readonly ConcurrentDictionary<ColumnCacheKey, object> enumerateMap = new ConcurrentDictionary<ColumnCacheKey, object>();
+        private static readonly ConcurrentDictionary<ColumnCacheKey, ListFactory> listMap = new ConcurrentDictionary<ColumnCacheKey, ListFactory>();
+        private static readonly ConcurrentDictionary<AggregateCacheKey, object> aggregateMap = new ConcurrentDictionary<AggregateCacheKey, object>();
         private static readonly ConcurrentDictionary<ISchema, BufferCache> buffers = new ConcurrentDictionary<ISchema, BufferCache>();
 
         private static BufferCache GetBuffer(ISchema schema) => buffers.GetOrAdd(schema, s => new BufferCache(s));
 
-        public static AggregateReader GetAggregateReader(AggregateCacheKey cacheKey)
+        public static AggregateFactory GetAggregateFactory(ISchema schema, IEnumerable<AggregateAttribute> header)
         {
-            return (AggregateReader)aggregateReaders.GetOrAdd(cacheKey, k =>
+            AggregateCacheKey cacheKey = new AggregateCacheKey(schema, QueryType.Aggregate, header.ToList());
+
+            return (AggregateFactory)aggregateMap.GetOrAdd(cacheKey, k =>
+            {
+                AggregateParser parser = new AggregateParser(k.Schema);
+                AggregateResult result = parser.Parse(k.Header);
+
+                QueryCompiler compiler = new QueryCompiler();
+
+                return compiler.Compile(result);
+            });
+        }
+
+        public static ListFactory GetListFactory(ISchema schema, QueryType queryType, IDataRecord header)
+        {
+            ColumnCacheKey cacheKey = GetCacheKey(schema, queryType, header);
+
+            return listMap.GetOrAdd(cacheKey, k =>
             {
                 BufferCache buffer = GetBuffer(k.Schema);
-                AggregateParser parser = new AggregateParser(buffer);
-                AggregateTree tree = parser.Parse(cacheKey.Items);
+                ListParser parser = new ListParser(buffer, queryType);
+                ListResult result = parser.Parse(k.Header);
 
                 QueryCompiler compiler = new QueryCompiler();
 
-                return compiler.Compile(tree);
+                return compiler.Compile(result);
             });
         }
 
-        public static EnumerateReader<TItem> GetEnumerateReader<TItem>(ISchemaStore schemas, IDataRecord dataRecord)
+        public static EnumerateFactory<T> GetEnumerateFactory<T>(ISchema schema, IDataRecord header)
         {
-            ISchema schema = schemas.GetSchema(typeof(IList<TItem>));
-            ColumnCacheKey cacheKey = GetCacheKey(schema, QueryType.List, dataRecord);
+            ColumnCacheKey cacheKey = GetCacheKey(schema, QueryType.List, header);
 
-            return (EnumerateReader<TItem>)enumerateReaders.GetOrAdd(cacheKey, k =>
+            return (EnumerateFactory<T>)enumerateMap.GetOrAdd(cacheKey, k =>
             {
                 EnumerateParser parser = new EnumerateParser(schema);
-                EnumerateTree tree = parser.Parse(k.Items);
+                EnumerateResult result = parser.Parse(k.Header);
 
                 QueryCompiler compiler = new QueryCompiler();
 
-                return compiler.Compile<TItem>(tree);
+                return compiler.Compile<T>(result);
             });
-        }
-
-        public static BufferWriter GetAggregateWriter(ISchema schema, IDataRecord dataRecord)
-        {
-            ColumnCacheKey cacheKey = GetCacheKey(schema, QueryType.Aggregate, dataRecord);
-
-            return aggregrateWriters.GetOrAdd(cacheKey, k => GetWriter(k, QueryType.Aggregate));
-        }
-
-        public static BufferWriter GetListWriter(ISchema schema, IDataRecord dataRecord)
-        {
-            ColumnCacheKey cacheKey = GetCacheKey(schema, QueryType.Aggregate, dataRecord);
-
-            return listWriters.GetOrAdd(cacheKey, k => GetWriter(k, QueryType.List));
         }
 
         private static ColumnCacheKey GetCacheKey(ISchema schema, QueryType type, IDataRecord dataRecord)
         {
-            IEnumerable<ColumnName> columns = Enumerable.Range(0, GetFieldCount()).Select(i => GetColumnName(dataRecord, i));
+            List<ColumnAttribute> attributes = new List<ColumnAttribute>(GetFieldCount());
 
-            return new ColumnCacheKey(schema, type, columns);
+            for (int i = 0; i < attributes.Count; i++)
+                attributes.Add(GetColumnAttribute(dataRecord, i));
+
+            return new ColumnCacheKey(schema, type, attributes);
 
             int GetFieldCount()
             {
@@ -80,18 +86,9 @@ namespace Jerrycurl.Data.Queries.Internal.Caching
             }
         }
 
-        public static ColumnName GetColumnName(IDataRecord dataRecord, int i)
-            => new ColumnName(new ColumnMetadata(dataRecord.GetName(i), dataRecord.GetFieldType(i), dataRecord.GetDataTypeName(i), i));
+        public static ColumnAttribute GetColumnAttribute(IDataRecord dataRecord, int i)
+            => new ColumnAttribute(dataRecord.GetName(i), i, dataRecord.GetFieldType(i), dataRecord.GetDataTypeName(i));
 
-        private static BufferWriter GetWriter(ColumnCacheKey cacheKey, QueryType queryType)
-        {
-            BufferCache buffer = GetBuffer(cacheKey.Schema);
-            BufferParser parser = new BufferParser(queryType, buffer);
-            BufferTree tree = parser.Parse(cacheKey.Items);
 
-            QueryCompiler compiler = new QueryCompiler();
-
-            return compiler.Compile(tree);
-        }
     }
 }

@@ -2,5 +2,5 @@
 
 namespace Jerrycurl.Data.Queries.Internal.Compilation
 {
-    internal delegate TItem EnumerateReader<TItem>(IDataReader dataReader);
+    internal delegate TItem EnumerateFactory<TItem>(IDataReader dataReader);
 }

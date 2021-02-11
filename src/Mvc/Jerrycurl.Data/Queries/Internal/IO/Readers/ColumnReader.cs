@@ -2,11 +2,11 @@
 using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Queries.Internal.Parsing;
 
-namespace Jerrycurl.Data.Queries.Internal.IO
+namespace Jerrycurl.Data.Queries.Internal.IO.Readers
 {
-    internal class ColumnBinder : ValueBinder
+    internal class ColumnReader : DataReader
     {
-        public ColumnBinder(Node node)
+        public ColumnReader(Node node)
             : base(node)
         {
 

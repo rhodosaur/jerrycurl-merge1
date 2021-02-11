@@ -5,5 +5,5 @@ using Jerrycurl.Data.Queries;
 
 namespace Jerrycurl.Data.Queries.Internal.Compilation
 {
-    internal delegate object AggregateReader(IQueryBuffer buffer);
+    internal delegate object AggregateFactory(IQueryBuffer buffer);
 }

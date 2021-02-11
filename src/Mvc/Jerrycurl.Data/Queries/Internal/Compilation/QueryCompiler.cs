@@ -14,6 +14,8 @@ using Jerrycurl.Data.Queries.Internal.IO;
 using Jerrycurl.Data.Queries.Internal.Caching;
 using System.Collections;
 using System.Security.Cryptography;
+using Jerrycurl.Data.Queries.Internal.IO.Writers;
+using Jerrycurl.Data.Queries.Internal.IO.Readers;
 
 namespace Jerrycurl.Data.Queries.Internal.Compilation
 {
@@ -21,57 +23,56 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
     {
         public const bool UseTryCatchExpressions = true;
 
-        private delegate void BufferInternalWriter(IDataReader dataReader, ElasticArray slots, ElasticArray aggregates, ElasticArray helpers, ISchema schema);
-        private delegate void BufferInternalInitializer(ElasticArray slots);
-        private delegate TItem AggregateInternalReader<TItem>(ElasticArray slots, ElasticArray aggregates, ISchema schema);
-        private delegate object AggregateInternalReader(ElasticArray slots, ElasticArray aggregates, ISchema schema);
+        private delegate void ListInternalWriter(IDataReader dataReader, ElasticArray lists, ElasticArray aggregates, ElasticArray helpers, ISchema schema);
+        private delegate void ListInternalInitializer(ElasticArray lists);
+        private delegate object AggregateInternalReader(ElasticArray lists, ElasticArray aggregates, ISchema schema);
         private delegate TItem EnumerateInternalReader<TItem>(IDataReader dataReader, ElasticArray helpers, ISchema schema);
 
-        private BufferWriter CompileBuffer(BufferTree tree, Expression initialize, Expression writeOne, Expression writeAll)
+        private ListFactory CompileBuffer(ListResult result, Expression initialize, Expression writeOne, Expression writeAll)
         {
-            ParameterExpression[] initArgs = new[] { Arguments.Slots };
-            ParameterExpression[] writeArgs = new[] { Arguments.DataReader, Arguments.Slots, Arguments.Aggregates, Arguments.Helpers, Arguments.Schema };
+            ParameterExpression[] initArgs = new[] { Arguments.Lists };
+            ParameterExpression[] writeArgs = new[] { Arguments.DataReader, Arguments.Lists, Arguments.Aggregates, Arguments.Helpers, Arguments.Schema };
 
-            BufferInternalInitializer initializeFunc = this.Compile<BufferInternalInitializer>(initialize, initArgs);
-            BufferInternalWriter writeOneFunc = this.Compile<BufferInternalWriter>(writeOne, writeArgs);
-            BufferInternalWriter writeAllFunc = this.Compile<BufferInternalWriter>(writeAll, writeArgs);
+            ListInternalInitializer initializeFunc = this.Compile<ListInternalInitializer>(initialize, initArgs);
+            ListInternalWriter writeOneFunc = this.Compile<ListInternalWriter>(writeOne, writeArgs);
+            ListInternalWriter writeAllFunc = this.Compile<ListInternalWriter>(writeAll, writeArgs);
 
-            ElasticArray helpers = this.GetHelperArray(tree.Helpers);
-            ISchema schema = tree.Schema;
+            ElasticArray helpers = this.GetHelperBuffer(result.Helpers);
+            ISchema schema = result.Schema;
 
-            if (tree.QueryType == QueryType.Aggregate && tree.AggregateNames.Any())
+            if (result.QueryType == QueryType.Aggregate)
             {
-                AggregateName[] names = tree.AggregateNames.ToArray();
+                AggregateAttribute[] header = result.Aggregates.Select(a => a.Attribute).NotNull().ToArray();
 
-                return new BufferWriter()
+                return new ListFactory()
                 {
                     Initialize = buf =>
                     {
-                        buf.Aggregate.Names.AddRange(names);
+                        buf.AggregateHeader.AddRange(header);
 
-                        initializeFunc(buf.Slots);
+                        initializeFunc(buf.ListData);
                     },
-                    WriteOne = (buf, dr) => writeOneFunc(dr, buf.Slots, buf.Aggregate.Values, helpers, schema),
+                    WriteOne = (buf, dr) => writeOneFunc(dr, buf.ListData, buf.AggregateData, helpers, schema),
                     WriteAll = (buf, dr) =>
                     {
-                        buf.Aggregate.Names.AddRange(names);
+                        buf.AggregateHeader.AddRange(header);
 
-                        writeAllFunc(dr, buf.Slots, buf.Aggregate.Values, helpers, schema);
+                        writeAllFunc(dr, buf.ListData, buf.AggregateData, helpers, schema);
                     },
                 };
             }
             else
             {
-                return new BufferWriter()
+                return new ListFactory()
                 {
-                    WriteAll = (buf, dr) => writeAllFunc(dr, buf.Slots, buf.Aggregate?.Values, helpers, schema),
-                    WriteOne = (buf, dr) => writeOneFunc(dr, buf.Slots, buf.Aggregate?.Values, helpers, schema),
-                    Initialize = buf => initializeFunc(buf.Slots),
+                    WriteAll = (buf, dr) => writeAllFunc(dr, buf.ListData, buf.AggregateData, helpers, schema),
+                    WriteOne = (buf, dr) => writeOneFunc(dr, buf.ListData, buf.AggregateData, helpers, schema),
+                    Initialize = buf => initializeFunc(buf.ListData),
                 };
             }
         }
 
-        public BufferWriter Compile(BufferTree tree)
+        public ListFactory Compile(ListResult result)
         {
             List<ParameterExpression> variables = new List<ParameterExpression>();
 
@@ -81,7 +82,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
             List<Expression> body = new List<Expression>();
 
-            foreach (SlotWriter writer in tree.Slots)
+            foreach (ListWriter writer in result.Lists)
             {
                 Expression initExpression = this.GetInitializeExpression(writer);
                 Expression writeExpresssion = this.GetWriterExpression(writer);
@@ -94,7 +95,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 variables.Add(writer.Variable);
             }
 
-            foreach (HelperWriter writer in tree.Helpers)
+            foreach (HelperWriter writer in result.Helpers)
             {
                 Expression writeExpression = this.GetWriterExpression(writer);
 
@@ -104,10 +105,10 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 variables.Add(writer.Variable);
             }
 
-            foreach (AggregateWriter writer in tree.Aggregates)
+            foreach (AggregateWriter writer in result.Aggregates)
                 body.Add(this.GetWriterExpression(writer));
 
-            foreach (ListWriter writer in tree.Lists)
+            foreach (JoinWriter writer in result.Joins)
                 body.Add(this.GetWriterExpression(writer));
 
             oneList.AddRange(body);
@@ -117,104 +118,107 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             Expression writeOne = this.GetBlockOrExpression(oneList, variables);
             Expression writeAll = this.GetBlockOrExpression(allList, variables);
 
-            return this.CompileBuffer(tree, initialize, writeOne, writeAll);
+            return this.CompileBuffer(result, initialize, writeOne, writeAll);
         }
 
-        public AggregateReader Compile(AggregateTree tree)
-        {
-            Expression body = this.GetBinderExpression(tree.Aggregate);
-
-            if (tree.Aggregate.Metadata.HasFlag(BindingMetadataFlags.Item))
-            {
-                ParameterExpression variable = Expression.Variable(tree.Aggregate.Metadata.Parent.Composition.Construct.Type);
-                Expression newList = tree.Aggregate.Metadata.Parent.Composition.Construct;
-                Expression assignList = Expression.Assign(variable, newList);
-                Expression callAdd = Expression.Call(variable, tree.Aggregate.Metadata.Parent.Composition.Add, body);
-
-                body = this.GetBlockOrExpression(new[] { assignList, callAdd, variable }, new[] { variable });
-            }
-
-            ParameterExpression[] arguments = new[] { Arguments.Slots, Arguments.Aggregates, Arguments.Schema };
-            AggregateInternalReader reader = this.Compile<AggregateInternalReader>(body, arguments);
-
-            ISchema schema = tree.Schema;
-
-            return buf => reader(buf.Slots, buf.Aggregate.Values, schema);
-        }
-
-        public EnumerateReader<TItem> Compile<TItem>(EnumerateTree tree)
+        public AggregateFactory Compile(AggregateResult result)
         {
             List<Expression> body = new List<Expression>();
 
-            if (tree.Item == null)
+            if (result.Value != null)
+                body.Add(this.GetBinderExpression(result.Value));
+
+            if (result.List != null)
+                body.Add(this.GetBinderExpression(result.List));
+
+            ParameterExpression[] arguments = new[] { Arguments.Lists, Arguments.Aggregates, Arguments.Schema };
+            AggregateInternalReader reader = this.Compile<AggregateInternalReader>(body, arguments);
+
+            ISchema schema = result.Schema;
+
+            return buf => reader(buf.ListData, buf.AggregateData, schema);
+        }
+
+        public EnumerateFactory<TItem> Compile<TItem>(EnumerateResult result)
+        {
+            List<Expression> body = new List<Expression>();
+
+            if (result.Value == null)
                 return _ => default;
 
-            foreach (HelperWriter writer in tree.Helpers)
+            foreach (HelperWriter writer in result.Helpers)
                 body.Add(this.GetWriterExpression(writer));
 
-            body.Add(this.GetBinderExpression(tree.Item));
+            body.Add(this.GetBinderExpression(result.Value));
 
             ParameterExpression[] arguments = new[] { Arguments.DataReader, Arguments.Helpers, Arguments.Schema };
             EnumerateInternalReader<TItem> reader = this.Compile<EnumerateInternalReader<TItem>>(body, arguments);
 
-            ElasticArray helpers = this.GetHelperArray(tree.Helpers);
-            ISchema schema = tree.Schema;
+            ElasticArray helpers = this.GetHelperBuffer(result.Helpers);
+            ISchema schema = result.Schema;
 
             return dr => reader(dr, helpers, schema);
         }
 
         #region " Initialize "
-        private Expression GetInitializeExpression(SlotWriter writer)
+        private Expression GetInitializeExpression(ListWriter writer)
         {
-            Expression slotIndex = this.GetElasticIndexExpression(Arguments.Slots, writer.BufferIndex);
-            Expression convertIndex = Expression.Convert(slotIndex, writer.Variable.Type);
+            Expression listIndex = this.GetElasticIndexExpression(Arguments.Lists, writer.BufferIndex);
+            Expression listValue = Expression.Convert(listIndex, writer.Variable.Type);
 
-            return Expression.Assign(writer.Variable, convertIndex);
+            return Expression.Assign(writer.Variable, listValue);
         }
-
+        private Expression GetInitializeExpression(NewReader reader)
+        {
+            return null;
+        }
+        private Expression GetInitializeExpression(JoinWriter writer)
+        {
+            return null;
+        }
         #endregion
 
         #region " Writers "
-        private Expression GetWriterExpression(SlotWriter writer)
+        private Expression GetWriterExpression(ListWriter writer)
         {
-            Expression slotIndex = this.GetElasticIndexExpression(Arguments.Slots, writer.BufferIndex);
+            Expression listIndex = this.GetElasticIndexExpression(Arguments.Lists, writer.BufferIndex);
             NewExpression newList;
 
-            if (writer.KeyType == null)
+            if (writer.JoinKey == null)
                 newList = writer.Metadata.Composition.Construct;
             else
             {
-                Type dictionaryType = this.GetDictionaryType(writer.KeyType);
+                Type dictionaryType = this.GetDictionaryType(writer.JoinKey.CompositeType);
 
                 newList = Expression.New(dictionaryType);
             }
 
-            Expression assignNew = Expression.Assign(slotIndex, newList);
-            Expression isNull = Expression.ReferenceEqual(slotIndex, Expression.Constant(null));
+            Expression assignList = Expression.Assign(listIndex, newList);
+            Expression isNull = Expression.ReferenceEqual(listIndex, Expression.Constant(null));
 
-            return Expression.IfThen(isNull, assignNew);
+            return Expression.IfThen(isNull, assignList);
         }
 
-        private Expression GetWriterExpression(ListWriter writer)
+        private Expression GetWriterExpression(JoinWriter writer)
         {
-            Expression value = this.GetBinderExpression(writer.Item);
+            Expression value = this.GetBinderExpression(writer.Value);
             Expression writeItem;
 
-            if (writer.JoinKey == null && writer.Metadata.HasFlag(BindingMetadataFlags.List))
-                writeItem = Expression.Call(writer.Slot, writer.Metadata.Composition.Add, value);
+            if (writer.JoinKey == null && writer.List != null)
+                writeItem = Expression.Call(writer.List, writer.Metadata.Composition.Add, value);
             else if (writer.JoinKey == null)
             {
-                Expression arrayIndex = this.GetElasticIndexExpression(Arguments.Slots, writer.BufferIndex);
-                Expression objectValue = Expression.Convert(value, typeof(object));
+                Expression listIndex = this.GetElasticIndexExpression(Arguments.Lists, writer.BufferIndex);
+                Expression listValue = Expression.Convert(value, typeof(object));
 
-                writeItem = Expression.Assign(arrayIndex, objectValue);
+                writeItem = Expression.Assign(listIndex, listValue);
             }
             else
             {
                 Expression arrayIsNotNull = Expression.ReferenceNotEqual(writer.JoinKey.Array, Expression.Constant(null));
                 Expression arrayIndex = this.GetElasticIndexExpression(writer.JoinKey.Array, writer.BufferIndex);
 
-                if (writer.Metadata.HasFlag(BindingMetadataFlags.List))
+                if (writer.List != null)
                 {
                     Expression arrayIndexIsNotNull = Expression.ReferenceNotEqual(arrayIndex, Expression.Constant(null));
                     Expression assignIndex = Expression.Assign(arrayIndex, writer.Metadata.Composition.Construct);
@@ -244,52 +248,64 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             return Expression.Assign(writer.Variable, castValue);
         }
 
-        private Expression GetWriterExpression(AggregateWriter writer)
+        private Expression GetWriterExpression(AggregateWriter writer, bool useTryCatch = true)
         {
-            Expression arrayIndex = this.GetElasticIndexExpression(Arguments.Aggregates, writer.BufferIndex);
-            Expression value = this.GetBinderOrNullExpression(writer.Data);
+            Expression aggregateIndex = this.GetElasticIndexExpression(Arguments.Aggregates, writer.Attribute.AggregateIndex.Value);
+            Expression aggregateValue = this.GetBinderExpression(writer.Value);
 
-            return Expression.Assign(arrayIndex, value);
+            Expression isDbNull = writer.Value.IsDbNull ?? this.GetIsDbNullExpression(writer.Value);
+            Expression value = writer.Value.Variable;
+
+            if (value == null)
+            {
+                value = this.GetValueExpression(writer.Value);
+                value = this.GetConvertExpression(writer.Value, value);
+
+                if (useTryCatch)
+                    value = this.GetTryCatchExpression(writer.Value, value);
+            }
+
+            return Expression.Condition(isDbNull, Expression.Constant(null), this.GetConvertOrExpression(value, typeof(object)));
         }
 
         #endregion
 
         #region " Keys "
-        private Expression GetKeyInitValueExpression(ValueBinder binder, bool useTryCatch = true)
+        private Expression GetKeyInitValueExpression(DataReader reader, bool useTryCatch = true)
         {
-            Expression value = this.GetValueExpression(binder);
-            Expression convertedValue = this.GetConvertExpression(value, binder);
+            Expression value = this.GetValueExpression(reader);
+            Expression convertedValue = this.GetConvertExpression(reader, value);
 
             if (useTryCatch)
-                convertedValue = this.GetTryCatchExpression(binder, convertedValue);
+                convertedValue = this.GetTryCatchExpression(reader, convertedValue);
 
-            if (binder.CanBeDbNull)
+            if (reader.CanBeDbNull)
             {
-                Expression isDbNull = this.GetIsDbNullExpression(binder);
-                Expression assignNull = Expression.Assign(binder.IsDbNull, isDbNull);
+                Expression isDbNull = this.GetIsDbNullExpression(reader);
+                Expression assignNull = Expression.Assign(reader.IsDbNull, isDbNull);
 
                 convertedValue = Expression.Condition(assignNull, Expression.Default(convertedValue.Type), convertedValue);
             }
 
-            return Expression.Assign(binder.Variable, convertedValue);
+            return Expression.Assign(reader.Variable, convertedValue);
         }
 
-        private Expression GetKeyInitArrayExpression(KeyBinder binder)
+        private Expression GetKeyInitArrayExpression(KeyReader reader)
         {
-            IEnumerable<ParameterExpression> isNullVars = binder.Values.Where(v => v.CanBeDbNull).Select(v => v.IsDbNull).ToList();
+            IEnumerable<ParameterExpression> isNullVars = reader.Values.Where(v => v.CanBeDbNull).Select(v => v.IsDbNull).ToList();
 
-            Expression newKey = this.GetNewCompositeKeyExpression(binder);
-            Expression setKey = Expression.Assign(binder.Variable, newKey);
-            Expression tryGet = this.GetDictionaryTryGetExpression(binder.Slot, setKey, binder.Array);
+            Expression newKey = this.GetNewCompositeKeyExpression(reader);
+            Expression setKey = Expression.Assign(reader.Variable, newKey);
+            Expression tryGet = this.GetDictionaryTryGetExpression(reader.List, setKey, reader.Array);
             Expression newArray = Expression.New(typeof(ElasticArray));
-            Expression setArray = Expression.Assign(binder.Array, newArray);
-            Expression addArray = this.GetDictionaryAddExpression(binder.Slot, binder.Variable, setArray);
+            Expression setArray = Expression.Assign(reader.Array, newArray);
+            Expression addArray = this.GetDictionaryAddExpression(reader.List, reader.Variable, setArray);
             Expression getOrAdd = Expression.IfThenElse(tryGet, Expression.Default(typeof(void)), addArray);
 
             if (isNullVars.Any())
             {
                 Expression isNull = this.GetAndConditionExpression(isNullVars);
-                Expression setNull = Expression.Assign(binder.Array, Expression.Constant(null, binder.Array.Type));
+                Expression setNull = Expression.Assign(reader.Array, Expression.Constant(null, reader.Array.Type));
 
                 getOrAdd = Expression.IfThenElse(isNull, setNull, getOrAdd);
             }
@@ -297,30 +313,27 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             return getOrAdd;
         }
 
-        private Expression GetKeyBlockExpression(KeyBinder primaryKey, IEnumerable<KeyBinder> joinKeys, Expression body)
+        private Expression GetKeyBlockExpression(KeyReader primaryKey, IEnumerable<KeyReader> joinKeys, Expression body)
         {
             List<Expression> expressions = new List<Expression>();
             List<ParameterExpression> variables = new List<ParameterExpression>();
 
-            IList<ValueBinder> allValues = joinKeys.SelectMany(k => k.Values).ToList();
-
-            foreach (ValueBinder valueBinder in allValues.Distinct())
+            foreach (DataReader reader in joinKeys.SelectMany(k => k.Values).Distinct())
             {
-                expressions.Add(this.GetKeyInitValueExpression(valueBinder));
+                expressions.Add(this.GetKeyInitValueExpression(reader));
 
-                if (valueBinder.CanBeDbNull)
-                    variables.Add(valueBinder.IsDbNull);
+                if (reader.CanBeDbNull)
+                    variables.Add(reader.IsDbNull);
 
-                variables.Add(valueBinder.Variable);
-                
+                variables.Add(reader.Variable);
             }
 
-            foreach (KeyBinder joinBinder in joinKeys)
+            foreach (KeyReader reader in joinKeys)
             {
-                expressions.Add(this.GetKeyInitArrayExpression(joinBinder));
+                expressions.Add(this.GetKeyInitArrayExpression(reader));
 
-                variables.Add(joinBinder.Variable);
-                variables.Add(joinBinder.Array);                
+                variables.Add(reader.List);
+                variables.Add(reader.Array);                
             }
 
             expressions.Add(body);
@@ -340,118 +353,90 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
         #region " Binders "
 
-        private Expression GetBinderExpression(NodeBinder binder) => binder switch
+        private Expression GetBinderExpression(BaseReader reader) => reader switch
         {
-            ColumnBinder b => this.GetBinderExpression(b, b.IsDbNull, b.Variable, b.CanBeDbNull),
-            AggregateBinder b => this.GetBinderExpression(b, b.IsDbNull, b.Variable, b.CanBeDbNull),
-            NewBinder b => this.GetBinderExpression(b),
-            JoinBinder b => this.GetBinderExpression(b),
+            ColumnReader r => this.GetBinderExpression(r, r.IsDbNull, r.Variable, r.CanBeDbNull),
+            AggregateReader r => this.GetBinderExpression(r, r.IsDbNull, r.Variable, r.CanBeDbNull),
+            NewReader r => this.GetBinderExpression(r),
+            JoinReader r => this.GetBinderExpression(r),
             _ => throw new InvalidOperationException(),
         };
 
-        private Expression GetBinderExpression(JoinBinder binder)
+        private Expression GetBinderExpression(JoinReader reader)
         {
-            Expression arrayIndex = this.GetElasticIndexExpression(binder.Array, binder.ArrayIndex);
-            Expression hasArray = Expression.ReferenceNotEqual(binder.Array, Expression.Constant(null));
+            Expression arrayIsNull = Expression.ReferenceNotEqual(reader.JoinKey.Array, Expression.Constant(null));
+            Expression arrayIndex = this.GetElasticIndexExpression(reader.JoinKey.Array, reader.JoinIndex);
 
-            if (binder.Key.Metadata.List == null)
+            if (reader.List == null)
             {
-                Expression ifArray = Expression.Condition(hasArray, arrayIndex, Expression.Constant(null));
+                Expression ifArray = Expression.Condition(arrayIsNull, arrayIndex, Expression.Constant(null));
 
-                return Expression.Convert(ifArray, binder.Metadata.Type);
+                return Expression.Convert(ifArray, reader.Metadata.Type);
             }
             else
             {
-                Expression newExpression = binder.Metadata.Composition.Construct;
-                Expression assignNew = Expression.Assign(arrayIndex, newExpression);
-                Expression hasNoList = Expression.ReferenceEqual(arrayIndex, Expression.Constant(null));
-                Expression oldOrNewList = Expression.Condition(hasNoList, assignNew, arrayIndex);
-                Expression ifArray = Expression.Condition(hasArray, oldOrNewList, Expression.Constant(null));
+                Expression newList = this.GetBinderExpression(reader.List);
+                Expression assignList = Expression.Assign(arrayIndex, newList);
+                Expression indexIsNull = Expression.ReferenceEqual(arrayIndex, Expression.Constant(null));
+                Expression getOrAdd = Expression.Condition(arrayIsNull, assignList, arrayIndex);
+                Expression ifArray = Expression.Condition(arrayIsNull, getOrAdd, Expression.Constant(null));
 
-                return Expression.Convert(ifArray, binder.Metadata.Type);
+                return Expression.Convert(ifArray, reader.Metadata.Type);
             }
         }
 
-        private Expression GetBinderOrNullExpression(ColumnBinder binder, bool useTryCatch = true)
+        private Expression GetBinderExpression(DataReader reader, Expression isDbNull, Expression value, bool canBeDbNull, bool useTryCatch = true)
         {
-            if (!binder.CanBeDbNull)
-                return this.GetBinderExpression(binder, binder.IsDbNull, binder.Variable, binder.CanBeDbNull);
-
-            Expression isDbNull = binder.IsDbNull ?? this.GetIsDbNullExpression(binder);
-            Expression nullValue = Expression.Constant(null);
-            Expression value = binder.Variable;
+            isDbNull ??= this.GetIsDbNullExpression(reader);
 
             if (value == null)
             {
-                value = this.GetValueExpression(binder);
-                value = this.GetConvertExpression(value, binder);
+                value = this.GetValueExpression(reader);
+                value = this.GetConvertExpression(reader, value);
 
                 if (useTryCatch)
-                    value = this.GetTryCatchExpression(binder, value);
+                    value = this.GetTryCatchExpression(reader, value);
             }
-
-            return Expression.Condition(isDbNull, nullValue, Expression.Convert(value, typeof(object)));
-        }
-
-        private Expression GetBinderExpression(ValueBinder binder, Expression isDbNull, Expression value, bool canBeDbNull, bool useTryCatch = true)
-        {
-            isDbNull ??= this.GetIsDbNullExpression(binder);
-
-            if (value == null)
-            {
-                value = this.GetValueExpression(binder);
-                value = this.GetConvertExpression(value, binder);
-                value = this.GetTryCatchExpression(binder, value);
-            }
-
-            //if (!this.IsAssignableFrom(binder.Metadata.Type, value.Type))
-            //    value = Expression.Convert(value, binder.Metadata.Type);
 
             if (canBeDbNull)
-                value = Expression.Condition(isDbNull, Expression.Default(binder.Metadata.Type), value);
+                value = Expression.Condition(isDbNull, Expression.Default(reader.Metadata.Type), value);
 
             return value;
         }
 
-        private Expression GetBinderExpression(NewBinder binder)
+        private Expression GetBinderExpression(NewReader reader)
         {
-            if (binder.IsDynamic)
-                return this.GetDynamicExpression(binder);
-
-            NewExpression newExpression = binder.Metadata.Composition.Construct;
-            Expression memberInit = Expression.MemberInit(newExpression, binder.Properties.Select(b =>
+            NewExpression newExpression = reader.Metadata.Composition.Construct;
+            Expression memberInit = Expression.MemberInit(newExpression, reader.Properties.Select(r =>
             {
-                if (!b.Metadata.HasFlag(BindingMetadataFlags.Writable))
-                    throw BindingException.IsReadOnly(b.Metadata);
+                if (!r.Metadata.HasFlag(BindingMetadataFlags.Writable))
+                    throw BindingException.IsReadOnly(r.Metadata);
 
-                Expression value = this.GetBinderExpression(b);
+                Expression value = this.GetBinderExpression(r);
 
-                return Expression.Bind(b.Metadata.Member, value);
+                return Expression.Bind(r.Metadata.Member, value);
             }));
 
-            return this.GetKeyBlockExpression(binder.PrimaryKey, binder.JoinKeys, memberInit);
+            return this.GetKeyBlockExpression(reader.PrimaryKey, reader.JoinKeys, memberInit);
         }
 
-        #endregion
-
-        #region " Dynamic "
-        private Expression GetDynamicExpression(NewBinder binder)
+        private Expression GetBinderExpression(DynamicReader reader)
         {
-            ParameterExpression variable = Expression.Variable(binder.Metadata.Composition.Construct.Type);
-            NewExpression newExpression = binder.Metadata.Composition.Construct;
+            ParameterExpression variable = Expression.Variable(reader.Metadata.Composition.Construct.Type);
+            NewExpression newExpression = reader.Metadata.Composition.Construct;
 
             List<Expression> body = new List<Expression>()
             {
                 Expression.Assign(variable, newExpression),
             };
 
-            foreach (NodeBinder propertyBinder in binder.Properties)
+            foreach (BaseReader propertyReader in reader.Properties)
             {
-                string propertyName = propertyBinder.Identity.Schema.Notation.Member(propertyBinder.Identity.Name);
+                string propertyName = propertyReader.Identity.Schema.Notation.Member(propertyReader.Identity.Name);
 
-                Expression propertyValue = this.GetBinderExpression(propertyBinder);
+                Expression propertyValue = this.GetBinderExpression(propertyReader);
                 Expression objectValue = propertyValue.Type.IsValueType ? Expression.Convert(propertyValue, typeof(object)) : propertyValue;
-                Expression addDynamic = Expression.Call(variable, binder.Metadata.Composition.AddDynamic, Expression.Constant(propertyName), objectValue);
+                Expression addDynamic = Expression.Call(variable, reader.Metadata.Composition.AddDynamic, Expression.Constant(propertyName), objectValue);
 
                 body.Add(addDynamic);
             }
@@ -465,50 +450,59 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
         #region  " IsDbNull "
 
-        private Expression GetIsDbNullExpression(ValueBinder binder) => binder switch
+        private Expression GetIsDbNullExpression(DataReader reader) => reader switch
         {
-            ColumnBinder b => this.GetIsDbNullExpression(b),
-            AggregateBinder b => this.GetIsDbNullExpression(b),
+            ColumnReader r => this.GetIsDbNullExpression(r),
+            AggregateReader r => this.GetIsDbNullExpression(r),
             _ => throw new InvalidOperationException(),
         };
 
-        private Expression GetIsDbNullExpression(ColumnBinder reader)
+        private Expression GetIsDbNullExpression(ColumnReader reader)
         {
             MethodInfo isNullMethod = typeof(IDataRecord).GetMethod(nameof(IDataRecord.IsDBNull), new[] { typeof(int) });
 
             return Expression.Call(Arguments.DataReader, isNullMethod, Expression.Constant(reader.Column.Index));
         }
 
-        private Expression GetIsDbNullExpression(AggregateBinder binder)
+        private Expression GetIsDbNullExpression(AggregateReader reader)
         {
-            Expression array = binder.UseSlot ? Arguments.Slots : Arguments.Aggregates;
-            Expression arrayIndex = this.GetElasticIndexExpression(array, binder.BufferIndex);
+            Expression bufferIndex;
 
-            return Expression.ReferenceEqual(arrayIndex, Expression.Constant(null));
+            if (reader.Attribute.AggregateIndex != null)
+                bufferIndex = this.GetElasticIndexExpression(Arguments.Aggregates, reader.Attribute.AggregateIndex.Value);
+            else if (reader.Attribute.ListIndex != null)
+                bufferIndex = this.GetElasticIndexExpression(Arguments.Lists, reader.Attribute.ListIndex.Value);
+            else
+                throw new InvalidOperationException();
+
+            return Expression.ReferenceEqual(bufferIndex, Expression.Constant(null));
         }
 
         #endregion
 
         #region " Values "
-        private Expression GetValueExpression(ValueBinder binder) => binder switch
+        private Expression GetValueExpression(BaseReader reader) => reader switch
         {
-            ColumnBinder b => this.GetValueExpression(b),
-            AggregateBinder b => this.GetValueExpression(b),
+            ColumnReader r => this.GetValueExpression(r),
+            AggregateReader r => this.GetValueExpression(r),
             _ => throw new InvalidOperationException(),
         };
 
-        private Expression GetValueExpression(AggregateBinder binder)
+        private Expression GetValueExpression(AggregateReader reader)
         {
-            Expression array = binder.UseSlot ? Arguments.Slots : Arguments.Aggregates;
-
-            return this.GetElasticIndexExpression(array, binder.BufferIndex);
+            if (reader.Attribute.AggregateIndex != null)
+                return this.GetElasticIndexExpression(Arguments.Aggregates, reader.Attribute.AggregateIndex.Value);
+            else if (reader.Attribute.ListIndex != null)
+                return this.GetElasticIndexExpression(Arguments.Lists, reader.Attribute.ListIndex.Value);
+            else
+                throw new InvalidOperationException();
         }   
 
-        private Expression GetValueExpression(ColumnBinder binder)
+        private Expression GetValueExpression(ColumnReader reader)
         {
-            MethodInfo readMethod = this.GetValueReaderMethod(binder);
+            MethodInfo readMethod = this.GetValueReaderMethod(reader);
 
-            Expression index = Expression.Constant(binder.Column.Index);
+            Expression index = Expression.Constant(reader.Column.Index);
             Expression dataReader = Arguments.DataReader;
 
             if (readMethod.DeclaringType != typeof(IDataReader) && readMethod.DeclaringType != typeof(IDataRecord))
@@ -517,15 +511,15 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             return Expression.Call(dataReader, readMethod, index);
         }
 
-        private MethodInfo GetValueReaderMethod(ColumnBinder binder)
+        private MethodInfo GetValueReaderMethod(ColumnReader reader)
         {
             BindingColumnInfo bindingInfo = new BindingColumnInfo()
             {
-                Metadata = binder.Metadata,
-                Column = binder.Column,
+                Metadata = reader.Metadata,
+                Column = reader.Column,
             };
 
-            MethodInfo readMethod = binder.Metadata.Value?.Read?.Invoke(bindingInfo);
+            MethodInfo readMethod = reader.Metadata.Value?.Read?.Invoke(bindingInfo);
 
             if (readMethod == null)
                 readMethod = typeof(IDataRecord).GetMethod(nameof(IDataRecord.GetValue), new Type[] { typeof(int) });
@@ -536,29 +530,19 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
         #endregion
 
         #region " Convert "
-        private Expression GetConvertExpression(Expression value, ValueBinder binder) => binder switch
+        private Expression GetConvertExpression(BaseReader reader, Expression value) => reader switch
         {
-            AggregateBinder b => this.GetConvertExpression(value, b),
-            ColumnBinder b => this.GetConvertExpression(value, b),
+            AggregateReader r => this.GetConvertExpression(r, value),
+            ColumnReader r => this.GetConvertExpression(r, value),
             _ => throw new InvalidOperationException(),
         };
 
-        private Expression GetConvertExpression(Expression value, AggregateBinder binder)
+        private Expression GetConvertExpression(AggregateReader reader, Expression value)
+            => this.GetConvertOrExpression(value, reader.Metadata.Type);
+
+        private Expression GetConvertExpression(ColumnReader reader, Expression value)
         {
-            Type targetType = binder.KeyType ?? binder.Metadata.Type;
-
-            if (!this.IsAssignableFrom(targetType, value.Type))
-                Expression.Convert(value, targetType);
-
-            if (UseTryCatchExpressions)
-                value = this.GetTryCatchExpression(binder, value);
-
-            return value;
-        }
-
-        private Expression GetConvertExpression(Expression value, ColumnBinder binder)
-        {
-            Type targetType = binder.KeyType ?? binder.Metadata.Type;
+            Type targetType = reader.KeyType ?? reader.Metadata.Type;
             ParameterExpression variable = Expression.Variable(value.Type);
 
             BindingValueInfo valueInfo = new BindingValueInfo()
@@ -567,20 +551,20 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 TargetType = targetType,
                 CanBeNull = false,
                 CanBeDbNull = false,
-                Metadata = binder.Metadata,
+                Metadata = reader.Metadata,
                 Value = variable,
-                Helper = binder.Helper,
+                Helper = reader.Helper,
             };
 
             Expression convertedValue;
 
             try
             {
-                convertedValue = binder.Metadata.Value?.Convert?.Invoke(valueInfo);
+                convertedValue = reader.Metadata.Value?.Convert?.Invoke(valueInfo);
             }
             catch (Exception ex)
             {
-                throw BindingException.InvalidCast(binder.Metadata, ex);
+                throw BindingException.InvalidCast(reader.Metadata, ex);
             }
 
             if (convertedValue == null || object.ReferenceEquals(convertedValue, variable))
@@ -593,14 +577,32 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                     return Expression.ConvertChecked(value, ue.Type);
             }
 
-            Expression assignVar = Expression.Assign(variable, value);
+            Expression assignValue = Expression.Assign(variable, value);
 
-            return Expression.Block(new[] { variable }, assignVar, convertedValue);
+            return Expression.Block(new[] { variable }, assignValue, convertedValue);
         }
 
         #endregion
 
         #region " Helpers "
+
+        private Expression GetConvertOrExpression(Expression expression, Type type)
+        {
+            if (!expression.Type.IsValueType && type.IsValueType)
+                return Expression.Convert(expression, type);
+
+            return expression;
+        }
+
+        private Expression GetBlockOrExpression(IList<Expression> expressions, IList<ParameterExpression> variables = null)
+        {
+            if (expressions.Count == 1 && (variables == null || !variables.Any()))
+                return expressions[0];
+            else if (variables == null)
+                return Expression.Block(expressions);
+            else
+                return Expression.Block(variables.NotNull(), expressions);
+        }
 
         private TDelegate Compile<TDelegate>(IList<Expression> body, IList<ParameterExpression> arguments)
         {
@@ -608,6 +610,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
             return Expression.Lambda<TDelegate>(block, arguments).Compile();
         }
+
         private TDelegate Compile<TDelegate>(Expression block, params ParameterExpression[] arguments)
             => this.Compile<TDelegate>(new[] { block }, arguments);
 
@@ -615,8 +618,8 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
         {
             LabelTarget label = Expression.Label();
 
-            Expression read = Expression.Call(Arguments.DataReader, typeof(IDataReader).GetMethod(nameof(IDataReader.Read)));
-            Expression ifRead = Expression.IfThenElse(read, this.GetBlockOrExpression(body), Expression.Break(label));
+            Expression callRead = Expression.Call(Arguments.DataReader, typeof(IDataReader).GetMethod(nameof(IDataReader.Read)));
+            Expression ifRead = Expression.IfThenElse(callRead, this.GetBlockOrExpression(body), Expression.Break(label));
 
             return Expression.Loop(ifRead, label);
         }
@@ -635,24 +638,17 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             return Expression.Call(dictionary, tryGetMethod, key, outVariable);
         }
 
-        private Expression GetBlockOrExpression(IList<Expression> expressions, IList<ParameterExpression> variables = null)
+        private Expression GetNewCompositeKeyExpression(KeyReader key)
         {
-            if (expressions.Count == 1 && (variables == null || !variables.Any()))
-                return expressions[0];
-            else if (variables == null)
-                return Expression.Block(expressions);
-            else
-                return Expression.Block(variables.NotNull(), expressions);
-        }
+            if (key.Values.Count == 1)
+                return key.Values[0].Variable;
 
-        private Expression GetNewCompositeKeyExpression(KeyBinder key)
-        {
             ConstructorInfo ctor = key.KeyType.GetConstructors()[0];
 
             return Expression.New(ctor, key.Values.Select(v => v.Variable));
         }
 
-        private ElasticArray GetHelperArray(IEnumerable<HelperWriter> writers)
+        private ElasticArray GetHelperBuffer(IEnumerable<HelperWriter> writers)
         {
             ElasticArray array = new ElasticArray();
 
@@ -662,16 +658,16 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             return array;
         }
 
-        private Expression GetTryCatchExpression(NodeBinder binder, Expression expression)
+        private Expression GetTryCatchExpression(BaseReader reader, Expression expression)
         {
-            if (this.IsRunningNetFramework() && binder.Metadata.Type.IsValueType)
+            if (this.IsRunningNetFramework() && expression.Type.IsValueType)
                 return expression;
 
             ParameterExpression ex = Expression.Variable(typeof(Exception));
 
             MethodInfo constructor = typeof(QueryCompiler).GetStaticMethod(nameof(QueryCompiler.GetInvalidCastException), typeof(ISchema), typeof(string), typeof(Exception));
 
-            Expression newException = Expression.Call(constructor, Arguments.Schema, Expression.Constant(binder.Identity.Name), ex);
+            Expression newException = Expression.Call(constructor, Arguments.Schema, Expression.Constant(reader.Identity.Name), ex);
             CatchBlock catchBlock = Expression.Catch(ex, Expression.Throw(newException, expression.Type));
 
             return Expression.TryCatch(expression, catchBlock);
@@ -731,7 +727,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
         private static class Arguments
         {
             public static ParameterExpression DataReader { get; } = Expression.Parameter(typeof(IDataReader), "dataReader");
-            public static ParameterExpression Slots { get; } = Expression.Parameter(typeof(ElasticArray), "slots");
+            public static ParameterExpression Lists { get; } = Expression.Parameter(typeof(ElasticArray), "lists");
             public static ParameterExpression Aggregates { get; } = Expression.Parameter(typeof(ElasticArray), "aggregates");
             public static ParameterExpression Helpers { get; } = Expression.Parameter(typeof(ElasticArray), "helpers");
             public static ParameterExpression Schema { get; } = Expression.Parameter(typeof(ISchema), "schema");

@@ -12,32 +12,34 @@ namespace Jerrycurl.Data.Queries
 {
     public sealed class QueryReader
     {
-        public ISchemaStore Schemas { get; }
+        public ISchemaStore Store { get; }
 
         private readonly IDataReader syncReader;
         private readonly DbDataReader asyncReader;
 
-        public QueryReader(ISchemaStore schemas, IDataReader dataReader)
+        public QueryReader(ISchemaStore store, IDataReader dataReader)
         {
-            this.Schemas = schemas ?? throw new ArgumentNullException(nameof(schemas));
+            this.Store = store ?? throw new ArgumentNullException(nameof(store));
             this.syncReader = dataReader ?? throw new ArgumentNullException(nameof(dataReader));
             this.asyncReader = dataReader as DbDataReader;
         }
 
-        public async IAsyncEnumerable<TItem> ReadAsync<TItem>([EnumeratorCancellation]CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<T> ReadAsync<T>([EnumeratorCancellation]CancellationToken cancellationToken = default)
         {
             if (this.asyncReader == null)
                 throw new QueryException("Async not available. To use async operations, instantiate with a DbDataReader instance.");
 
-            EnumerateReader<TItem> reader = QueryCache.GetEnumerateReader<TItem>(this.Schemas, this.asyncReader);
+            ISchema schema = this.Store.GetSchema(typeof(IList<T>));
+            EnumerateFactory<T> reader = QueryCache.GetEnumerateFactory<T>(schema, this.asyncReader);
 
             while (await this.asyncReader.ReadAsync(cancellationToken).ConfigureAwait(false))
                 yield return reader(this.asyncReader);
         }
 
-        public IEnumerable<TItem> Read<TItem>()
+        public IEnumerable<T> Read<T>()
         {
-            EnumerateReader<TItem> reader = QueryCache.GetEnumerateReader<TItem>(this.Schemas, this.syncReader);
+            ISchema schema = this.Store.GetSchema(typeof(IList<T>));
+            EnumerateFactory<T> reader = QueryCache.GetEnumerateFactory<T>(schema, this.syncReader);
 
             while (this.syncReader.Read())
                 yield return reader(this.syncReader);

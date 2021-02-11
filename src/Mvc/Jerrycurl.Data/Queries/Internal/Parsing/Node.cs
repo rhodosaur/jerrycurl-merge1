@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Jerrycurl.Data.Metadata;
+using Jerrycurl.Data.Queries.Internal.Caching;
 using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Data.Queries.Internal.Parsing
@@ -30,6 +31,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         public MetadataIdentity Identity { get; }
         public IBindingMetadata Metadata { get; }
+        public DataAttribute Data { get; set; }
         public ISchema Schema => this.Metadata?.Identity.Schema ?? this.Identity?.Schema;
         public IList<Node> Properties { get; } = new List<Node>();
         public bool IsDynamic { get; set; }

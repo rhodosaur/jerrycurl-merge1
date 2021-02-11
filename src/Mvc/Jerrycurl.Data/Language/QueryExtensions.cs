@@ -150,7 +150,7 @@ namespace Jerrycurl.Data.Language
 
             using DbDataReader dataReader = relation.GetDataReader(targetHeader);
 
-            await buffer.InsertAsync(dataReader);
+            await buffer.InsertAsync(dataReader, default);
 
             return buffer;
         }
@@ -165,7 +165,7 @@ namespace Jerrycurl.Data.Language
 
             using DbDataReader dataReader = relation.GetDataReader();
 
-            await buffer.InsertAsync(dataReader);
+            await buffer.InsertAsync(dataReader, default);
 
             return buffer;
         }

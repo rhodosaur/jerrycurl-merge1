@@ -1,19 +1,19 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
+using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Queries.Internal.Parsing;
 
-namespace Jerrycurl.Data.Queries.Internal.IO
+namespace Jerrycurl.Data.Queries.Internal.IO.Readers
 {
-    internal class ValueBinder : NodeBinder
+    internal abstract class DataReader : BaseReader
     {
-        public ValueBinder(Node node)
+        public DataReader(Node node)
             : base(node)
         {
 
         }
+
         public bool CanBeDbNull { get; set; }
         public ParameterExpression IsDbNull { get; set; }
         public ParameterExpression Variable { get; set; }
-        public Type KeyType { get; set; }
     }
 }

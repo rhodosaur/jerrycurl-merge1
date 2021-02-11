@@ -12,13 +12,13 @@ namespace Jerrycurl.Data.Queries.Internal.Caching
     {
         public ISchema Schema { get; }
         public QueryType Type { get; }
-        public IReadOnlyList<T> Items { get; }
+        public IReadOnlyList<T> Header { get; }
 
-        public QueryCacheKey(ISchema schema, QueryType type, IEnumerable<T> items)
+        public QueryCacheKey(ISchema schema, QueryType type, IReadOnlyList<T> header)
         {
             this.Schema = schema ?? throw new ArgumentNullException(nameof(schema));
             this.Type = type;
-            this.Items = items?.ToList() ?? throw new ArgumentNullException(nameof(items));
+            this.Header = header ?? throw new ArgumentNullException(nameof(header));
         }
 
         public bool Equals(QueryCacheKey<T> other)
@@ -27,7 +27,7 @@ namespace Jerrycurl.Data.Queries.Internal.Caching
 
             eq.Add(this.Schema, other?.Schema);
             eq.Add(this.Type, other?.Type);
-            eq.AddRange(this.Items, other?.Items);
+            eq.AddRange(this.Header, other?.Header);
 
             return eq.ToEquals();
         }
@@ -37,7 +37,7 @@ namespace Jerrycurl.Data.Queries.Internal.Caching
             HashCode hashCode = new HashCode();
 
             hashCode.Add(this.Schema);
-            hashCode.AddRange(this.Items);
+            hashCode.AddRange(this.Header);
 
             return hashCode.ToHashCode();
         }

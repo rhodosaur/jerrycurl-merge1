@@ -8,26 +8,37 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 {
     internal static class NodeParser
     {
-        public static NodeTree Parse(ISchema schema, IEnumerable<IValueName> valueNames)
+        public static NodeTree Parse(ISchema schema, IEnumerable<DataAttribute> header)
         {
-            NodeTree tree = new NodeTree();
+            NodeTree tree = new NodeTree(schema);
 
-            foreach (IValueName name in valueNames)
-                AddNode(tree, new MetadataIdentity(schema, name.Name));
+            foreach (DataAttribute attribute in header)
+                AddDataNode(tree, attribute);
 
             return tree;
         }
 
-        private static void AddNode(NodeTree tree, MetadataIdentity identity)
+        private static void AddDataNode(NodeTree tree, DataAttribute attribute)
         {
+            MetadataIdentity identity = new MetadataIdentity(tree.Schema, attribute.Name);
             IBindingMetadata metadata = identity.Lookup<IBindingMetadata>() ?? FindDynamicMetadata(identity);
 
             if (metadata != null)
             {
+                Node node;
+
                 if (metadata.HasFlag(BindingMetadataFlags.Dynamic))
-                    AddDynamicNode(tree, identity, metadata);
+                    node = AddDynamicNode(tree, identity, metadata);
                 else
-                    AddStaticNode(tree, metadata);
+                    node = AddStaticNode(tree, metadata);
+
+                if (node != null)
+                {
+                    node.Data = attribute;
+
+                    tree.Data.Add(node);
+                }
+                    
             }
         }
 
