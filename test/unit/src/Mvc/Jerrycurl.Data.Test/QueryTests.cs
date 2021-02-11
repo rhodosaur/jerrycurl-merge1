@@ -51,44 +51,6 @@ namespace Jerrycurl.Data.Test
             result2.Sub.Value.ShouldBe(2);
         }
 
-        public async Task Test_Binding_OfResultSetWithoutColumns()
-        {
-            Query query = new Query()
-            {
-                QueryText = @"CREATE TABLE IF NOT EXISTS Temp001 ( Id integer );
-                              DROP TABLE Temp001;",
-            };
-
-            IList<BigModel> result1 = DatabaseHelper.Default.Query<BigModel>(query);
-            IList<BigModel> result2 = (await DatabaseHelper.Default.QueryAsync<BigModel>(query));
-            IList<BigModel> result3 = DatabaseHelper.Default.Enumerate<BigModel>(query).ToList();
-
-            result1.ShouldBeEmpty();
-            result2.ShouldBeEmpty();
-            result3.ShouldBeEmpty();
-        }
-
-        public async Task Test_Binding_OfResultSetWithoutMatchingColumns()
-        {
-            SqliteTable table = new SqliteTable("X")
-            {
-                new object[] { 1 },
-                new object[] { 2 }
-            };
-
-            BigAggregate result1 = DatabaseHelper.Default.Aggregate<BigAggregate>(table);
-            BigAggregate result2 = await DatabaseHelper.Default.AggregateAsync<BigAggregate>(table);
-            IList<BigModel> result3 = DatabaseHelper.Default.Query<BigModel>(table);
-            IList<BigModel> result4 = await DatabaseHelper.Default.QueryAsync<BigModel>(table);
-            IList<BigModel> result5 = DatabaseHelper.Default.Enumerate<BigModel>(table).ToList();
-
-            result1.ShouldNotBeNull();
-            result2.ShouldNotBeNull();
-            result3.ShouldBeEmpty();
-            result4.ShouldBeEmpty();
-            result5.ShouldBe(new[] { (BigModel)null, null });
-        }
-
         public async Task Test_Binding_OfValuesFromNullableParameters()
         {
             Query query = new Query()
@@ -162,37 +124,6 @@ namespace Jerrycurl.Data.Test
 
             verifyResult(result1);
             verifyResult(result2);
-        }
-
-
-        public async Task Test_Binding_OfSimpleProperties()
-        {
-            SqliteTable table1 = new SqliteTable("Item.Value", "Item.Value2")
-            {
-                new object[] { 1, "String 1" },
-                new object[] { 2, "String 2" },
-            };
-
-            IList<BigModel> result1 = DatabaseHelper.Default.Query<BigModel>(table1);
-            IList<BigModel> result2 = await DatabaseHelper.Default.QueryAsync<BigModel>(table1);
-            IList<BigModel> result3 = DatabaseHelper.Default.Enumerate<BigModel>(table1).ToList();
-
-            static void verifyResult(IList<BigModel> result)
-            {
-                result.ShouldNotBeNull();
-
-                result.Count.ShouldBe(2);
-
-                result[0].Value.ShouldBe(1);
-                result[0].Value2.ShouldBe("String 1");
-
-                result[1].Value.ShouldBe(2);
-                result[1].Value2.ShouldBe("String 2");
-            }
-
-            verifyResult(result1);
-            verifyResult(result2);
-            verifyResult(result3);
         }
 
         public async Task Test_Binding_OfScalarNullIntResult()
@@ -353,94 +284,5 @@ namespace Jerrycurl.Data.Test
             result1.NotUsedMany.ShouldBeNull();
             result2.NotUsedMany.ShouldBeNull();
         }
-
-        public async Task Test_Binding_OfResultsWithoutKey()
-        {
-            SqliteTable table = new SqliteTable("Item.Value")
-            {
-                new object[] { 1 },
-                new object[] { null },
-            };
-
-            IList<BigModel> result1 = DatabaseHelper.Default.Query<BigModel>(table);
-            IList<BigModel> result2 = (await DatabaseHelper.Default.QueryAsync<BigModel>(table));
-            IList<BigModel> result3 = DatabaseHelper.Default.Enumerate<BigModel>(table).ToList();
-
-            result1.Count.ShouldBe(2);
-            result2.Count.ShouldBe(2);
-            result3.Count.ShouldBe(2);
-
-            result1[0].ShouldNotBeNull();
-            result1[1].ShouldNotBeNull();
-            result2[0].ShouldNotBeNull();
-            result2[1].ShouldNotBeNull();
-            result3[0].ShouldNotBeNull();
-            result3[1].ShouldNotBeNull();
-        }
-
-        public async Task Test_Binding_OfResultsWithNonPrimaryKey()
-        {
-            SqliteTable table = new SqliteTable("Item.NonPrimaryKey", "Item.Value")
-            {
-                new object[] { null, 1 },
-                new object[] { 10, 1 },
-            };
-
-            IList<BigModel> result1 = DatabaseHelper.Default.Query<BigModel>(table);
-            IList<BigModel> result2 = (await DatabaseHelper.Default.QueryAsync<BigModel>(table));
-            IList<BigModel> result3 = DatabaseHelper.Default.Enumerate<BigModel>(table).ToList();
-
-            result1.Count.ShouldBe(2);
-            result2.Count.ShouldBe(2);
-            result3.Count.ShouldBe(2);
-
-            result1[0].ShouldNotBeNull();
-            result1[1].ShouldNotBeNull();
-            result2[0].ShouldNotBeNull();
-            result2[1].ShouldNotBeNull();
-            result3[0].ShouldNotBeNull();
-            result3[1].ShouldNotBeNull();
-        }
-
-        public async Task Test_Binding_OfResultsWithPrimaryKey()
-        {
-            SqliteTable table = new SqliteTable("Item.BigKey", "Item.Value")
-            {
-                new object[] { null, 1 },
-                new object[] { 10, 1 },
-            };
-
-            IList<BigModel> result1 = DatabaseHelper.Default.Query<BigModel>(table);
-            IList<BigModel> result2 = (await DatabaseHelper.Default.QueryAsync<BigModel>(table));
-            IList<BigModel> result3 = DatabaseHelper.Default.Enumerate<BigModel>(table).ToList();
-
-            result1.Count.ShouldBe(1);
-            result2.Count.ShouldBe(1);
-            result3.Count.ShouldBe(2);
-
-            result1[0].ShouldNotBeNull();
-            result2[0].ShouldNotBeNull();
-            result3[0].ShouldBeNull();
-            result3[1].ShouldNotBeNull();
-        }
-
-
-
-        public void Test_Binding_OfEmptyParameters()
-        {
-            Query query = new Query()
-            {
-                QueryText = "SELECT CASE WHEN @P1 IS NULL THEN 12 ELSE 0 END AS Item",
-                Parameters = new[]
-                {
-                    new Parameter("@P1"),
-                }
-            };
-
-            IList<int> result = DatabaseHelper.Default.Query<int>(query);
-
-            result.ShouldBe(new[] { 12 });
-        }
-
     }
 }

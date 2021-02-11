@@ -21,6 +21,18 @@ namespace Jerrycurl.Data.Commands
         private readonly Dictionary<string, FieldBuffer> columnHeader = new Dictionary<string, FieldBuffer>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, FieldBuffer> paramHeader = new Dictionary<string, FieldBuffer>(StringComparer.OrdinalIgnoreCase);
 
+        public ISchemaStore Store { get; }
+
+        public CommandBuffer()
+        {
+
+        }
+
+        public CommandBuffer(ISchemaStore store)
+        {
+            this.Store = store;
+        }
+
         public async Task UpdateAsync(DbDataReader dataReader, CancellationToken cancellationToken = default)
         {
             Action<IDataReader> updateAction = this.GetUpdateAction(dataReader);
@@ -85,7 +97,9 @@ namespace Jerrycurl.Data.Commands
                 adoParam.ParameterName = buffer.Parameter.Name;
                 buffer.Parameter.Parameter?.Build(adoParam);
 
-                if (buffer.Parameter.HasSource && buffer.Parameter.HasTarget)
+                if (buffer.Column != null)
+                    SetParameterDirection(adoParam, ParameterDirection.Input);
+                else if (buffer.Parameter.HasSource && buffer.Parameter.HasTarget)
                     SetParameterDirection(adoParam, ParameterDirection.InputOutput);
                 else if (buffer.Parameter.HasTarget)
                 {

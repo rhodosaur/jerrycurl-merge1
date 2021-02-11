@@ -31,7 +31,7 @@ namespace Jerrycurl.Data.Commands.Internal
                 nextSource = this.Buffer.GetSources(cascade.Binding.Source).FirstOrDefault();
 
                 if (nextSource == source)
-                    throw new InvalidOperationException("Cycle detected.");
+                    return null;
             }
 
             return nextSource;

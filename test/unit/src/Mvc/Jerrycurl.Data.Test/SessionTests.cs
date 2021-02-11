@@ -14,7 +14,7 @@ namespace Jerrycurl.Data.Test
 {
     public class SessionTests
     {
-        public async Task Test_ConnectionManagement_WithAsyncSession()
+        public async Task Test_Session_Connection_Async()
         {
             var connection = new SqliteConnection(DatabaseHelper.TestDbConnectionString);
 
@@ -37,7 +37,7 @@ namespace Jerrycurl.Data.Test
             connection.State.ShouldBe(ConnectionState.Closed);
         }
 
-        public void Test_ConnectionManagement_WithSyncSession()
+        public void Test_Session_Connection()
         {
             var connection = new SqliteConnection(DatabaseHelper.TestDbConnectionString);
 
@@ -60,7 +60,7 @@ namespace Jerrycurl.Data.Test
             connection.State.ShouldBe(ConnectionState.Closed);
         }
 
-        public void Test_ConnectionManagement_WithOpenConnection()
+        public void Test_Session_OpenConnection()
         {
             var connection = new SqliteConnection(DatabaseHelper.TestDbConnectionString);
 
@@ -85,7 +85,7 @@ namespace Jerrycurl.Data.Test
             });
         }
 
-        public async Task Test_ConnectionManagement_WithCommandHandler()
+        public async Task Test_CommandEngine_Connection()
         {
             var connection1 = new SqliteConnection(DatabaseHelper.TestDbConnectionString);
             var connection2 = new SqliteConnection(DatabaseHelper.TestDbConnectionString);
@@ -119,7 +119,7 @@ namespace Jerrycurl.Data.Test
         }
 
 
-        public async Task Test_ConnectionManagement_WithQueryEngine()
+        public async Task Test_QueryEngine_Connection()
         {
             var connection1 = new SqliteConnection(DatabaseHelper.TestDbConnectionString);
             var connection2 = new SqliteConnection(DatabaseHelper.TestDbConnectionString);

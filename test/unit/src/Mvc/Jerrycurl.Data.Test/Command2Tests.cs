@@ -10,18 +10,109 @@ using Jerrycurl.Test;
 using Jerrycurl.Data.Sessions;
 using Jerrycurl.Data.Test.Model;
 using Jerrycurl.Relations.Language;
+using System;
+using System.Data;
 
 namespace Jerrycurl.Data.Test
 {
     public class Command2Tests
     {
+        public void Test_Update_Missing()
+        {
+            var store = DatabaseHelper.Default.Schemas2;
+            var target = store.From<Blog>(null).Lookup("Id");
+            var buffer = new CommandBuffer(store);
+
+            buffer.Add(new ColumnBinding(target, "C0"));
+            buffer.Update(10, ("", "c0"));
+
+            Should.Throw<BindingException>(() => buffer.Commit());
+        }
+
+        public void Test_Update_CaseInsensitive()
+        {
+            var store = DatabaseHelper.Default.Schemas2;
+            var data = new Blog();
+            var target = store.From(data).Lookup("Id");
+            var buffer = new CommandBuffer(store);
+
+            buffer.Add(new ColumnBinding(target, "C0"));
+            buffer.Update(10, ("", "c0"));
+            buffer.Commit();
+
+            data.Id.ShouldBe(10);
+        }
+
+        public void Test_Update_Parameter_Propagation()
+        {
+            var store = DatabaseHelper.Default.Schemas2;
+            var data1 = new Blog();
+            var data2 = new Blog();
+            var target1 = store.From(data1).Lookup("Id");
+            var target2 = store.From(data2).Lookup("Id");
+            var buffer = new CommandBuffer(store);
+
+            buffer.Add(new ColumnBinding(target1, "C1"));
+            buffer.Add(new Parameter("P2", target2), target2);
+            buffer.Update(10, ("", "C1"));
+
+            var parameters1 = buffer.Prepare(() => new MockParameter());
+
+            parameters1[0].Value = 20;
+
+            buffer.Add(new Parameter("P1", target1));
+            buffer.Add(new Parameter("P2", target2));
+
+            var parameters2 = buffer.Prepare(() => new MockParameter());
+
+            parameters2.Count.ShouldBe(2);
+            parameters2[0].Value.ShouldBe(10);
+            parameters2[1].Value.ShouldBe(20);
+        }
+
+        public void Test_Update_Indexer()
+        {
+            var store = DatabaseHelper.Default.Schemas2;
+            var data1 = new List<int>() { 1, 2, 3 };
+            var data2 = new[] { 4, 5, 6 };
+            var target1 = store.From(data1).Select("Item").Body.Skip(1).First()[0];
+            var target2 = store.From(data2).Select("Item").Body.Skip(1).First()[0];
+            var buffer = new CommandBuffer(store);
+
+            buffer.Add(new ColumnBinding(target1, "C1"));
+            buffer.Add(new ColumnBinding(target2, "C2"));
+            buffer.Update(50, ("", "C1"));
+            buffer.Update(100, ("", "C2"));
+            buffer.Commit();
+
+            data1.ShouldBe(new[] { 1, 50, 3 });
+            data2.ShouldBe(new[] { 4, 100, 6 });
+        }
+
+        public void Test_Update_Priority()
+        {
+            var store = DatabaseHelper.Default.Schemas;
+            var data = new Blog();
+            var target = store.From(data).Lookup("Id");
+
+            var buffer = new CommandBuffer(store);
+
+            buffer.Add(new Parameter("P0", target), target);
+            buffer.Add(new ColumnBinding(target, "C0"));
+
+            var parameters = buffer.Prepare(() => new MockParameter());
+
+            parameters.Count.ShouldBe(1);
+            parameters[0].Direction.ShouldBe(ParameterDirection.Input);
+        }
+
         public void Test_Update_FromParameter()
         {
             var store = DatabaseHelper.Default.Schemas;
             var data = new Blog();
             var targets = store.From(data).Lookup("Id", "Title");
 
-            var buffer = new CommandBuffer();
+            var buffer = new CommandBuffer(store);
 
             buffer.Add(new Parameter("P0", targets[0]), targets[0]);
             buffer.Add(new ParameterBinding(targets[1], "P1"));
@@ -30,9 +121,6 @@ namespace Jerrycurl.Data.Test
 
             parameters[0].Value = 12;
             parameters[1].Value = "Blog!";
-
-            data.Id.ShouldBe(default);
-            data.Title.ShouldBe(default);
 
             buffer.Commit();
 
@@ -51,7 +139,7 @@ namespace Jerrycurl.Data.Test
                                     .Select("Id", "Title")
                                     .As("C1", "C2");
 
-            var buffer = new CommandBuffer();
+            var buffer = new CommandBuffer(store);
 
             buffer.Add(new ColumnBinding(targets[0], "C1"));
             buffer.Add(new ColumnBinding(targets[1], "C2"));
@@ -78,7 +166,7 @@ namespace Jerrycurl.Data.Test
                                     .Select("Id", "Title")
                                     .As("C1", "C2");
 
-            var buffer = new CommandBuffer();
+            var buffer = new CommandBuffer(store);
 
             buffer.Add(new ColumnBinding(targets[0], "C1"));
             buffer.Add(new ColumnBinding(targets[1], "C2"));
@@ -94,23 +182,32 @@ namespace Jerrycurl.Data.Test
             targetData.Title.ShouldBe("Blog!");
         }
 
-        public void Test_Update_FromCascadeCyclic_Throws()
+        public void Test_Update_FromCascade_Cyclic()
         {
             var store = DatabaseHelper.Default.Schemas;
-            var target1 = store.From(new Blog()).Lookup("Id");
-            var target2 = store.From(new Blog()).Lookup("Id");
-            var target3 = store.From(new Blog()).Lookup("Id");
+            var data1 = new Blog();
+            var data2 = new Blog();
+            var data3 = new Blog();
+            var target1 = store.Lookup(data1, "Id");
+            var target2 = store.Lookup(data2, "Id");
+            var target3 = store.Lookup(data3, "Id");
 
-            var buffer = new CommandBuffer();
+            var buffer = new CommandBuffer(store);
 
             buffer.Add(new CascadeBinding(target1, target2));
             buffer.Add(new CascadeBinding(target2, target3));
             buffer.Add(new CascadeBinding(target3, target1));
 
-            Should.Throw<BindingException>(() =>
-            {
-                buffer.Commit();
-            });
+            Should.NotThrow(() => buffer.Commit());
+
+            buffer.Add(new ColumnBinding(target2, "C0"));
+            buffer.Update(12, ("", "C0"));
+
+            Should.NotThrow(() => buffer.Commit());
+
+            data1.Id.ShouldBe(12);
+            data2.Id.ShouldBe(12);
+            data3.Id.ShouldBe(12);
         }
 
         public void Test_Update_FromCascadingParameter()
@@ -123,7 +220,7 @@ namespace Jerrycurl.Data.Test
             var target2 = store.From(data2).Lookup("Id");
             var target3 = store.From(data3).Lookup("Id");
 
-            var buffer = new CommandBuffer();
+            var buffer = new CommandBuffer(store);
 
             buffer.Add(new ParameterBinding(target1, "P0"));
             buffer.Add(new CascadeBinding(target2, target1));
