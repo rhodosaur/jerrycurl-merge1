@@ -12,6 +12,7 @@ namespace Jerrycurl.Relations.Metadata
     {
         public IRelationContractResolver DefaultResolver { get; set; } = new DefaultRelationContractResolver();
 
+        public void Initialize(IMetadataBuilderContext context) { }
         public IRelationMetadata GetMetadata(IMetadataBuilderContext context) => context.Relation;
 
         internal RelationMetadataBuilder()
@@ -22,7 +23,7 @@ namespace Jerrycurl.Relations.Metadata
         internal IRelationMetadata GetMetadata(Schema schema, MetadataIdentity identity)
         {
             MetadataIdentity parentIdentity = identity.Pop();
-            IRelationMetadata parent = schema.GetMetadata(parentIdentity);
+            IRelationMetadata parent = schema.GetCachedMetadata<IRelationMetadata>(parentIdentity.Name);
 
             if (parent == null)
                 return null;
@@ -32,7 +33,7 @@ namespace Jerrycurl.Relations.Metadata
             return parent.Properties.FirstOrDefault(m => m.Identity.Equals(identity));
         }
 
-        internal RelationMetadata GetModelMetadata(Schema schema, Type modelType)
+        internal void Initialize(Schema schema, Type modelType)
         {
             MetadataIdentity identity = new MetadataIdentity(schema);
             RelationMetadata metadata = new RelationMetadata(schema, identity)
@@ -52,8 +53,6 @@ namespace Jerrycurl.Relations.Metadata
                 metadata.Flags |= RelationMetadataFlags.List;
 
             schema.AddMetadata<IRelationMetadata>(metadata);
-
-            return metadata;
         }
 
         private IRelationContract GetContract(RelationMetadata metadata)

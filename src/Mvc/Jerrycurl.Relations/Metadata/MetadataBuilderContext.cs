@@ -5,16 +5,14 @@ namespace Jerrycurl.Relations.Metadata
     internal class MetadataBuilderContext : IMetadataBuilderContext
     {
         public Schema Schema { get; }
-        public RelationMetadata Relation { get; }
-
-        IRelationMetadata IMetadataBuilderContext.Relation => this.Relation;
+        public IRelationMetadata Relation { get; }
 
         public MetadataBuilderContext(Schema schema)
         {
             this.Schema = schema ?? throw new ArgumentNullException(nameof(schema));
         }
 
-        public MetadataBuilderContext(Schema schema, RelationMetadata relation)
+        public MetadataBuilderContext(Schema schema, IRelationMetadata relation)
         {
             this.Schema = schema ?? throw new ArgumentNullException(nameof(schema));
             this.Relation = relation ?? throw new ArgumentNullException(nameof(relation));
@@ -24,6 +22,6 @@ namespace Jerrycurl.Relations.Metadata
             => this.Schema.AddMetadata(metadata);
 
         public TMetadata GetMetadata<TMetadata>(string name) where TMetadata : IMetadata
-            => this.Schema.GetMetadataFromCache<TMetadata>(name);
+            => this.Schema.GetCachedMetadata<TMetadata>(name);
     }
 }

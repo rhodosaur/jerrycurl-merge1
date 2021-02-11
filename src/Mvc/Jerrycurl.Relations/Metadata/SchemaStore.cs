@@ -10,14 +10,12 @@ namespace Jerrycurl.Relations.Metadata
     public class SchemaStore : ISchemaStore
     {
         private readonly ConcurrentDictionary<Type, ISchema> entries = new ConcurrentDictionary<Type, ISchema>();
-        private readonly RelationMetadataBuilder relationBuilder = new RelationMetadataBuilder();
         private readonly List<IMetadataBuilder> builders = new List<IMetadataBuilder>();
 
         public DotNotation Notation { get; }
-        internal RelationMetadataBuilder RelationBuilder { get; }
-        internal List<IMetadataBuilder> MetadataBuilders { get; }
+        internal RelationMetadataBuilder RelationBuilder { get; } = new RelationMetadataBuilder();
 
-        IEnumerable<IMetadataBuilder> ISchemaStore.Builders => new IMetadataBuilder[] { this.relationBuilder }.Concat(this.builders);
+        public IEnumerable<IMetadataBuilder> Builders => new IMetadataBuilder[] { this.RelationBuilder }.Concat(this.builders);
 
         public SchemaStore()
             : this(new DotNotation())
@@ -52,11 +50,9 @@ namespace Jerrycurl.Relations.Metadata
 
         private Schema CreateSchema(Type modelType)
         {
-            Schema schema = new Schema(this);
+            Schema schema = new Schema(this, modelType);
 
-            IRelationMetadata model = this.relationBuilder.GetModelMetadata(schema, modelType);
-
-            schema.Initialize(model);
+            schema.Initialize();
 
             return schema;
         }

@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
+using Jerrycurl.Collections;
 using Jerrycurl.Reflection;
 
 namespace Jerrycurl.Relations.Metadata
@@ -10,19 +11,32 @@ namespace Jerrycurl.Relations.Metadata
     {
         private readonly ConcurrentDictionary<MetadataKey, object> entries = new ConcurrentDictionary<MetadataKey, object>();
         private readonly ConcurrentDictionary<Type, ReaderWriterLockSlim> locks = new ConcurrentDictionary<Type, ReaderWriterLockSlim>();
+        private readonly Type modelType;
 
         public IRelationMetadata Model { get; private set; }
         public SchemaStore Store { get; }
         public DotNotation Notation => this.Store.Notation;
 
-        public Schema(SchemaStore store)
+        ISchemaStore ISchema.Store => this.Store;
+
+        public Schema(SchemaStore store, Type modelType)
         {
             this.Store = store ?? throw new ArgumentNullException(nameof(store));
+            this.modelType = modelType ?? throw new ArgumentNullException(nameof(modelType));
         }
 
-        public void Initialize(IRelationMetadata model)
+        public void Initialize()
         {
-            this.Model = model;
+            this.Store.RelationBuilder.Initialize(this, this.modelType);
+
+            this.Model = this.GetCachedMetadata<IRelationMetadata>(this.Notation.Model());
+
+            foreach (IMetadataBuilder builder in this.Store.Builders)
+            {
+                MetadataBuilderContext context = new MetadataBuilderContext(this, this.Model);
+
+                builder.Initialize(context);
+            }
         }
 
         public void AddMetadata<TMetadata>(TMetadata metadata)
@@ -40,24 +54,20 @@ namespace Jerrycurl.Relations.Metadata
                 throw new InvalidOperationException("Metadata already added.");
         }
 
-        internal TMetadata GetMetadataFromCache<TMetadata>(string name)
+        internal TMetadata GetCachedMetadata<TMetadata>(string name)
             where TMetadata : IMetadata
         {
-            MetadataKey key = new MetadataKey(typeof(TMetadata), name, this.Notation.Comparer);
-
-            if (this.entries.TryGetValue(key, out object value))
-                return (TMetadata)value;
-
-            return default;
+            return (TMetadata)this.entries.GetValueOrDefault(this.CreateKey<TMetadata>(name));
         }
 
+        private MetadataKey CreateKey<TMetadata>(string name) => new MetadataKey(typeof(TMetadata), name, this.Notation.Comparer);
         private ReaderWriterLockSlim GetLock<TMetadata>() => this.locks.GetOrAdd(typeof(TMetadata), _ => new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion));
         private void RemoveLock<TMetadata>() => this.locks.TryRemove(typeof(TMetadata), out _);
 
         public TMetadata Lookup<TMetadata>(string name)
             where TMetadata : IMetadata
         {
-            MetadataKey key = new MetadataKey(typeof(TMetadata), name, this.Notation.Comparer);
+            MetadataKey key = this.CreateKey<TMetadata>(name);
             ReaderWriterLockSlim slim = this.GetLock<TMetadata>();
 
             try
@@ -83,12 +93,21 @@ namespace Jerrycurl.Relations.Metadata
             try
             {
                 MetadataIdentity identity = new MetadataIdentity(this, name);
-                IRelationMetadata relation = this.Store.RelationBuilder.GetMetadata(schema, identity);
+                IRelationMetadata relation = this.GetCachedMetadata<IRelationMetadata>(name);
 
-                foreach (IMetadataBuilder<TMetadata> metadataBuilder in this.Store.OfType<IMetadataBuilder<TMetadata>>())
+                if (relation == null)
                 {
-                    MetadataIdentity identity = new MetadataIdentity(this, name);
-                    MetadataBuilderContext context = new MetadataBuilderContext(identity, this);
+                    MetadataBuilderContext context = new MetadataBuilderContext(this);
+
+                    relation = this.Store.RelationBuilder.GetMetadata(context);
+
+                    if (relation == null)
+                        return default;
+                }
+
+                foreach (IMetadataBuilder<TMetadata> metadataBuilder in this.Store.Builders.OfType<IMetadataBuilder<TMetadata>>())
+                {
+                    MetadataBuilderContext context = new MetadataBuilderContext(this, relation);
 
                     TMetadata metadata = metadataBuilder.GetMetadata(context);
 
@@ -107,16 +126,16 @@ namespace Jerrycurl.Relations.Metadata
             }
         }
 
-        public override string ToString() => this.Model.GetSanitizedName();
+        public override string ToString() => this.Model.Type.GetSanitizedName();
 
+        public IRelationMetadata Lookup(string name) => this.Lookup<IRelationMetadata>();
         public TMetadata Lookup<TMetadata>() where TMetadata : IMetadata
             => this.Lookup<TMetadata>(this.Notation.Model());
 
+        public IRelationMetadata Require(string name) => this.Require<IRelationMetadata>(name);
         public TMetadata Require<TMetadata>(string name)
             where TMetadata : IMetadata
-        {
-            return this.Lookup<TMetadata>(name) ?? throw MetadataException.NotFound<TMetadata>(this, name);
-        }
+            => this.Lookup<TMetadata>(name) ?? throw MetadataException.NotFound<TMetadata>(this, name);
 
         public TMetadata Require<TMetadata>() where TMetadata : IMetadata
             => this.Require<TMetadata>(this.Notation.Model());
