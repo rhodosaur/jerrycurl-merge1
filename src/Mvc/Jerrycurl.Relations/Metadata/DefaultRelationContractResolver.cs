@@ -28,7 +28,7 @@ namespace Jerrycurl.Relations.Metadata.Contracts
                     WriteIndex = this.GetArrayIndexWriter(metadata),
                 };
             }
-            else if (this.IsManyType(metadata))
+            else if (this.IsOneType(metadata))
             {
                 return new RelationContract()
                 {
@@ -67,7 +67,7 @@ namespace Jerrycurl.Relations.Metadata.Contracts
             return true;
         }
 
-        private bool IsManyType(IRelationMetadata metadata)
+        private bool IsOneType(IRelationMetadata metadata)
         {
             if (!metadata.Type.IsGenericType)
                 return false;

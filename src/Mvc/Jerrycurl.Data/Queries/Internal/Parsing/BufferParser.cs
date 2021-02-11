@@ -75,7 +75,9 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         private void AddAggregates(BufferTree tree, NodeTree nodeTree, IEnumerable<ColumnName> valueNames)
         {
-            foreach (Node node in nodeTree.Nodes.Where(n => this.IsAggregateSet(n.Metadata)))
+            IEnumerable<Node> aggregateNodes = nodeTree.Nodes.Where(n => this.IsAggregateSet(n.Metadata));
+
+            foreach (Node node in aggregateNodes)
             {
                 ColumnBinder value = BindingHelper.FindValue(node, valueNames);
 
@@ -99,12 +101,12 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
         {
             IEnumerable<Node> itemNodes = nodeTree.Items.Where(n => !this.IsAggregateSet(n.Metadata));
 
-            foreach (Node itemNode in itemNodes)
+            foreach (Node node in itemNodes)
             {
                 ListWriter writer = new ListWriter()
                 {
-                    Metadata = itemNode.Metadata.Parent,
-                    Item = this.CreateBinder(tree, itemNode, valueNames),
+                    Metadata = node.Metadata.Parent,
+                    Item = this.CreateBinder(tree, node, valueNames),
                 };
 
                 if (writer.Item is NewBinder newBinder)
@@ -113,12 +115,12 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                     newBinder.PrimaryKey = null;
                 }
 
-                if (!this.IsPrincipalSet(itemNode.Metadata))
+                if (!this.IsPrincipalSet(node.Metadata))
                 {
                     this.AddChildKey(writer);
 
                     if (writer.JoinKey == null)
-                        throw new BindingException($"Cannot join {itemNode.Identity}, no valid reference found.");
+                        throw new BindingException($"No valid reference found for {node.Identity}. Please specify matching [Key] and [Ref] annotations to map across one-to-many boundaries.");
                 }
                 else if (this.IsAggregateSet(writer.Metadata))
                     tree.AggregateNames.Add(new AggregateName(writer.Metadata.Identity.Name, isPrincipal: true));

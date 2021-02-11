@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using Jerrycurl.Data.Queries.Internal;
 using Jerrycurl.Relations.Metadata;
 
@@ -48,36 +49,13 @@ namespace Jerrycurl.Relations.Internal.Queues
                 this.Reset();
             }
 
-            if (this.innerEnumerator == null)
-            {
-                this.innerQueue.Enqueue(item);
-
-                this.Debug(item, "Enqueue (1)");
-            }
-                
-            else
-            {
-                this.innerQueue.Enqueue(item);
-
-                this.Debug(item, "Enqueue (2)");
-            }
-
-            //if (this.Type == RelationQueueType.Cached)
-            //{
-            //    this.innerCache.Clear();
-            //    this.usingCache = false;
-            //    this.Reset();
-            //}
+            this.innerQueue.Enqueue(item);
         }
 
         private void Start()
         {
-            this.Reset();
-
-            if (this.innerQueue.Count > 0)
+            if (this.HasItems)
             {
-                this.Debug(this.CurrentItem, "Start");
-
                 if (this.IsCached)
                     this.cacheEnumerator = this.CurrentItem.Cache.GetEnumerator();
                 else
@@ -86,50 +64,50 @@ namespace Jerrycurl.Relations.Internal.Queues
         }
 
         private bool IsStarted => this.IsCached ? this.cacheEnumerator != null : this.innerEnumerator != null;
+        private bool HasItems => (this.innerQueue.Count > 0);
 
         private bool MoveNext()
         {
             if (!this.IsStarted)
-                return false;
+                this.Start();
+
+            bool result;
+
+            if (!this.IsStarted)
+                result = false;
             else if (this.IsCached)
-                return this.cacheEnumerator.MoveNext();
+            {
+                if (result = this.cacheEnumerator.MoveNext())
+                    this.Cache = this.cacheEnumerator.Current;
+            }
+            else if (this.Type == RelationQueueType.Cached)
+            {
+                if (result = this.innerEnumerator.MoveNext())
+                {
+                    this.CurrentItem.Increment();
+                    this.CurrentItem.Cache.Add(this.Cache = new FieldArray());
+                }
+            }
             else
-                return this.innerEnumerator.MoveNext();
+            {
+                if (result = this.innerEnumerator.MoveNext())
+                    this.CurrentItem.Increment();
+            }
+
+            return result;
         }
 
         public string GetFieldName(string namePart) => this.CurrentItem.CombineWith(namePart);
 
         public bool Read()
         {
-            while (this.innerQueue.Count > 0)
-            {
-                if (!this.IsStarted)
-                    this.Start();
+            if (this.MoveNext())
+                return true;
 
-                if (this.MoveNext())
-                {
-                    this.CurrentItem.Increment();
+            this.Dequeue();
 
-                    if (this.IsCached)
-                        this.Cache = this.cacheEnumerator.Current;
-                    else if (this.Type == RelationQueueType.Cached)
-                        this.CurrentItem.Cache.Add(this.Cache = new FieldArray());
-
-                    return true;
-                }
-
-                if (this.Type != RelationQueueType.Cached)
-                    this.Dequeue();
-                else
-                {
-                    this.IsCached = true;
-                    this.Reset();
-                    break;
-                }
-                    
-
-                this.Reset();
-            }
+            if (this.Type == RelationQueueType.Recursive && this.HasItems)
+                return this.Read();
 
             return false;
         }
@@ -146,8 +124,16 @@ namespace Jerrycurl.Relations.Internal.Queues
 
         private void Dequeue()
         {
-            if (this.innerQueue.Count > 0)
+            if (this.Type == RelationQueueType.Cached)
+            {
+                this.IsCached = true;
+                this.Reset();
+            }
+            else if (this.HasItems)
+            {
                 this.innerQueue.Dequeue();
+                this.Reset();
+            }
         }
 
         public void Dispose() => this.Reset();

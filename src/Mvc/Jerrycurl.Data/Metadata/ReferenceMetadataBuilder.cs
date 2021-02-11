@@ -5,6 +5,8 @@ using Jerrycurl.Data.Metadata;
 using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Data.Metadata.Annotations;
 using System.Net.Security;
+using System.Runtime.InteropServices;
+using Jerrycurl.Relations;
 
 namespace Jerrycurl.Data.Metadata
 {
@@ -171,9 +173,6 @@ namespace Jerrycurl.Data.Metadata
         {
             if (metadata.Parent != null)
             {
-                if (metadata.Relation.HasFlag(RelationMetadataFlags.Recursive))
-                    yield return metadata;
-
                 yield return metadata.Parent;
 
                 if (metadata.Parent.HasFlag(RelationMetadataFlags.List) && metadata.Parent.Parent != null)
@@ -197,11 +196,23 @@ namespace Jerrycurl.Data.Metadata
         {
             foreach (Reference reference in this.GetPossibleParents(metadata).SelectMany(m => m.ParentReferences.Value))
             {
-                /*if (reference.Metadata.Equals(metadata) && reference.HasFlag(ReferenceFlags.Self))
-                    yield return reference.Other;
-                else */if (reference.Other.Metadata.Equals(metadata))
+                if (reference.Other.Metadata.Equals(metadata))
                     yield return reference.Other;
             }
+        }
+
+        private bool HasOneAttribute(ReferenceMetadata metadata) => metadata.Annotations.OfType<OneAttribute>().Any();
+        private bool IsOneType(ReferenceMetadata metadata)
+        {
+            if (!metadata.Type.IsGenericType)
+                return false;
+
+            Type openType = metadata.Type.GetGenericTypeDefinition();
+
+            if (openType == typeof(One<>))
+                return true;
+
+            return false;
         }
 
         private IEnumerable<Reference> CreateParentReferences(ReferenceMetadata parent)
@@ -252,11 +263,33 @@ namespace Jerrycurl.Data.Metadata
 
                         if (childMetadata.Relation.HasFlag(RelationMetadataFlags.Item))
                         {
-                            rightRef.Flags |= ReferenceFlags.Many;
                             rightRef.List = leftRef.List = childMetadata.Parent;
+
+                            if (this.IsOneType(childMetadata.Parent))
+                            {
+                                leftRef.Flags &= ~ReferenceFlags.One;
+                                leftRef.Flags |= ReferenceFlags.Many;
+                                rightRef.Flags |= ReferenceFlags.One;
+                            }
+                            else
+                                rightRef.Flags |= ReferenceFlags.Many;
                         }
                         else
+                        {
                             rightRef.Flags |= ReferenceFlags.One;
+
+                            if (this.HasOneAttribute(childMetadata))
+                            {
+                                leftRef.Flags &= ~ReferenceFlags.One;
+                                leftRef.Flags |= ReferenceFlags.Many;
+                            }
+                        }
+
+                        if (childMetadata.Equals(parent))
+                        {
+                            leftRef.Flags |= ReferenceFlags.Self | ReferenceFlags.Child;
+                            rightRef.Flags |= ReferenceFlags.Self | ReferenceFlags.Parent;
+                        }
 
                         leftRef.Other = rightRef;
                         rightRef.Other = leftRef;
@@ -266,26 +299,7 @@ namespace Jerrycurl.Data.Metadata
                 }
             }
 
-            this.MergeRecursiveReferences(parent, references);
-
             return references;
-        }
-
-        private void MergeRecursiveReferences(ReferenceMetadata metadata, List<Reference> references)
-        {
-            foreach (Reference reference in references.ToList())
-            {
-                Reference reverse = references.FirstOrDefault(r => r.Key.Equals(reference.Other.Key) && r.Other.Key.Equals(reference.Key));
-
-                if (reverse != null)
-                {
-                    reference.Flags |= ReferenceFlags.Self;
-                    reference.Other.Flags |= ReferenceFlags.Self;
-
-                    if (reverse.HasFlag(ReferenceFlags.Parent | ReferenceFlags.Foreign))
-                        references.Remove(reverse);
-                }
-            }
         }
     }
 }
