@@ -44,9 +44,9 @@ namespace Jerrycurl.Mvc.Test
 
         public void Test_Page_ResultVariance()
         {
-            PageDescriptor descriptor = this.FindPage("LocatorQuery2");
-            ProcArgs args1 = new ProcArgs(typeof(object), typeof(int));
-            ProcArgs args2 = new ProcArgs(typeof(object), typeof(string));
+            var descriptor = this.FindPage("LocatorQuery2");
+            var args1 = new ProcArgs(typeof(object), typeof(int));
+            var args2 = new ProcArgs(typeof(object), typeof(string));
 
             this.engine.Proc(descriptor, args1).ShouldNotBeNull();
             this.engine.Proc(descriptor, args2).ShouldNotBeNull();
