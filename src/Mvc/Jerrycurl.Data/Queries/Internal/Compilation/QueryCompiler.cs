@@ -597,6 +597,10 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             {
                 convertedValue = reader.Metadata.Value?.Convert?.Invoke(valueInfo);
             }
+            catch (BindingException ex)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 throw BindingException.InvalidCast(reader.Metadata, ex);
