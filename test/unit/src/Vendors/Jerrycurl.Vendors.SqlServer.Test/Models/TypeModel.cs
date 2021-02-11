@@ -14,6 +14,7 @@ namespace Jerrycurl.Vendors.SqlServer.Test.Models
         public long BigInt { get; set; }
         public float Real { get; set; }
         public double Float { get; set; }
+        public decimal Decimal { get; set; }
         public DateTimeOffset DateTimeOffset { get; set; }
         public DateTime Date { get; set; }
         public DateTime DateTime { get; set; }
@@ -41,6 +42,7 @@ namespace Jerrycurl.Vendors.SqlServer.Test.Models
                 Real = 100.0f,
                 Int = 100000,
                 Float = 100.0d,
+                Decimal = 343.345432m,
                 DateTimeOffset = new DateTimeOffset(1819, 5, 4, 3, 2, 1, TimeSpan.FromHours(3)),
                 Date = new DateTime(1819, 5, 4),
                 DateTime = new DateTime(1819, 5, 4, 3, 2, 1),

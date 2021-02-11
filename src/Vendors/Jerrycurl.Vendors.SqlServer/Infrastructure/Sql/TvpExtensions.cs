@@ -35,14 +35,24 @@ namespace Jerrycurl.Mvc.Sql.SqlServer
         /// </summary>
         /// <param name="projection">The current projection.</param>
         /// <param name="expression">Expression selecting a specific attribute.</param>
+        /// <param name="tblAlias">The table alias to qualify each column name with.</param>
         /// <returns>A new attribute containing the appended buffer.</returns>
-        public static IProjectionAttribute Tvp<TModel, TProperty>(this IProjection<TModel> projection, Expression<Func<TModel, TProperty>> expression) => projection.For(expression).Tvp();
+        public static IProjectionAttribute Tvp<TModel, TProperty>(this IProjection<TModel> projection, Expression<Func<TModel, TProperty>> expression, string tblAlias = null) => projection.For(expression).Tvp(tblAlias);
 
         /// <summary>
         /// Appends a correlated table-valued parameter from the current values, e.g. <c>@TP0 T0</c>, to the projection buffer.
         /// </summary>
         /// <param name="projection">The current projection.</param>
+        /// <param name="tblAlias">The table alias to qualify each column name with.</param>
         /// <returns>A new attribute containing the appended buffer.</returns>
-        public static IProjectionAttribute Tvp(this IProjection projection) => projection.TvpName().Append(" ").Ali();
+        public static IProjectionAttribute Tvp(this IProjection projection, string tblAlias = null)
+        {
+            IProjectionAttribute attribute = projection.TvpName().Append(" ");
+
+            if (tblAlias != null)
+                return attribute.Append(attribute.Context.Domain.Dialect.Identifier(tblAlias));
+            else
+                return attribute.Ali();
+        }
     }
 }
