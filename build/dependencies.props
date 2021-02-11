@@ -2,7 +2,6 @@
     <PropertyGroup Label="NuGet Package IDs">
         <OraclePackageId>Oracle.ManagedDataAccess.Core</OraclePackageId>
         <SqlServerPackageId>Microsoft.Data.SqlClient</SqlServerPackageId>
-        <SqlServerLegacyPackageId>System.Data.SqlClient</SqlServerLegacyPackageId>
         <MySqlPackageId>MySql.Data</MySqlPackageId>
         <PostgresPackageId>Npgsql</PostgresPackageId>
         <SqlitePackageId>Microsoft.Data.Sqlite</SqlitePackageId>
@@ -11,7 +10,6 @@
     <PropertyGroup Label="NuGet Package Versions">
         <OraclePackageVersion>2.19.31</OraclePackageVersion>
         <SqlServerPackageVersion>1.1.0</SqlServerPackageVersion>
-        <SqlServerLegacyPackageVersion>4.6.1</SqlServerLegacyPackageVersion>
         <MySqlPackageVersion>8.0.17</MySqlPackageVersion>
         <PostgresPackageVersion>4.1.3.1</PostgresPackageVersion>
         <SqlitePackageVersion>2.2.6</SqlitePackageVersion>
@@ -31,7 +29,6 @@
     <PropertyGroup Label="Target Versions">
         <OracleTargetVersion>$(OraclePackageVersion)</OracleTargetVersion>
         <SqlServerTargetVersion>$(SqlServerPackageVersion)</SqlServerTargetVersion>
-        <SqlServerLegacyTargetVersion>$(SqlServerLegacyPackageVersion)</SqlServerLegacyTargetVersion>
         <MySqlTargetVersion>$(MySqlPackageVersion)</MySqlTargetVersion>
         <PostgresTargetVersion>$(PostgresPackageVersion)</PostgresTargetVersion>
         <SqliteTargetVersion>$(SqlitePackageVersion)</SqliteTargetVersion>

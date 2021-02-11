@@ -9,12 +9,6 @@ namespace Jerrycurl.Data.Queries.Internal
 {
     internal interface IQueryBuffer
     {
-        ISchemaStore Store { get; }
-        ISchema Schema { get; }
-
-        void Insert(IDataReader dataReader);
-        Task InsertAsync(DbDataReader dataReader, CancellationToken cancellationToken = default);
-
         internal AggregateBuffer Aggregate { get; }
         internal ElasticArray Slots { get; }
     }

@@ -7,13 +7,8 @@ using Jerrycurl.Data.Sessions;
 using Jerrycurl.Relations;
 using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Vendors.SqlServer.Internal;
-#if SQLSERVER_LEGACY
-using System.Data.SqlClient;
-using Microsoft.SqlServer.Server;
-#else
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.SqlClient.Server;
-#endif
 
 namespace Jerrycurl.Vendors.SqlServer
 {

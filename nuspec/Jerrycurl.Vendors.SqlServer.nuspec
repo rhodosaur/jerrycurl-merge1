@@ -14,7 +14,7 @@
         <tags>sqlserver $PackageTags$</tags>
         <repository type="git" url="$RepositoryUrl$" commit="$GitCommitId$" />
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Microsoft SQL Server support for Jerrycurl. Targets Microsoft.Data.SqlClient.</description>
+        <description>Microsoft SQL Server support for Jerrycurl.</description>
         <dependencies>
             <group targetFramework="netstandard2.0">
                 <dependency id="Jerrycurl.Mvc" version="$PackageVersion$" />
