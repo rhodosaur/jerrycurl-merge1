@@ -1,4 +1,5 @@
-﻿using Jerrycurl.Data.Commands;
+﻿using Jerrycurl.Collections;
+using Jerrycurl.Data.Commands;
 using Jerrycurl.Data.Sessions;
 using System;
 using System.Collections.Generic;
@@ -9,17 +10,72 @@ namespace Jerrycurl.Mvc
 {
     public class SqlBuffer : ISqlBuffer
     {
-        private readonly List<IParameter> parameters = new List<IParameter>();
-        private readonly List<IUpdateBinding> bindings = new List<IUpdateBinding>();
-        private readonly StringBuilder text = new StringBuilder();
-        private readonly List<SqlOffset> offsets = new List<SqlOffset>();
+        private readonly List<IndexedBuffer> innerBuffers;
+        private readonly Stack<int> bufferStack = new Stack<int>();
+
+        private IndexedBuffer currentBuffer;
+
+        protected List<IParameter> Parameters => this.currentBuffer.Parameters;
+        protected List<IUpdateBinding> Bindings => this.currentBuffer.Bindings;
+        protected StringBuilder Text => this.currentBuffer.Text;
+        protected List<SqlOffset> Offsets => this.currentBuffer.Offsets;
+
+        public SqlBuffer()
+        {
+            this.currentBuffer = new IndexedBuffer();
+            this.innerBuffers = new List<IndexedBuffer>() { this.currentBuffer };
+        }
+
+        public void Push(int batchIndex)
+        {
+            this.bufferStack.Push(batchIndex);
+
+            if (batchIndex >= 0)
+            {
+                this.ReserveBuffer(batchIndex);
+                this.currentBuffer = this.innerBuffers[batchIndex] ??= new IndexedBuffer();
+            }
+        }
+
+        public void Pop()
+        {
+            if (this.bufferStack.Count > 0)
+            {
+                int batchIndex = this.bufferStack.Pop();
+
+                if (batchIndex >= 0)
+                {
+                    if (this.bufferStack.Count > 0)
+                        this.currentBuffer = this.innerBuffers[this.bufferStack.Peek()];
+                    else
+                        this.currentBuffer = this.innerBuffers[0];
+                }
+            }
+        }
+
+        public void Mark()
+        {
+            SqlOffset current = this.GetCurrentOffset();
+
+            this.Offsets.Add(current);
+        }
+
+        private void ReserveBuffer(int batchIndex)
+        {
+            if (batchIndex >= this.innerBuffers.Count)
+            {
+                IEnumerable<IndexedBuffer> defaults = Enumerable.Range(0, batchIndex + 1 - this.innerBuffers.Count).Select(_ => (IndexedBuffer)null);
+
+                this.innerBuffers.AddRange(defaults);
+            }
+        }
 
         public void Append(IEnumerable<IParameter> parameters)
         {
             if (parameters == null)
                 throw new ArgumentNullException(nameof(parameters));
 
-            this.parameters.AddRange(parameters);
+            this.Parameters.AddRange(parameters);
         }
 
         public void Append(IEnumerable<IUpdateBinding> bindings)
@@ -27,7 +83,7 @@ namespace Jerrycurl.Mvc
             if (bindings == null)
                 throw new ArgumentNullException(nameof(bindings));
 
-            this.bindings.AddRange(bindings);
+            this.Bindings.AddRange(bindings);
         }
 
         public void Append(ISqlContent content)
@@ -35,9 +91,9 @@ namespace Jerrycurl.Mvc
             if (content == null)
                 throw new ArgumentNullException(nameof(content));
 
-            this.bindings.AddRange(content.Bindings ?? Array.Empty<IUpdateBinding>());
-            this.parameters.AddRange(content.Parameters ?? Array.Empty<IParameter>());
-            this.text.Append(content.Text);
+            this.Bindings.AddRange(content.Bindings ?? Array.Empty<IUpdateBinding>());
+            this.Parameters.AddRange(content.Parameters ?? Array.Empty<IParameter>());
+            this.Text.Append(content.Text);
         }
 
         public void Append(string text)
@@ -45,39 +101,50 @@ namespace Jerrycurl.Mvc
             if (text == null)
                 throw new ArgumentNullException(nameof(text));
 
-            this.text.Append(text);
-        }
-
-        public void Mark()
-        {
-            SqlOffset current = this.GetCurrentOffset();
-
-            this.offsets.Add(current);
+            this.Text.Append(text);
         }
 
         private SqlOffset GetCurrentOffset()
         {
             return new SqlOffset()
             {
-                NumberOfParams = this.parameters.Count,
-                NumberOfBindings = this.bindings.Count,
-                Text = this.text.Length,
+                NumberOfParams = this.Parameters.Count,
+                NumberOfBindings = this.Bindings.Count,
+                Text = this.Text.Length,
             };
         }
 
         public ISqlContent ReadToEnd()
         {
+            List<IParameter> parameters = new List<IParameter>();
+            List<IUpdateBinding> bindings = new List<IUpdateBinding>();
+            StringBuilder text = new StringBuilder();
+
+            foreach (IndexedBuffer buffer in this.innerBuffers.NotNull())
+            {
+                parameters.AddRange(buffer.Parameters);
+                bindings.AddRange(buffer.Bindings);
+                text = text.Append(buffer.Text.ToString());
+            }
+
             return new SqlContent()
             {
-                Bindings = this.bindings,
-                Parameters = this.parameters,
-                Text = this.text.ToString()
+                Bindings = bindings,
+                Parameters = parameters,
+                Text = text.ToString(),
             };
         }
 
         public IEnumerable<ISqlContent> Read(ISqlOptions options)
         {
-            if (options == null || (options.MaxParameters <= 0 && options.MaxSql <= 0) || (options.MaxParameters >= this.parameters.Count && options.MaxSql >= this.text.Length))
+            foreach (IndexedBuffer buffer in this.innerBuffers.NotNull())
+                foreach (ISqlContent batch in this.Read(buffer, options))
+                    yield return batch;
+        }
+
+        private IEnumerable<ISqlContent> Read(IndexedBuffer buffer, ISqlOptions options)
+        {
+            if (options == null || (options.MaxParameters <= 0 && options.MaxSql <= 0) || (options.MaxParameters >= this.Parameters.Count && options.MaxSql >= this.Text.Length))
             {
                 yield return this.ReadToEnd();
                 yield break;
@@ -90,7 +157,7 @@ namespace Jerrycurl.Mvc
             int maxSql = options.MaxSql <= 0 ? int.MaxValue : options.MaxSql;
             int maxParams = options.MaxParameters <= 0 ? int.MaxValue : options.MaxParameters;
 
-            SqlOffset[] offsets = this.offsets.Concat(new[] { this.GetCurrentOffset() }).ToArray();
+            SqlOffset[] offsets = buffer.Offsets.Concat(new[] { this.GetCurrentOffset() }).ToArray();
 
             for (int i = 0; i < offsets.Length - 1; i++)
             {
@@ -101,9 +168,9 @@ namespace Jerrycurl.Mvc
                 {
                     yield return new SqlContent()
                     {
-                        Bindings = this.bindings.Skip(yieldedBindings).Take(offset.NumberOfBindings - yieldedBindings),
-                        Parameters = this.parameters.Skip(yieldedParams).Take(offset.NumberOfParams - yieldedParams),
-                        Text = this.text.ToString(yieldedText, offset.Text - yieldedText),
+                        Bindings = buffer.Bindings.Skip(yieldedBindings).Take(offset.NumberOfBindings - yieldedBindings),
+                        Parameters = buffer.Parameters.Skip(yieldedParams).Take(offset.NumberOfParams - yieldedParams),
+                        Text = buffer.Text.ToString(yieldedText, offset.Text - yieldedText),
                     };
 
                     yieldedParams += offset.NumberOfParams - yieldedParams;
@@ -112,30 +179,28 @@ namespace Jerrycurl.Mvc
                 }
             }
 
-            if (yieldedParams < this.parameters.Count || yieldedText < this.text.Length || yieldedBindings < this.bindings.Count)
+            if (yieldedParams < buffer.Parameters.Count || yieldedText < buffer.Text.Length || yieldedBindings < buffer.Bindings.Count)
             {
-                string newText = this.text.ToString(yieldedText, this.text.Length - yieldedText);
+                string newText = buffer.Text.ToString(yieldedText, buffer.Text.Length - yieldedText);
 
                 if (!string.IsNullOrWhiteSpace(newText))
                 {
                     yield return new SqlContent()
                     {
-                        Bindings = this.bindings.Skip(yieldedBindings),
-                        Parameters = this.parameters.Skip(yieldedParams),
+                        Bindings = buffer.Bindings.Skip(yieldedBindings),
+                        Parameters = buffer.Parameters.Skip(yieldedParams),
                         Text = newText,
                     };
                 }
             }
         }
 
-        public void Push(int bufferIndex)
+        private class IndexedBuffer
         {
-            
-        }
-
-        public void Pop()
-        {
-            
+            public List<IParameter> Parameters { get; } = new List<IParameter>();
+            public List<IUpdateBinding> Bindings { get; } = new List<IUpdateBinding>();
+            public StringBuilder Text { get; } = new StringBuilder();
+            public List<SqlOffset> Offsets { get; } = new List<SqlOffset>();
         }
     }
 }

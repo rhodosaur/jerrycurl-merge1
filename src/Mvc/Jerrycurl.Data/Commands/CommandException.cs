@@ -31,5 +31,9 @@ namespace Jerrycurl.Data.Commands
 
         internal static CommandException NoSchemaStoreAttached()
             => new CommandException("No schema store attached; use the CommandBuffer(ISchemaStore) constructor to enable language features.");
+
+        internal static CommandException InvalidBindingType(IUpdateBinding binding)
+            => new CommandException($"Invalid binding type '{binding.GetType().Name}': Only ColumnBinding, ParameterBinding and CascadeBinding are supported.");
+
     }
 }

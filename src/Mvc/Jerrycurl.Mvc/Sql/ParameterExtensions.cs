@@ -67,7 +67,7 @@ namespace Jerrycurl.Mvc.Sql
 
                     if (attribute.Metadata.HasAnyFlag(ProjectionMetadataFlags.Cascade))
                     {
-                        CascadeBinding binding = new CascadeBinding(attribute.Data.Input, attribute.Data.Output);
+                        CascadeBinding binding = new CascadeBinding(attribute.Data.Output, attribute.Data.Input);
 
                         result = result.Append(binding);
                     }
