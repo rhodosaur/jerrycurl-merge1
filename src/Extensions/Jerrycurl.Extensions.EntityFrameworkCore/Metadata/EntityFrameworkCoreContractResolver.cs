@@ -76,7 +76,7 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Metadata
         {
             IProperty property = this.FindProperty(metadata.Relation);
 
-            if (property.DeclaringType.ClrType == metadata.Relation.Type)
+            if (property?.DeclaringType.ClrType == metadata.Relation.Type)
                 return this.GetColumnName(property);
 
             return null;
@@ -95,11 +95,11 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Metadata
 
 #if NET20_BASE
         private IKey GetPrimaryKey(IProperty property) => property?.GetContainingPrimaryKey();
-        private string GetTableName(IEntityType entity) => entity?.Relational()?.TableName ?? entity.ClrType.Name;
+        private string GetTableName(IEntityType entity) => entity?.Relational()?.TableName ?? entity?.ClrType.Name;
         private string GetSchemaName(IEntityType entity) => entity?.Relational()?.Schema;
-        private string GetColumnName(IProperty property) => property?.Relational()?.ColumnName ?? property.Name;
+        private string GetColumnName(IProperty property) => property?.Relational()?.ColumnName ?? property?.Name;
         private string GetKeyName(IKey key) => key?.Relational()?.Name;
-        private string GetKeyName(IForeignKey key) => key.Relational()?.Name;
+        private string GetKeyName(IForeignKey key) => key?.Relational()?.Name;
 
 #elif NET21_BASE
         private IKey GetPrimaryKey(IProperty property) => property?.FindContainingPrimaryKey();

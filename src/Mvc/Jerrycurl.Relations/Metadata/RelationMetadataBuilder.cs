@@ -23,7 +23,7 @@ namespace Jerrycurl.Relations.Metadata
         internal IRelationMetadata GetMetadata(Schema schema, MetadataIdentity identity)
         {
             MetadataIdentity parentIdentity = identity.Pop();
-            IRelationMetadata parent = schema.GetCachedMetadata<IRelationMetadata>(parentIdentity.Name);
+            IRelationMetadata parent = schema.GetCachedMetadata<IRelationMetadata>(parentIdentity.Name) ?? this.GetMetadata(schema, parentIdentity);
 
             if (parent == null)
                 return null;

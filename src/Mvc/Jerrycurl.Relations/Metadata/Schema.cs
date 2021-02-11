@@ -93,17 +93,10 @@ namespace Jerrycurl.Relations.Metadata
             try
             {
                 MetadataIdentity identity = new MetadataIdentity(this, name);
-                IRelationMetadata relation = this.GetCachedMetadata<IRelationMetadata>(name);
+                IRelationMetadata relation = this.GetCachedMetadata<IRelationMetadata>(name) ?? this.Store.RelationBuilder.GetMetadata(this, identity);
 
                 if (relation == null)
-                {
-                    MetadataBuilderContext context = new MetadataBuilderContext(this);
-
-                    relation = this.Store.RelationBuilder.GetMetadata(context);
-
-                    if (relation == null)
-                        return default;
-                }
+                    return default;
 
                 foreach (IMetadataBuilder<TMetadata> metadataBuilder in this.Store.Builders.OfType<IMetadataBuilder<TMetadata>>())
                 {
