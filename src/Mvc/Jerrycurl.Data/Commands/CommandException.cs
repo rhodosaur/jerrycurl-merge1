@@ -29,7 +29,7 @@ namespace Jerrycurl.Data.Commands
 
         }
 
-        internal static InvalidOperationException NoSchemaStoreAttached()
-            => new InvalidOperationException("No schema store attached; use the CommandBuffer(ISchemaStore) constructor to use language features.");
+        internal static CommandException NoSchemaStoreAttached()
+            => new CommandException("No schema store attached; use the CommandBuffer(ISchemaStore) constructor to enable language features.");
     }
 }

@@ -15,6 +15,16 @@ namespace Jerrycurl.Data.Test
 {
     public class CommandTests
     {
+        public void Test_Update_LanguageFeatures()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var buffer1 = new CommandBuffer(store);
+            var buffer2 = new CommandBuffer();
+
+            Should.NotThrow(() => buffer1.Update(1, ("", "foo")));
+            Should.Throw<CommandException>(() => buffer2.Update(1, ("", "foo")));
+        }
+
         public void Test_Update_InvalidDataType()
         {
             var store = DatabaseHelper.Default.Store;

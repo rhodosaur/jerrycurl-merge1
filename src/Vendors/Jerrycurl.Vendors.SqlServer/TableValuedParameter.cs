@@ -70,7 +70,6 @@ namespace Jerrycurl.Vendors.SqlServer
                 throw new InvalidOperationException("No columns found.");
         }
 
-        [Obsolete("Use RelationReader?")]
         private static void BindParameter(SqlParameter sqlParam, string tvpName, string[] columnNames, BindingParameterConverter[] converters, IRelation relation)
         {
             ITuple refTuple = relation.Row();
