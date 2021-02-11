@@ -9,7 +9,7 @@ namespace Jerrycurl.Mvc.Test
         private readonly ProcLocator locator = new ProcLocator();
         private readonly ProcEngine engine = new ProcEngine(null);
 
-        public void Page_CanResolveFactory_WithoutDomain()
+        public void Test_Page_CanLookup_NoDomain()
         {
             PageDescriptor descriptor = this.locator.FindPage("NoDomainQuery", typeof(NoDomainAccessor));
             ProcArgs args = new ProcArgs(typeof(object), typeof(object));
@@ -22,7 +22,7 @@ namespace Jerrycurl.Mvc.Test
             factory.ShouldNotBeNull();
         }
 
-        public void Proc_IfNoDomainAssociated_ThrowsExpectedException()
+        public void Test_Procedure_CannotLookup_NoDomain()
         {
             PageDescriptor descriptor = this.locator.FindPage("NoDomainQuery", typeof(NoDomainAccessor));
             ProcArgs args = new ProcArgs(typeof(object), typeof(object));
@@ -33,7 +33,7 @@ namespace Jerrycurl.Mvc.Test
             Should.Throw<ProcExecutionException>(() => this.engine.Proc(descriptor, args));
         }
 
-        public void Page_IfExists_ReturnsFactory()
+        public void Test_Procedure_CanLookup()
         {
             PageDescriptor descriptor = this.FindPage("LocatorQuery2");
             ProcArgs args = new ProcArgs(typeof(int), typeof(object));
@@ -43,7 +43,7 @@ namespace Jerrycurl.Mvc.Test
             factory.ShouldNotBeNull();
         }
 
-        public void Page_WithResultObject_CanConvertFromAnyType()
+        public void Test_Page_ResultVariance()
         {
             PageDescriptor descriptor = this.FindPage("LocatorQuery2");
             ProcArgs args1 = new ProcArgs(typeof(object), typeof(int));

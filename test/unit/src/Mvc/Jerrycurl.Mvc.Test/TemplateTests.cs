@@ -6,7 +6,7 @@ namespace Jerrycurl.Mvc.Test
 {
     public class TemplateTests
     {
-        public void Proc_UsesTemplatesCorrectly()
+        public void Test_Procedure_Template()
         {
             MiscAccessor misc = new MiscAccessor();
 
@@ -15,7 +15,7 @@ namespace Jerrycurl.Mvc.Test
             result.ShouldBe(new[] { 1, 2, 3 });
         }
 
-        public void Proc_UsesPartialsCorrectly()
+        public void Test_Partial_Template()
         {
             MiscAccessor misc = new MiscAccessor();
 

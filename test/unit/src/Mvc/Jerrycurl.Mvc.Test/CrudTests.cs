@@ -8,7 +8,7 @@ namespace Jerrycurl.Mvc.Test
 {
     public class CrudTests
     {
-        public void Create_WithLiterals_Works()
+        public void Test_Create_UsingLiterals()
         {
             CrudAccessor crud = new CrudAccessor();
 
@@ -22,7 +22,7 @@ namespace Jerrycurl.Mvc.Test
             newItems.ShouldAllBe(it => it.Id > 0);
         }
 
-        public void CreateReadUpdateDelete_Works()
+        public void Test_Crud_UsingParameters()
         {
             CrudAccessor crud = new CrudAccessor();
 
