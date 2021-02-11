@@ -101,7 +101,7 @@ namespace Jerrycurl.Relations.Metadata
 
         private void ThrowContractException(RelationMetadata metadata, string message)
         {
-            throw new MetadataBuilderException($"Invalid contract for metadata '{metadata.Identity}'. {message}");
+            throw new MetadataBuilderException($"Invalid contract for {metadata.Identity}. {message}");
         }
 
         private Lazy<IReadOnlyList<TItem>> CreateLazy<TItem>(Func<IEnumerable<TItem>> factory) => new Lazy<IReadOnlyList<TItem>>(() => factory().ToList());
@@ -170,18 +170,35 @@ namespace Jerrycurl.Relations.Metadata
             return metadata;
         }
 
+        private IRelationMetadata GetRecursiveParent(IMetadataBuilderContext context, RelationMetadata metadata)
+        {
+            IRelationMetadata current = metadata.Parent;
+            IRelationMetadata stop = current.MemberOf.Parent ?? current.MemberOf;
+
+            while (current != stop)
+            {
+                if (current.Type == metadata.Type)
+                    return current;
+            }
+
+            return null;
+        }
+
         private Lazy<IRelationMetadata> CreateRecursor(IMetadataBuilderContext context, RelationMetadata metadata)
         {
-            if (metadata.Parent.MemberOf.Type.Equals(metadata.Type))
+            if (metadata.HasFlag(RelationMetadataFlags.Item))
             {
-                IRelationMetadata recursiveParent = metadata.Parent.MemberOf;
+                IRelationMetadata recursiveParent = this.GetRecursiveParent(context, metadata);
 
-                string recursivePath = context.Notation.Path(recursiveParent.Identity.Name, metadata.Parent.Identity.Name);
-                string otherPath = context.Notation.Combine(metadata.Identity.Name, recursivePath);
+                if (recursiveParent != null)
+                {
+                    string recursivePath = context.Notation.Path(recursiveParent.Identity.Name, metadata.Parent.Identity.Name);
+                    string otherPath = context.Notation.Combine(metadata.Identity.Name, recursivePath);
 
-                MetadataIdentity otherId = metadata.Identity.Push(recursivePath);
+                    MetadataIdentity otherId = metadata.Identity.Push(recursivePath);
 
-                return new Lazy<IRelationMetadata>(() => this.GetMetadata(context, otherId));
+                    return new Lazy<IRelationMetadata>(() => this.GetMetadata(context, otherId));
+                }
             }
             else if (metadata.MemberOf.Recursor != null)
             {
