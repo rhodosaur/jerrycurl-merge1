@@ -45,12 +45,6 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
         public static KeyBinder FindParentKey(NewBinder binder, IReference reference) => FindKey(binder, reference, reference.FindParentKey());
         public static KeyBinder FindPrimaryKey(NewBinder binder, IReferenceKey primaryKey) => FindKey(binder, null, primaryKey);
 
-        public static ParameterExpression Variable(Type type, NodeBinder binder)
-            => Variable(type, binder.Metadata?.Identity);
-
-        public static ParameterExpression Variable(Type type, MetadataIdentity identity)
-            => Expression.Variable(type, identity?.Name);
-
         private static KeyBinder FindKey(NewBinder binder, IReference reference, IReferenceKey referenceKey)
         {
             if (referenceKey == null)
@@ -82,7 +76,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                         value.KeyType = keyType;
 
                     key.KeyType = GetCompositeKeyType(values.Select(v => v.KeyType));
-                    key.Variable = Expression.Variable(key.KeyType);
+                    key.Variable = Expression.Variable(key.KeyType, "key");
                 }
 
 

@@ -105,9 +105,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 writer.Slot = this.AddSlot(tree, writer.Metadata, writer.JoinKey);
 
                 if (writer.JoinKey != null)
-                {
                     writer.BufferIndex = this.Buffer.GetChildIndex(writer.JoinKey.Metadata);
-                }
 
                 tree.Lists.Add(writer);
             }
@@ -115,12 +113,14 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         private bool IsPrincipalSet(IBindingMetadata metadata)
         {
-            if (this.Type == QueryType.Aggregate)
+            if (metadata.HasFlag(BindingMetadataFlags.Item) && this.Type == QueryType.Aggregate)
                 return (metadata.Relation.Depth == 2);
+            else if (metadata.HasFlag(BindingMetadataFlags.Item))
+                return (metadata.Relation.Depth == 1);
+            else if (this.Type == QueryType.Aggregate)
+                return (metadata.Relation.Depth == 1);
 
-            bool isPrincipal = metadata.Relation.Depth == (this.Type == QueryType.Aggregate ? 2 : 1);
-
-            return (isPrincipal); // check this for many-to-ones somehow
+            return false;
         }
 
         private bool IsAggregateSet(IBindingMetadata metadata) => (this.Type == QueryType.Aggregate && metadata.Relation.Depth == 1);
@@ -129,16 +129,19 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
         {
             int bufferIndex;
             Type variableType;
+            string variableName;
 
             if (joinKey == null)
             {
                 bufferIndex = metadata.Relation.Depth == 0 ? this.Buffer.GetResultIndex() : this.Buffer.GetListIndex(metadata.Identity);
                 variableType = metadata.Composition.Construct.Type;
+                variableName = $"list_{bufferIndex}";
             }
             else
             {
                 bufferIndex = this.Buffer.GetParentIndex(joinKey.Metadata);
                 variableType = this.GetDictionaryType(joinKey);
+                variableName = $"dic_{bufferIndex}";
             }
 
             SlotWriter slotWriter = tree.Slots.FirstOrDefault(w => w.BufferIndex == bufferIndex);
@@ -148,7 +151,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 slotWriter = new SlotWriter()
                 {
                     BufferIndex = bufferIndex,
-                    Variable = BindingHelper.Variable(variableType, metadata.Identity),
+                    Variable = Expression.Variable(variableType, variableName),
                     Metadata = metadata,
                     KeyType = joinKey?.KeyType,
                 };
@@ -170,7 +173,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 {
                     Object = binder.Metadata.Helper.Object,
                     BufferIndex = tree.Helpers.Count,
-                    Variable = BindingHelper.Variable(binder.Metadata.Helper.Type, binder),
+                    Variable = Expression.Variable(binder.Metadata.Helper.Type, $"helper_{tree.Helpers.Count}"),
                 };
 
                 binder.Helper = writer.Variable;
@@ -204,10 +207,12 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         private void InitializeKeyVariables(KeyBinder key)
         {
+            int index = 0;
+
             foreach (ValueBinder value in key.Values)
             {
-                value.IsDbNull ??= BindingHelper.Variable(typeof(bool), value);
-                value.Variable ??= BindingHelper.Variable(value.KeyType, value);
+                value.IsDbNull ??= Expression.Variable(typeof(bool), $"key_{key.BufferIndex}_{index++}_isnull");
+                value.Variable ??= Expression.Variable(value.KeyType, $"key_{key.BufferIndex}_{index}");
             }
         }
 
@@ -216,20 +221,18 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             IEnumerable<IReference> references = this.GetParentReferences(binder.Metadata);
             IEnumerable<KeyBinder> joinKeys = references.Select(r => BindingHelper.FindParentKey(binder, r));
 
-            var x = joinKeys.NotNull().DistinctBy(k => k.Metadata.Other.Metadata.Identity).ToList();
-
             foreach (KeyBinder joinKey in joinKeys.NotNull().DistinctBy(k => k.Metadata.Other.Metadata.Identity))
             {
-                if (joinKey.Metadata.HasFlag(ReferenceFlags.Self))
-                {
-                    var xx = this.GetChildReferences(binder.Metadata).ToList();
-                }
+                IReference reference = joinKey.Metadata;
 
-                IBindingMetadata metadata = (joinKey.Metadata.List ?? joinKey.Metadata.Other.Metadata).Identity.Lookup<IBindingMetadata>();
+                if (joinKey.Metadata.HasFlag(ReferenceFlags.Self))
+                    reference = joinKey.Metadata = this.GetRecursiveReference(binder.Metadata);
+
+                IBindingMetadata metadata = (reference.List ?? reference.Other.Metadata).Identity.Lookup<IBindingMetadata>();
 
                 JoinBinder joinBinder = new JoinBinder(metadata)
                 {
-                    Array = joinKey.Array ??= BindingHelper.Variable(typeof(ElasticArray), metadata.Identity),
+                    Array = joinKey.Array ??= Expression.Variable(typeof(ElasticArray), $"array_{joinKey.BufferIndex}"),
                     ArrayIndex = this.Buffer.GetChildIndex(joinKey.Metadata),
                     Key = joinKey,
                 };
@@ -255,15 +258,13 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 {
                     this.InitializeKeyVariables(joinKey);
 
-                    joinKey.Array ??= BindingHelper.Variable(typeof(ElasticArray), joinKey.Metadata.Metadata.Identity);
+                    joinKey.Array ??= Expression.Variable(typeof(ElasticArray), $"array_{joinKey.BufferIndex}");
                 }
             }
         }
 
-        private IEnumerable<IReference> GetRecursiveReferences(IReference reference)
-        {
-            return null;
-        }
+        private IReference GetRecursiveReference(IBindingMetadata metadata)
+            => this.GetChildReferences(metadata).FirstOrDefault().Other;
 
         private IEnumerable<IReference> GetParentReferences(IBindingMetadata metadata)
             => this.GetValidReferences(metadata).Where(r => r.HasFlag(ReferenceFlags.Parent));

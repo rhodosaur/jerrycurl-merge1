@@ -33,9 +33,8 @@ namespace Jerrycurl.Data.Queries.Internal.Caching
         {
             IReference childReference = reference.Find(ReferenceFlags.Child);
             IReferenceMetadata metadata = childReference.List ?? childReference.Metadata;
-            IReferenceKey parentKey = reference.HasFlag(ReferenceFlags.Self) ? childReference.Key : childReference.Other.Key;
 
-            BufferCacheKey cacheKey = new BufferCacheKey(metadata.Identity, parentKey);
+            BufferCacheKey cacheKey = new BufferCacheKey(metadata.Identity, childReference.Other.Key);
 
             return this.GetParentIndex(cacheKey);
         }
@@ -44,14 +43,13 @@ namespace Jerrycurl.Data.Queries.Internal.Caching
         {
             IReference childReference = reference.Find(ReferenceFlags.Child);
             IReferenceMetadata metadata = childReference.List ?? childReference.Metadata;
-            IReferenceKey parentKey = reference.HasFlag(ReferenceFlags.Self) ? childReference.Key : childReference.Other.Key;
 
             int parentIndex = this.GetParentIndex(reference);
 
             lock (this.state)
             {
                 Dictionary<BufferCacheKey, int> innerMap = this.childMap.GetOrAdd(parentIndex);
-                BufferCacheKey joinKey = new BufferCacheKey(metadata.Identity, parentKey, childReference.Key);
+                BufferCacheKey joinKey = new BufferCacheKey(metadata.Identity, childReference.Other.Key, childReference.Key);
 
                 return innerMap.GetOrAdd(joinKey, innerMap.Count);
             }

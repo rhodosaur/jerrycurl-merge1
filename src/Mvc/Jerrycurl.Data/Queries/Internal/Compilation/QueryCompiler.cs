@@ -190,17 +190,24 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 writeItem = Expression.Call(writer.Slot, writer.Metadata.Composition.Add, value);
             else
             {
+                Expression arrayIsNotNull = Expression.ReferenceNotEqual(writer.JoinKey.Array, Expression.Constant(null));
                 Expression arrayIndex = this.GetElasticIndexExpression(writer.JoinKey.Array, writer.BufferIndex);
+                Expression arrayIndexIsNotNull = Expression.ReferenceNotEqual(arrayIndex, Expression.Constant(null));
 
                 if (writer.JoinKey.Metadata.List == null)
-                    writeItem = Expression.Assign(arrayIndex, value);
+                {
+                    Expression assignValue = Expression.Assign(arrayIndex, value);
+
+                    writeItem = Expression.IfThen(arrayIsNotNull, assignValue);
+                }
                 else
                 {
-                    Expression list = Expression.Convert(arrayIndex, writer.Metadata.Composition.Construct.Type);
-                    Expression isNotNull = Expression.ReferenceNotEqual(arrayIndex, Expression.Constant(null));
-                    Expression callAdd = Expression.Call(list, writer.Metadata.Composition.Add, value);
+                    Expression assignIndex = Expression.Assign(arrayIndex, writer.Metadata.Composition.Construct);
+                    Expression getOrAdd = Expression.Condition(arrayIndexIsNotNull, arrayIndex, assignIndex);
+                    Expression listValue = Expression.Convert(getOrAdd, writer.Metadata.Composition.Construct.Type);
+                    Expression callAdd = Expression.Call(listValue, writer.Metadata.Composition.Add, value);
 
-                    writeItem = Expression.IfThen(isNotNull, callAdd);
+                    writeItem = Expression.IfThen(arrayIsNotNull, callAdd);
                 }
             }
 

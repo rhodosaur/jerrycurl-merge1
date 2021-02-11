@@ -13,10 +13,10 @@ namespace Jerrycurl.Relations.Metadata
         private readonly ConcurrentDictionary<Type, ReaderWriterLockSlim> locks = new ConcurrentDictionary<Type, ReaderWriterLockSlim>();
 
         public Type Model { get; }
-        public SchemaStore Store { get; }
+        public ISchemaStore Store { get; }
         public DotNotation Notation => this.Store.Notation;
 
-        public Schema(SchemaStore store, Type model)
+        public Schema(ISchemaStore store, Type model)
         {
             this.Store = store ?? throw new ArgumentNullException(nameof(store));
             this.Model = model ?? throw new ArgumentNullException(nameof(model));

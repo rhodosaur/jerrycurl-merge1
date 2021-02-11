@@ -6,6 +6,7 @@ namespace Jerrycurl.Relations.Metadata
     {
         Type Model { get; }
         DotNotation Notation { get; }
+        ISchemaStore Store { get; }
 
         TMetadata Lookup<TMetadata>(string name) where TMetadata : IMetadata;
         TMetadata Lookup<TMetadata>() where TMetadata : IMetadata;
