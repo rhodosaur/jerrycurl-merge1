@@ -130,7 +130,7 @@ namespace Jerrycurl.Relations.Internal.Compilation
         #endregion
 
         #region " Queues "
-        private Type GetQueueGenericType(QueueIndex queue) => typeof(RelationQueueNew<,>).MakeGenericType(queue.List.Type, queue.Item.Type);
+        private Type GetQueueGenericType(QueueIndex queue) => typeof(RelationQueueSexy<,>).MakeGenericType(queue.List.Type, queue.Item.Type);
         private Type GetQueueItemGenericType(QueueIndex queue) => typeof(RelationQueueItem<>).MakeGenericType(queue.List.Type);
 
         private Expression GetAssignNewQueueExpression(QueueIndex index, int metadataOffset)
