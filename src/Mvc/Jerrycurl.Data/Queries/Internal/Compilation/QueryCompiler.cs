@@ -205,7 +205,6 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             }
 
             Expression body;
-            List<KeyReader> primaryKeys = new List<KeyReader>() { writer.PrimaryKey };
 
             if (writer.List.NewList == null && writer.Join?.NewList == null)
             {
@@ -224,11 +223,9 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 Expression addValue = Expression.Call(listValue, writer.Join.AddMethod, value);
 
                 body = Expression.IfThen(bufferNotNull, addValue);
-
-                primaryKeys.Add(writer.Join.Key);
             }
 
-            return this.GetKeyBlockExpression(primaryKeys, new[] { writer.Join }.Concat(writer.JOINS), body);
+            return this.GetKeyBlockExpression(new[] { writer.PrimaryKey }, new[] { writer.Join }.Concat(writer.JOINS), body);
         }
         
         private Expression GetWriterExpression(HelperWriter writer)
@@ -358,7 +355,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
         #endregion
 
-        #region " Binders "
+        #region " Readers "
 
         private Expression GetReaderExpression(BaseReader reader) => reader switch
         {
@@ -403,7 +400,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                     value = this.GetTryCatchExpression(reader, value);
             }
 
-            if (canBeDbNull && reader.Metadata.Type != value.Type)
+            if (canBeDbNull)
                 value = Expression.Condition(isDbNull, Expression.Default(reader.Metadata.Type), value);
 
             return value;

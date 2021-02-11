@@ -210,22 +210,19 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         private void AddParentKeys(ListResult result, NewReader reader)
         {
-            foreach (IReference reference in this.GetParentReferences(reader.Metadata).DistinctBy(r => r.Other.Metadata.Identity))
+            IEnumerable<KeyReader> joinKeys = this.GetParentReferences(reader.Metadata).Select(r => this.FindParentKey(reader, r));
+
+            foreach (KeyReader joinKey in joinKeys.NotNull().Where(k => this.IsValidJoinKey(k)).DistinctBy(k => k.Target.Identity))
             {
-                KeyReader joinKey = this.FindParentKey(reader, reference);
+                this.InitializeKey(joinKey);
 
-                if (joinKey != null && this.IsValidJoinKey(joinKey))
+                JoinReader join = new JoinReader(joinKey.Reference)
                 {
-                    this.InitializeKey(joinKey);
+                    Target = this.GetJoinTarget(result, joinKey),
+                };
 
-                    JoinReader join = new JoinReader(reference)
-                    {
-                        Target = this.GetJoinTarget(result, joinKey),
-                    };
-
-                    reader.Joins.Add(join.Target);
-                    reader.Properties.Add(join);
-                }
+                reader.Joins.Add(join.Target);
+                reader.Properties.Add(join);
             }
         }
         private void AddChildKey(ListResult result, TargetWriter writer)

@@ -314,11 +314,13 @@ namespace Jerrycurl.Data.Test
 
             var result = buffer.Commit<IList<Blog>>();
 
+            result.ShouldNotBeNull();
             result.Count.ShouldBe(2);
 
             result[0].Id2.ShouldBe(1);
             result[0].Title.ShouldBe("Blog 1");
 
+            result[0].Posts.ShouldNotBeNull();
             result[0].Posts.Count.ShouldBe(2);
             result[0].Posts[0].BlogId2.ShouldBe(result[0].Id2);
             result[0].Posts[0].Headline.ShouldBe("Post 1.1");
@@ -547,11 +549,13 @@ namespace Jerrycurl.Data.Test
 
             var result = buffer.Commit<IList<Blog>>();
 
+            result.ShouldNotBeNull();
             result.Count.ShouldBe(2);
 
             result[0].Id2.ShouldBe(1);
             result[0].Title.ShouldBe("Blog 1");
 
+            result[0].Posts.ShouldNotBeNull();
             result[0].Posts.Count.ShouldBe(2);
             result[0].Posts[0].BlogId2.ShouldBe(result[0].Id2);
             result[0].Posts[0].Headline.ShouldBe("Post 1.1");
