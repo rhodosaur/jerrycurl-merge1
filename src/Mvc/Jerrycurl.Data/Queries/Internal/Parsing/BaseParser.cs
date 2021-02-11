@@ -138,6 +138,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 {
                     Values = values,
                     Reference = reference,
+                    Target = reference?.Find(ReferenceFlags.Child).Metadata.Identity.Require<IBindingMetadata>(),
                 };
             }
 

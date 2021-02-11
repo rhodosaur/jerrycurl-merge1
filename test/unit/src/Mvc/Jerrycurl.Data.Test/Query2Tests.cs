@@ -238,7 +238,7 @@ namespace Jerrycurl.Data.Test
             result.ShouldBeNull();
         }
 
-        public void Test_Aggregate_NonPrimary()
+        public void Test_Aggregate_NonPrimaryKey()
         {
             var store = DatabaseHelper.Default.Store;
             var schema = store.GetSchema(typeof(Blog));
@@ -374,26 +374,28 @@ namespace Jerrycurl.Data.Test
             var data = (50, new List<int>());
             var empty = store.From(data).Select("Item1", "Item2.Item");
 
-            //buffer1.Insert(empty, "Id", "Foo");
-            //buffer2.Insert(empty, "Item.Id", "Foo");
-            //buffer3.Insert(empty, "Id", "Foo");
-            buffer4.Insert(empty, "Item.Id", "Foo");
+            buffer1.Insert(empty, "Id2", "Foo");
+            buffer2.Insert(empty, "Item.Id2", "Foo");
+            buffer3.Insert(empty, "Id2", "Foo");
+            buffer4.Insert(empty, "Item.Id2", "Foo");
 
-            //var result1 = buffer1.Commit<Blog>();
-            //var result2 = buffer2.Commit<List<Blog>>();
-            //var result3 = buffer3.Commit<Blog>();
+            var result1 = buffer1.Commit<Blog>();
+            var result2 = buffer2.Commit<List<Blog>>();
+            var result3 = buffer3.Commit<Blog>();
             var result4 = buffer4.Commit<List<Blog>>();
 
-            //result1.ShouldBeNull();
-            //result3.ShouldBeNull();
+            result1.ShouldBeNull();
 
-            //result2.ShouldNotBeNull();
-            //result2.Count.ShouldBe(0);
+            result2.ShouldNotBeNull();
+            result2.Count.ShouldBe(0);
 
-            //result4.ShouldNotBeNull();
-            //result4.Count.ShouldBe(1);
-            //result4[0].ShouldNotBeNull();
-            //result4[0].Id.ShouldBe(50);
+            result3.ShouldNotBeNull();
+            result3.Id2.ShouldBe(0);
+
+            result4.ShouldNotBeNull();
+            result4.Count.ShouldBe(1);
+            result4[0].ShouldNotBeNull();
+            result4[0].Id2.ShouldBe(0);
         }
 
 
@@ -425,6 +427,16 @@ namespace Jerrycurl.Data.Test
             result.ShouldNotBeNull();
             result.Id3.ShouldBe(10);
             result.Posts.ShouldBeNull();
+        }
+
+        public void Test_Insert_Key_Priority()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Test_Insert_Result_Priority()
+        {
+            throw new NotImplementedException();
         }
 
         public void Test_Insert_Missing_ChildKey()

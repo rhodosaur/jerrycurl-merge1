@@ -81,13 +81,13 @@ namespace Jerrycurl.Test
         public IList<TItem> Query<TItem>(params Query[] queries) => this.Queries.List<TItem>(queries);
         public IList<TItem> Query<TItem>(string sql) => this.Queries.List<TItem>(new Query() { QueryText = sql });
 
-        public TItem Aggregate<TItem>(params SqliteTable[] tables) => this.Queries.Aggregate<TItem>(tables.Select(t => t.ToQuery()));
-        public TItem Aggregate<TItem>(params Query[] queries) => this.Queries.Aggregate<TItem>(queries);
-        public TItem Aggregate<TItem>(string sql) => this.Queries.Aggregate<TItem>(new Query() { QueryText = sql });
+        public TItem Aggregate<TItem>(params SqliteTable[] tables) => this.Queries.Aggregate<IList<TItem>>(tables.Select(t => t.ToQuery())).FirstOrDefault();
+        public TItem Aggregate<TItem>(params Query[] queries) => this.Queries.Aggregate<IList<TItem>>(queries).FirstOrDefault();
+        public TItem Aggregate<TItem>(string sql) => this.Queries.Aggregate<IList<TItem>>(new Query() { QueryText = sql }).FirstOrDefault();
 
-        public async Task<TItem> AggregateAsync<TItem>(params SqliteTable[] tables) => await this.Queries.AggregateAsync<TItem>(tables.Select(t => t.ToQuery()));
-        public async Task<TItem> AggregateAsync<TItem>(params Query[] queries) => await this.Queries.AggregateAsync<TItem>(queries);
-        public async Task<TItem> AggregateAsync<TItem>(string sql) => await this.Queries.AggregateAsync<TItem>(new Query() { QueryText = sql });
+        public async Task<TItem> AggregateAsync<TItem>(params SqliteTable[] tables) => (await this.Queries.AggregateAsync<IList<TItem>>(tables.Select(t => t.ToQuery()))).FirstOrDefault();
+        public async Task<TItem> AggregateAsync<TItem>(params Query[] queries) => (await this.Queries.AggregateAsync<IList<TItem>>(queries)).FirstOrDefault();
+        public async Task<TItem> AggregateAsync<TItem>(string sql) => (await this.Queries.AggregateAsync<IList<TItem>>(new Query() { QueryText = sql })).FirstOrDefault();
 
 
         public IEnumerable<TItem> Enumerate<TItem>(params SqliteTable[] tables) => this.Queries.Enumerate<TItem>(tables.Select(t => t.ToQuery()));

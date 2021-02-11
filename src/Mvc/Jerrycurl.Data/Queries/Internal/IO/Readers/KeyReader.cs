@@ -11,6 +11,7 @@ namespace Jerrycurl.Data.Queries.Internal.IO.Readers
     {
         public IList<DataReader> Values { get; set; }
         public IReference Reference { get; set; }
+        public IBindingMetadata Target { get; set; }
         public ParameterExpression Variable { get; set; }
     }
 }

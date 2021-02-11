@@ -1,6 +1,7 @@
 ﻿using Jerrycurl.Collections;
 using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Queries.Internal.Extensions;
+using Jerrycurl.Data.Queries.Internal.Parsing;
 using Jerrycurl.Relations.Metadata;
 using System;
 using System.Collections.Generic;
@@ -16,34 +17,39 @@ namespace Jerrycurl.Data.Queries.Internal.Caching
         private readonly object state = new object();
 
         public ISchema Schema { get; }
+        public const int ResultIndex = 0;
 
         public BufferCache(ISchema schema)
         {
             this.Schema = schema ?? throw new ArgumentNullException(nameof(schema));
         }
 
-        public int GetResultIndex() => 0;
-        public int GetAggregateIndex(MetadataIdentity metadata)
+        public int GetListIndex(IBindingMetadata metadata, IReference reference)
+            => (reference != null ? this.GetListIndex(reference) : this.GetListIndex(metadata));
+
+        public int GetListIndex(IBindingMetadata metadata)
         {
-            lock (this.state)
-                return this.aggregateMap.GetOrAdd(metadata, this.aggregateMap.Count);
+            if (metadata.HasFlag(BindingMetadataFlags.Model))
+                return ResultIndex;
+            else if (metadata.HasFlag(BindingMetadataFlags.Item) && metadata.Parent.HasFlag(BindingMetadataFlags.Model))
+                return ResultIndex;
+
+            return this.GetListIndex(new BufferCacheKey(metadata.Identity));
         }
 
-        public int GetListIndex(MetadataIdentity target) => this.GetParentIndex(new BufferCacheKey(target));
-        public int GetParentIndex(IReference reference)
+        public int GetListIndex(IReference reference)
         {
-            IEnumerable<Type> key = this.GetParentKeyType(reference);
-            BufferCacheKey cacheKey = new BufferCacheKey(key);
+            BufferCacheKey cacheKey = new BufferCacheKey(this.GetParentKeyType(reference));
 
-            return this.GetParentIndex(cacheKey);
+            return this.GetListIndex(cacheKey);
         }
 
-        public int GetChildIndex(IReference reference)
+        public int GetJoinIndex(IReference reference)
         {
             IReference childReference = reference.Find(ReferenceFlags.Child);
             MetadataIdentity target = childReference.Metadata.Identity;
 
-            int parentIndex = this.GetParentIndex(reference);
+            int parentIndex = this.GetListIndex(reference);
 
             lock (this.state)
             {
@@ -53,14 +59,20 @@ namespace Jerrycurl.Data.Queries.Internal.Caching
             }
         }
 
+        public int GetAggregateIndex(MetadataIdentity metadata)
+        {
+            lock (this.state)
+                return this.aggregateMap.GetOrAdd(metadata, this.aggregateMap.Count);
+        }
+
         private IEnumerable<Type> GetParentKeyType(IReference reference)
         {
             IReference parentReference = reference.Find(ReferenceFlags.Parent);
 
-            return parentReference.Key.Properties.Select(m => Nullable.GetUnderlyingType(m.Type) ?? m.Type);
+            return parentReference.Key.Properties.Select(m => m.Type.GetKeyType());
         }
 
-        private int GetParentIndex(BufferCacheKey key)
+        private int GetListIndex(BufferCacheKey key)
         {
             lock (this.state)
                 return this.parentMap.GetOrAdd(key, this.parentMap.Count + 1);

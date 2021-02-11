@@ -53,14 +53,22 @@ namespace Jerrycurl.Data.Metadata
             => Create(metadata.Identity, message: "No valid constructor found.");
 
         internal static BindingException NoReferenceFound(MetadataIdentity from, MetadataIdentity to)
-            => new BindingException($"No valid reference found between {from} and {to}. Please specify matching [Key] and [Ref] annotations to map across one-to-many boundaries.");
+            => new BindingException($"No valid reference found between {from} and {to}. Please select matching [Key] and [Ref] values to map across one-to-many boundaries.");
 
-        internal static BindingException IncompatibleReference(IReference reference)
+        internal static BindingException NoReferenceFound(IBindingMetadata metadata)
         {
-            string leftTuple = $"({string.Join(", ", reference.Key.Properties.Select(m => m.Type.GetSanitizedName()))})";
-            string rightTuple = $"({string.Join(", ", reference.Other.Key.Properties.Select(m => m.Type.GetSanitizedName()))})";
+            if (metadata.HasFlag(BindingMetadataFlags.Item))
+                return NoReferenceFound(metadata.Identity, metadata.Parent.Parent.Identity);
+            else
+                return NoReferenceFound(metadata.Identity, metadata.Parent.Identity);
+        }
 
-            return new BindingException($"Cannot join {reference.Metadata.Identity}: {leftTuple} is incompatible with {rightTuple}.");
+        internal static BindingException InvalidReference(IReference reference)
+        {
+            string leftTuple = string.Join(", ", reference.Key.Properties.Select(m => m.Type.GetSanitizedName()));
+            string rightTuple = string.Join(", ", reference.Other.Key.Properties.Select(m => m.Type.GetSanitizedName()));
+
+            return new BindingException($"Cannot join {reference.Metadata.Identity}: ({leftTuple}) is incompatible with {rightTuple}.");
         }
 
     }

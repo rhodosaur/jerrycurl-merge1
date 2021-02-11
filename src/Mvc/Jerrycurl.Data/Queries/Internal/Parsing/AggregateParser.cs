@@ -8,6 +8,7 @@ using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Collections;
 using System.Net.Http.Headers;
 using Jerrycurl.Data.Queries.Internal.IO.Readers;
+using Jerrycurl.Data.Queries.Internal.IO.Targets;
 
 namespace Jerrycurl.Data.Queries.Internal.Parsing
 {
@@ -24,12 +25,21 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             NodeTree nodeTree = NodeParser.Parse(this.Schema, header);
 
             Node valueNode = nodeTree.Items.FirstOrDefault(this.IsResultNode);
-            Node listNode = nodeTree.Items.FirstOrDefault(this.IsResultListNode);
+            Node itemNode = nodeTree.Items.FirstOrDefault(this.IsResultListNode);
 
             AggregateResult result = new AggregateResult(this.Schema);
 
-            result.Value = this.CreateReader(result, valueNode);
-            result.List = this.CreateReader(result, listNode);
+            if (itemNode != null)
+            {
+                result.Value = this.CreateReader(result, itemNode);
+                result.Target = new AggregateTarget()
+                {
+                    AddMethod = itemNode.Metadata.Parent.Composition.Add,
+                    NewList = itemNode.Metadata.Parent.Composition.Construct,
+                };
+            }
+            else
+                result.Value = this.CreateReader(result, valueNode);
 
             return result;
         }

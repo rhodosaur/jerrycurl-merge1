@@ -125,20 +125,10 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
         public AggregateFactory Compile(AggregateResult result)
         {
-            List<Expression> body = new List<Expression>();
+            Expression body = Expression.Default(result.Metadata.Type);
 
             if (result.Value != null)
-                body.Add(this.GetReaderExpression(result.Value));
-
-            if (result.List != null)
-                body.Add(this.GetReaderExpression(result.List));
-
-            if (!body.Any())
-            {
-                IBindingMetadata metadata = result.Schema.Lookup<IBindingMetadata>();
-
-                body.Add(Expression.Default(metadata.Type));
-            }
+                body = this.GetAggregateExpression(result.Value, result.Target);
 
             ParameterExpression[] arguments = new[] { Arguments.Lists, Arguments.Aggregates, Arguments.Schema };
             AggregateInternalReader reader = this.Compile<AggregateInternalReader>(body, arguments);
@@ -168,6 +158,22 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
             return dr => reader(dr, helpers, schema);
         }
+
+        #region " Aggregate "
+        public Expression GetAggregateExpression(BaseReader reader, AggregateTarget target)
+        {
+            if (target == null)
+                return this.GetReaderExpression(reader);
+
+            ParameterExpression variable = Expression.Variable(target.NewList.Type);
+
+            Expression value = this.GetReaderExpression(reader);
+            Expression assignList = Expression.Assign(variable, target.NewList);
+            Expression addValue = Expression.Call(variable, target.AddMethod, value);
+
+            return this.GetBlockOrExpression(new[] { assignList, addValue, variable }, new[] { variable });
+        }
+        #endregion
 
         #region " Prepare "
         private Expression GetPrepareVariableExpression(ListTarget target)
