@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace Jerrycurl.Extensions.Json.Metadata.Contracts
 {
-    internal class JsonContractResolver : IJsonContractResolver
+    public class JsonContractResolver : IJsonContractResolver
     {
         public JsonSerializerOptions Options { get; }
 

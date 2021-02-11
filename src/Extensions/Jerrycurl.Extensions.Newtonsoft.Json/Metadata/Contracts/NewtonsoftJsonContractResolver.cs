@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Jerrycurl.Extensions.Newtonsoft.Json.Metadata.Contracts
 {
-    internal class NewtonsoftJsonContractResolver : IJsonContractResolver
+    public class NewtonsoftJsonContractResolver : IJsonContractResolver
     {
         public JsonSerializerSettings Settings { get; }
 
