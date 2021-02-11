@@ -97,7 +97,7 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
 
         public Expression GetReadWriteExpression(NodeReader reader, Expression parentValue)
         {
-            ParameterExpression variable = Expression.Parameter(reader.Metadata.Type);
+            ParameterExpression variable = this.GetVariable(reader.Metadata);
 
             Expression value = this.GetReadExpression(reader, parentValue);
             Expression assignVariable = Expression.Assign(variable, value);
@@ -111,7 +111,7 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
             notBody.AddRange(this.GetReadWriteExpressions(reader, variable));
             nullBody.AddRange(this.GetWriteMissingExpressions(reader));
 
-            if (!value.Type.IsValueType || Nullable.GetUnderlyingType(value.Type) != null)
+            if (this.IsNullableType(value.Type) && (notBody.Any() || nullBody.Any()))
             {
                 Expression isNull = Expression.ReferenceEqual(variable, Expression.Constant(null));
                 Expression notBlock = this.GetBlockOrExpression(notBody);
@@ -305,7 +305,11 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
             }
             else
             {
-                return this.GetSourceNameExpression(); //combine too
+                MethodInfo combineMethod = typeof(DotNotation2).GetMethod(nameof(DotNotation2.Combine), new[] { typeof(string), typeof(string) });
+
+                Expression sourceName = this.GetSourceNameExpression();
+
+                return Expression.Call(Arguments.Notation, combineMethod, sourceName, Expression.Constant(writer.NamePart));
             }
         }
 
@@ -344,6 +348,14 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
         #endregion
 
         #region " Helpers "
+        private bool IsNullableType(Type type) => (!type.IsValueType || Nullable.GetUnderlyingType(type) != null);
+
+        private ParameterExpression GetVariable(IRelationMetadata metadata, Type variableType = null)
+        {
+            string varName = "_" + metadata.Identity.Name.ToLower().Replace('.', '_');
+
+            return Expression.Variable(variableType ?? metadata.Type, varName);
+        }
         private Expression GetBlockOrExpression(IList<Expression> expressions, IList<ParameterExpression> variables = null)
         {
             if (expressions.Count == 1 && (variables == null || !variables.Any()))

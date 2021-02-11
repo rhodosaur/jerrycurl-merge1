@@ -55,12 +55,5 @@ namespace Jerrycurl.Relations.V11.Internal.Queues
 
             return this.buffer.ToString();
         }
-
-        private struct SC
-        {
-            public string Before { get; set; }
-            public string Index { get; set; }
-            public string After { get; set; }
-        }
     }
 }
