@@ -25,7 +25,7 @@ namespace Jerrycurl.Data.Test
                 {
                     new ColumnBinding(field, "B1"),
                 },
-            }; ;
+            };
 
             DatabaseHelper.Default.Execute(command);
 
