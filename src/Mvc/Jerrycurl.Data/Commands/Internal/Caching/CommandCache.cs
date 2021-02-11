@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Reflection;
 using Jerrycurl.Data.Commands.Internal.Compilation;
 using Jerrycurl.Data.Metadata;
 using Jerrycurl.Relations.Metadata;

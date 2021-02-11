@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Jerrycurl.Relations;
 
 namespace Jerrycurl.Data.Queries.Internal

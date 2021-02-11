@@ -63,6 +63,10 @@ namespace Jerrycurl.Relations
             {
                 throw BindingException.From(this, "Property has no setter.");
             }
+            catch (NullReferenceException)
+            {
+                throw BindingException.From(this, "Property cannot be null.");
+            }
             catch (Exception ex)
             {
                 throw BindingException.From(this, innerException: ex);

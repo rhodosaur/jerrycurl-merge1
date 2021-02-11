@@ -4,8 +4,6 @@ using System.Linq;
 using Jerrycurl.Data.Metadata;
 using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Data.Metadata.Annotations;
-using System.Net.Security;
-using System.Runtime.InteropServices;
 using Jerrycurl.Relations;
 
 namespace Jerrycurl.Data.Metadata

@@ -8,6 +8,7 @@ using Jerrycurl.Relations.Internal.Queues;
 using Jerrycurl.Relations.Internal.IO;
 using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Reflection;
+using Jerrycurl.Relations.Internal.Parsing;
 
 namespace Jerrycurl.Relations.Internal.Compilation
 {

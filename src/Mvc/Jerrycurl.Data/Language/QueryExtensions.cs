@@ -5,7 +5,6 @@ using System.Data.Common;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Jerrycurl.Data.Commands;
 using Jerrycurl.Data.Queries;
 using Jerrycurl.Relations;
 using Jerrycurl.Relations.Language;

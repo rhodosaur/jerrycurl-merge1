@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using Jerrycurl.Diagnostics;
 using HashCode = Jerrycurl.Diagnostics.HashCode;
 

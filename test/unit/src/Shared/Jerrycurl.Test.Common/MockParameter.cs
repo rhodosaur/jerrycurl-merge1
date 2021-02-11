@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
 using System.Data.Common;
-using Jerrycurl.Data.Commands;
-using Jerrycurl.Data.Filters;
-using Jerrycurl.Data.Queries;
-using Shouldly;
 
 namespace Jerrycurl.Test
 {

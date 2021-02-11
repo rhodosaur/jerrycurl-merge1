@@ -1,10 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using Jerrycurl.Data.Metadata;
+﻿using System.Collections.Generic;
 using Jerrycurl.Data.Queries.Internal.IO.Readers;
 using Jerrycurl.Data.Queries.Internal.IO.Targets;
-using Jerrycurl.Data.Queries.Internal.Parsing;
 
 namespace Jerrycurl.Data.Queries.Internal.IO.Writers
 {

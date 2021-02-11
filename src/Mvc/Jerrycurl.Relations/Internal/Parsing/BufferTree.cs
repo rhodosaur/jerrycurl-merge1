@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
+using Jerrycurl.Relations.Internal.IO;
 using Jerrycurl.Relations.Metadata;
 
-namespace Jerrycurl.Relations.Internal.IO
+namespace Jerrycurl.Relations.Internal.Parsing
 {
     internal class BufferTree
     {

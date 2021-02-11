@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using Jerrycurl.Data.Metadata;
-using Jerrycurl.Diagnostics;
-using HashCode = Jerrycurl.Diagnostics.HashCode;
 
 namespace Jerrycurl.Data.Queries.Internal.Caching
 {

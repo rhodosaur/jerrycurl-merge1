@@ -2,10 +2,10 @@
 using System.Linq;
 using System.Linq.Expressions;
 using Jerrycurl.Relations.Internal.Queues;
-using Jerrycurl.Relations.Internal.Parsing;
 using Jerrycurl.Relations.Metadata;
+using Jerrycurl.Relations.Internal.IO;
 
-namespace Jerrycurl.Relations.Internal.IO
+namespace Jerrycurl.Relations.Internal.Parsing
 {
     internal class BufferParser
     {
@@ -144,7 +144,13 @@ namespace Jerrycurl.Relations.Internal.IO
 
         private string GetNamePart(Node node, QueueIndex queue, BufferTree tree)
         {
-            if (queue != null)
+            /*if (queue != null && queue.Type == RelationQueueType.Recursive)
+            {
+                string itemName = tree.Notation.Combine(node.Metadata.Identity.Name, tree.Notation.Member(queue.Item.Identity.Name));
+
+                return tree.Notation.Path(queue.Item.Identity.Name, itemName);
+            }
+            else */if (queue != null)
                 return tree.Notation.Path(queue.Item.Identity.Name, node.Metadata.Identity.Name);
             else
                 return tree.Notation.Path(tree.Source.Metadata.Identity.Name, node.Metadata.Identity.Name);

@@ -2,7 +2,6 @@
 using Jerrycurl.Data.Filters;
 using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Queries;
-using Jerrycurl.Relations;
 using Jerrycurl.Relations.Language;
 using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Test.Profiling;
@@ -89,18 +88,10 @@ namespace Jerrycurl.Test
         public async Task<TItem> AggregateAsync<TItem>(params Query[] queries) => (await this.Queries.AggregateAsync<IList<TItem>>(queries)).FirstOrDefault();
         public async Task<TItem> AggregateAsync<TItem>(string sql) => (await this.Queries.AggregateAsync<IList<TItem>>(new Query() { QueryText = sql })).FirstOrDefault();
 
-
         public IEnumerable<TItem> Enumerate<TItem>(params SqliteTable[] tables) => this.Queries.Enumerate<TItem>(tables.Select(t => t.ToQuery()));
         public IEnumerable<TItem> Enumerate<TItem>(params Query[] queries) => this.Queries.Enumerate<TItem>(queries);
         public IAsyncEnumerable<TItem> EnumerateAsync<TItem>(params SqliteTable[] tables) => this.Queries.EnumerateAsync<TItem>(tables.Select(t => t.ToQuery()));
         public IAsyncEnumerable<TItem> EnumerateAsync<TItem>(params Query[] queries) => this.Queries.EnumerateAsync<TItem>(queries);
         public IAsyncEnumerable<TItem> EnumerateAsync<TItem>(string sql) => this.Queries.EnumerateAsync<TItem>(new Query() { QueryText = sql });
-
-
-        public IRelation Relation<T>(T model = default, params string[] header)
-            => this.Model(model).Select(header);
-
-        public IField Model<T>(T model = default)
-            => this.Store.From(model);
     }
 }

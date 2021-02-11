@@ -1,12 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Shouldly;
+﻿using Shouldly;
 using Jerrycurl.Data.Queries;
 using Jerrycurl.Test;
 using Jerrycurl.Data.Sessions;
 using Jerrycurl.Data.Metadata;
-using Jerrycurl.Data.Test.Model;
 using Jerrycurl.Data.Language;
 using Jerrycurl.Mvc;
 using System.Text.Json;

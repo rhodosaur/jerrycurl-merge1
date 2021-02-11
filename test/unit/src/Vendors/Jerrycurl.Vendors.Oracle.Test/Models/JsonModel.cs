@@ -1,5 +1,4 @@
 ﻿using Jerrycurl.Data.Metadata.Annotations;
-using Jerrycurl.Mvc.Metadata.Annotations;
 using Newtonsoft.Json;
 
 namespace Jerrycurl.Vendors.Oracle.Test.Models

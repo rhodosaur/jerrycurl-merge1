@@ -1,9 +1,5 @@
-﻿using System.Threading.Tasks;
-using Shouldly;
+﻿using Shouldly;
 using Jerrycurl.Test;
-using Jerrycurl.Data.Test.Model;
-using Jerrycurl.Data.Queries;
-using Jerrycurl.Data.Language;
 using Jerrycurl.Relations.Language;
 using Jerrycurl.Data.Metadata;
 using System.Linq;

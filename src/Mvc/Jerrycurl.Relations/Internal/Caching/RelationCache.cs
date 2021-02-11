@@ -1,8 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using Jerrycurl.Relations.Internal.Compilation;
 using Jerrycurl.Relations.Internal.Queues;
-using Jerrycurl.Relations.Internal.IO;
 using Jerrycurl.Relations.Metadata;
+using Jerrycurl.Relations.Internal.Parsing;
 
 namespace Jerrycurl.Relations.Internal.Caching
 {

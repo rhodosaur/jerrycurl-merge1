@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Text.Json;
 using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Metadata.Annotations;
-using Jerrycurl.Mvc.Metadata.Annotations;
 using Jerrycurl.Reflection;
 
 namespace Jerrycurl.Extensions.Json.Metadata

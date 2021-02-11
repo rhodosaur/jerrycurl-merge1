@@ -8,14 +8,9 @@ using Jerrycurl.Data.Queries.Internal.Caching;
 using Jerrycurl.Data.Queries.Internal.Extensions;
 using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Collections;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using Jerrycurl.Data.Queries.Internal.IO.Readers;
 using Jerrycurl.Data.Queries.Internal.IO.Writers;
-using System.Runtime.CompilerServices;
 using Jerrycurl.Data.Queries.Internal.IO.Targets;
-using System.IO;
-using System.Text;
 
 namespace Jerrycurl.Data.Queries.Internal.Parsing
 {

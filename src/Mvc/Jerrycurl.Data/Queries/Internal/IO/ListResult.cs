@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq.Expressions;
-using Jerrycurl.Data.Metadata;
+﻿using System.Collections.Generic;
 using Jerrycurl.Data.Queries.Internal.IO.Targets;
 using Jerrycurl.Data.Queries.Internal.IO.Writers;
 using Jerrycurl.Relations.Metadata;

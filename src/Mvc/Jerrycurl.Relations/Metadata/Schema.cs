@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using Jerrycurl.Reflection;
-using Jerrycurl.Relations.Internal;
 
 namespace Jerrycurl.Relations.Metadata
 {

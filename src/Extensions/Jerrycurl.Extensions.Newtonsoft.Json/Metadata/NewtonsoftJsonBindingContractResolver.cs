@@ -6,7 +6,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Metadata.Annotations;
-using Jerrycurl.Mvc.Metadata.Annotations;
 using Jerrycurl.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;

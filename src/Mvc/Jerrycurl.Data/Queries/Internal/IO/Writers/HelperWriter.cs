@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Linq.Expressions;
 using Jerrycurl.Data.Metadata;
-using Jerrycurl.Data.Queries.Internal.Parsing;
 
 namespace Jerrycurl.Data.Queries.Internal.IO.Writers
 {

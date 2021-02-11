@@ -7,16 +7,12 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using Jerrycurl.Collections;
 using Jerrycurl.Data.Metadata;
-using Jerrycurl.Data.Queries.Internal.Parsing;
 using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Reflection;
 using Jerrycurl.Data.Queries.Internal.IO;
 using Jerrycurl.Data.Queries.Internal.Caching;
-using System.Collections;
-using System.Security.Cryptography;
 using Jerrycurl.Data.Queries.Internal.IO.Writers;
 using Jerrycurl.Data.Queries.Internal.IO.Readers;
-using System.Runtime.CompilerServices;
 using Jerrycurl.Data.Queries.Internal.IO.Targets;
 
 namespace Jerrycurl.Data.Queries.Internal.Compilation

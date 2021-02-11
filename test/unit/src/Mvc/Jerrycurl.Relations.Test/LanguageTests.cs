@@ -1,5 +1,4 @@
-﻿using Jerrycurl.Relations.Metadata;
-using Jerrycurl.Relations.Test.Models;
+﻿using Jerrycurl.Relations.Test.Models;
 using Jerrycurl.Relations.Language;
 using Jerrycurl.Test;
 using Shouldly;
@@ -14,11 +13,11 @@ namespace Jerrycurl.Relations.Test
         {
             var store = DatabaseHelper.Default.Store;
             var actual = store.For<RootModel>()
-                                         .Select(m => m.Object)
-                                         .Select(m => m.ReadOnly);
+                              .Select(m => m.Object)
+                              .Select(m => m.ReadOnly);
 
             var expected = store.GetSchema<RootModel>()
-                                           .Select("Object", "ReadOnly");
+                                .Select("Object", "ReadOnly");
 
             actual.ShouldBe(expected);
         }
@@ -33,7 +32,7 @@ namespace Jerrycurl.Relations.Test
                                          .Select(m => m.Complex.Value);
 
             var expected = store.GetSchema<List<RootModel>>()
-                                           .Select("Item.Object", "Item.ReadOnly", "Item.Complex.Value");
+                                .Select("Item.Object", "Item.ReadOnly", "Item.Complex.Value");
 
             actual.ShouldBe(expected);
         }
@@ -50,7 +49,7 @@ namespace Jerrycurl.Relations.Test
                               .Select();
 
             var expected = store.GetSchema<List<RootModel>>()
-                                           .Select("Item", "Item.IntValue", "Item.Complex", "Item.IntList.Item");
+                                .Select("Item", "Item.IntValue", "Item.Complex", "Item.IntList.Item");
 
             actual.ShouldBe(expected);
         }
