@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 
-namespace Jerrycurl.Mvc
+namespace Jerrycurl.Mvc.Internal
 {
     internal static class ProcCache
     {

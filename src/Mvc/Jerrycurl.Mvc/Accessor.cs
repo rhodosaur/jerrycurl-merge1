@@ -194,7 +194,8 @@ namespace Jerrycurl.Mvc
 
             QueryEngine engine = new QueryEngine(queryOptions);
 
-            return engine.List<TItem>(queries);
+            return engine.Execute<IList<TItem>>(queries, QueryType2.List);
+            //return engine.List<TItem>(queries);
         }
 
         /// <summary>

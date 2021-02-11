@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Jerrycurl.Mvc.Internal;
 using Jerrycurl.Mvc.Projections;
 using Jerrycurl.Relations;
 using Jerrycurl.Relations.Metadata;

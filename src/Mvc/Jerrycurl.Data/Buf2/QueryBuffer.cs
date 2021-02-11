@@ -60,7 +60,7 @@ namespace Jerrycurl.Data.Buf2
                     this.innerCommit = this.AggregateCommit;
                     break;
                 default:
-                    throw new QueryException($"Invalid query type '{this.Type}': Only List and Aggregate are supported.");
+                    throw QueryException.InvalidQueryType(this.Type);
             }
         }
 

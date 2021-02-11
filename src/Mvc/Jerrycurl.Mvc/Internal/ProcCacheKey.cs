@@ -2,7 +2,7 @@
 using Jerrycurl.Diagnostics;
 using HashCode = Jerrycurl.Diagnostics.HashCode;
 
-namespace Jerrycurl.Mvc
+namespace Jerrycurl.Mvc.Internal
 {
     internal class ProcCacheKey : IEquatable<ProcCacheKey>
     {

@@ -5,7 +5,7 @@ using Jerrycurl.Relations.Metadata;
 using System;
 using HashCode = Jerrycurl.Diagnostics.HashCode;
 
-namespace Jerrycurl.Mvc
+namespace Jerrycurl.Mvc.Internal
 {
     internal class ProcLookupKey : IEquatable<ProcLookupKey>
     {

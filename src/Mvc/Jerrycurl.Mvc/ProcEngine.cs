@@ -11,6 +11,7 @@ using Jerrycurl.Mvc.Metadata.Annotations;
 using Jerrycurl.Reflection;
 using Jerrycurl.Data.Metadata;
 using Jerrycurl.Mvc.Sql;
+using Jerrycurl.Mvc.Internal;
 
 namespace Jerrycurl.Mvc
 {
@@ -38,7 +39,7 @@ namespace Jerrycurl.Mvc
                 throw new ArgumentNullException(nameof(args));
 
             if (descriptor.DomainType == null)
-                throw new ProcExecutionException($"No domain found for page type '{descriptor.PageType.GetSanitizedFullName()}'. Make sure to implement IDomain in a parent namespace.");
+                throw ProcExecutionException.DomainNotFound(descriptor.PageType);
 
             ProcCacheKey key = new ProcCacheKey(descriptor, args);
 
