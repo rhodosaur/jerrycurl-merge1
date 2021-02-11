@@ -14,13 +14,10 @@ namespace Jerrycurl.Buf2
 {
     public static class RelationExtensions
     {
-        public static ISchema Declare<T>(this ISchemaStore store)
+        public static ISchema Describe<T>(this ISchemaStore store)
             => store.GetSchema(typeof(T));
 
-        public static ListBuffer2 AsListBuffer(this ISchema schema)
-            => new ListBuffer2(schema);
-
-        public static ListBuffer2 AsAggregateBuffer(this ISchema schema)
-            => new ListBuffer2(schema);
+        public static QueryBuffer AsBuffer(this ISchema schema, QueryType2 type)
+            => new QueryBuffer(schema, type);
     }
 }

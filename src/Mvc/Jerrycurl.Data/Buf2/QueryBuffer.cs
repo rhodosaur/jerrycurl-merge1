@@ -68,6 +68,7 @@ namespace Jerrycurl.Data.Buf2
         public Task InsertAsync(DbDataReader dataReader, CancellationToken cancellationToken = default) => this.innerInsertAsync(dataReader, cancellationToken);
         public object Commit() => this.innerCommit();
 
+        #region " Aggregate "
         private void AggregateInsert(IDataReader dataReader)
         {
             BufferWriter writer = QueryCache2.GetAggregateWriter(this.Schema, dataReader);
@@ -84,6 +85,25 @@ namespace Jerrycurl.Data.Buf2
             while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
                 writer.WriteOne(this, dataReader);
         }
+
+
+        private object AggregateCommit()
+        {
+            try
+            {
+                QueryCacheKey<AggregateName> cacheKey = this.aggregate.ToCacheKey();
+                AggregateReader reader = QueryCache2.GetAggregateReader(cacheKey);
+
+                return reader(this);
+            }
+            finally
+            {
+                this.Flush();
+            }
+        }
+        #endregion
+
+        #region " List "
 
         private void ListInsert(IDataReader dataReader)
         {
@@ -114,19 +134,7 @@ namespace Jerrycurl.Data.Buf2
             }
         }
 
-        private object AggregateCommit()
-        {
-            try
-            {
-                QueryCacheKey<AggregateName> cacheKey = this.aggregate.ToCacheKey();
-                AggregateReader reader = QueryCache2.GetAggregateReader(cacheKey);
+        #endregion
 
-                return reader(this);
-            }
-            finally
-            {
-                this.Flush();
-            }
-        }
     }
 }
