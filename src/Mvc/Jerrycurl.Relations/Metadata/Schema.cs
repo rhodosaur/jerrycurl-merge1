@@ -121,7 +121,7 @@ namespace Jerrycurl.Relations.Metadata
 
         public override string ToString() => this.Model.Type.GetSanitizedName();
 
-        public IRelationMetadata Lookup(string name) => this.Lookup<IRelationMetadata>();
+        public IRelationMetadata Lookup(string name) => this.Lookup<IRelationMetadata>(name);
         public TMetadata Lookup<TMetadata>() where TMetadata : IMetadata
             => this.Lookup<TMetadata>(this.Notation.Model());
 

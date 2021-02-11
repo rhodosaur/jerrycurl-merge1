@@ -1,0 +1,20 @@
+﻿using System;
+using Jerrycurl.Mvc.Projections;
+using Jerrycurl.Mvc.Sql;
+
+namespace Jerrycurl.Mvc.Test.Conventions.Queries.Crud
+{
+    public class CreateDatabase_cssql : ProcPage<dynamic, object>
+    {
+        public CreateDatabase_cssql(IProjection model, IProjection result)
+            : base(model, result)
+        {
+
+        }
+
+        public override void Execute()
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

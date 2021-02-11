@@ -13,6 +13,8 @@ using System.Drawing;
 using Jerrycurl.Data.Test.Model.Custom;
 using Jerrycurl.Data.Test.Model.Blogging;
 using Jerrycurl.Data.Test.Metadata;
+using Jerrycurl.Data.Test.Model;
+using Jerrycurl.Test.Extensions;
 
 namespace Jerrycurl.Data.Test
 {
@@ -287,9 +289,135 @@ namespace Jerrycurl.Data.Test
             result.IReadOnlyCollection.Count.ShouldBe(1);
             result.IReadOnlyCollection.First().ShouldBe(47);
         }
-        public void Test_Insert_AllTypes()
+        public void Test_InsertAndAggregate_AllTypes()
         {
-            //throw new NotImplementedException();
+            var store = DatabaseHelper.Default.Store;
+            var schema1 = store.GetSchema(typeof(List<BlogDatabaseView>));
+            var schema2 = store.GetSchema(typeof(BlogDatabaseModel));
+            var data = new BlogDatabaseModel()
+            {
+                Categories = new List<Jerrycurl.Test.Model.Database.BlogCategory>()
+                {
+                    new Jerrycurl.Test.Model.Database.BlogCategory()
+                    {
+                        Id = 1,
+                        Name = "Plants",
+                    },
+                    new Jerrycurl.Test.Model.Database.BlogCategory()
+                    {
+                        Id = 2,
+                        Name = "Birds",
+                    }
+                },
+                Blogs = new List<Jerrycurl.Test.Model.Database.Blog>()
+                {
+                    new Jerrycurl.Test.Model.Database.Blog()
+                    {
+                        Id = 1,
+                        Title = "Blog #1",
+                        CategoryId = 2,
+                    },
+                    new Jerrycurl.Test.Model.Database.Blog()
+                    {
+                        Id = 2,
+                        Title = "Blog #2",
+                        CategoryId = 2,
+                    },
+                    new Jerrycurl.Test.Model.Database.Blog()
+                    {
+                        Id = 3,
+                        Title = "Blog #3",
+                    }
+                },
+                Authors = new List<Jerrycurl.Test.Model.Database.BlogAuthor>()
+                {
+                    new Jerrycurl.Test.Model.Database.BlogAuthor()
+                    {
+                        BlogId = 2,
+                        Name = "Blogger #2",
+                    },
+                },
+                Posts = new List<Jerrycurl.Test.Model.Database.BlogPost>()
+                {
+                    new Jerrycurl.Test.Model.Database.BlogPost()
+                    {
+                        Id = 1,
+                        BlogId = 1,
+                        CreatedOn = new DateTime(2000, 1, 1),
+                        Headline = "Blog post #1.1",
+                        Content = "So...",
+                    },
+                    new Jerrycurl.Test.Model.Database.BlogPost()
+                    {
+                        Id = 2,
+                        BlogId = 1,
+                        CreatedOn = new DateTime(2000, 1, 1),
+                        Headline = "Blog post #1.2",
+                        Content = "...and then"
+                    },
+                    new Jerrycurl.Test.Model.Database.BlogPost()
+                    {
+                        Id = 3,
+                        BlogId = 3,
+                        CreatedOn = new DateTime(2000, 1, 1),
+                        Headline = "Blog post #3.1",
+                        Content = "Well...",
+                    },
+                },
+            };
+
+            
+            var buffer1 = new QueryBuffer(schema1, QueryType.List);
+            var buffer2 = new QueryBuffer(schema2, QueryType.Aggregate);
+
+            var categories = store.For<BlogDatabaseModel>()
+                .Join(m => m.Categories)
+                .SelectAll()
+                .From(data);
+
+            var authors = store.For<BlogDatabaseModel>()
+                .Join(m => m.Authors)
+                .SelectAll()
+                .From(data);
+
+            var blogs = store.For<BlogDatabaseModel>()
+                .Join(m => m.Blogs)
+                .SelectAll()
+                .From(data);
+
+            var posts = store.For<BlogDatabaseModel>()
+                .Join(m => m.Posts)
+                .SelectAll()
+                .From(data);
+
+            buffer1.Insert(categories, "Item.Category.Item.Id",
+                                       "Item.Category.Item.ParentId",
+                                       "Item.Category.Item.Name");
+            buffer1.Insert(authors, "Item.Author.Item.BlogId",
+                                    "Item.Author.Item.Name",
+                                    "Item.Author.Item.TwitterUrl");
+            buffer1.Insert(blogs, "Item.Id",
+                                  "Item.Title",
+                                  "Item.CategoryId");
+            buffer1.Insert(posts, "Item.Posts.Item.Id",
+                                  "Item.Posts.Item.BlogId",
+                                  "Item.Posts.Item.CreatedOn",
+                                  "Item.Posts.Item.Headline",
+                                  "Item.Posts.Item.Content");
+
+            buffer2.Insert(categories);
+            buffer2.Insert(authors);
+            buffer2.Insert(blogs);
+            buffer2.Insert(posts);
+
+            var result1 = buffer1.Commit<List<BlogDatabaseView>>();
+            var result2 = buffer2.Commit<BlogDatabaseModel>();
+
+            result1.Cast<Jerrycurl.Test.Model.Database.Blog>().ToList().ShouldBeSameAsJson(data.Blogs);
+            result1.Where(b => b.Author.HasValue).Select(b => b.Author.Value).Distinct().ToList().ShouldBeSameAsJson(data.Authors);
+            result1.Where(b => b.Category.HasValue).Select(b => b.Category.Value).Distinct().ToList().ShouldBeSameAsJson(data.Categories);
+            result1.SelectMany(b => b.Posts).Cast<Jerrycurl.Test.Model.Database.BlogPost>().ToList().ShouldBeSameAsJson(data.Posts);
+            result2.ShouldBeSameAsJson(data);
         }
 
         public void Test_Insert_DualRecursiveTree()

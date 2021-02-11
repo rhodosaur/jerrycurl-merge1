@@ -48,6 +48,8 @@ namespace Jerrycurl.Data.Language
         #region " Insert "
         public static QueryBuffer Insert(this QueryBuffer buffer, IRelation relation, params string[] targetHeader)
             => buffer.Insert(relation, (IEnumerable<string>)targetHeader);
+        public static QueryBuffer Insert(this QueryBuffer buffer, IRelation relation, IEnumerable<IRelationMetadata> targetHeader)
+            => buffer.Insert(relation, targetHeader?.Select(m => m?.Identity.Name));
 
         public static QueryBuffer Insert(this QueryBuffer buffer, IRelation relation, IEnumerable<string> targetHeader)
         {
@@ -138,6 +140,8 @@ namespace Jerrycurl.Data.Language
         #region " InsertAsync "
         public static Task<QueryBuffer> InsertAsync(this QueryBuffer buffer, IRelation relation, params string[] targetHeader)
             => buffer.InsertAsync(relation, (IEnumerable<string>)targetHeader);
+        public static Task<QueryBuffer> InsertAsync(this QueryBuffer buffer, IRelation relation, IEnumerable<IRelationMetadata> targetHeader)
+            => buffer.InsertAsync(relation, targetHeader?.Select(m => m?.Identity.Name));
 
         public static async Task<QueryBuffer> InsertAsync(this QueryBuffer buffer, IRelation relation, IEnumerable<string> targetHeader)
         {
