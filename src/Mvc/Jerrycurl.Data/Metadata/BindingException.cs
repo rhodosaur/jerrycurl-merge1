@@ -56,7 +56,7 @@ namespace Jerrycurl.Data.Metadata
             => Create(metadata, message: "No valid constructor found.");
 
         internal static BindingException NoReferenceFound(MetadataIdentity from, MetadataIdentity to)
-            => new BindingException($"No valid reference found between {from} and {to}. Please select matching [Key] and [Ref] values to map across one-to-many boundaries.");
+            => new BindingException($"No valid reference found between {from} and {to}. Include matching [Key] and [Ref] attributes to map across one-to-many boundaries.");
 
         internal static BindingException NoReferenceFound(IBindingMetadata metadata)
         {
