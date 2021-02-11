@@ -4,16 +4,20 @@ namespace Jerrycurl.Relations.Metadata
 {
     internal class MetadataBuilderContext : IMetadataBuilderContext
     {
-        public MetadataIdentity Identity { get; }
-        public DotNotation Notation => this.Schema.Notation;
         public Schema Schema { get; }
+        public RelationMetadata Relation { get; }
 
-        ISchema IMetadataBuilderContext.Schema => this.Schema;
+        IRelationMetadata IMetadataBuilderContext.Relation => this.Relation;
 
-        public MetadataBuilderContext(MetadataIdentity identity, Schema schema)
+        public MetadataBuilderContext(Schema schema)
         {
-            this.Identity = identity ?? throw new ArgumentNullException(nameof(identity));
             this.Schema = schema ?? throw new ArgumentNullException(nameof(schema));
+        }
+
+        public MetadataBuilderContext(Schema schema, RelationMetadata relation)
+        {
+            this.Schema = schema ?? throw new ArgumentNullException(nameof(schema));
+            this.Relation = relation ?? throw new ArgumentNullException(nameof(relation));
         }
 
         public void AddMetadata<TMetadata>(TMetadata metadata) where TMetadata : IMetadata

@@ -11,8 +11,8 @@ namespace Jerrycurl.Mvc
         {
             serializerOptions ??= new JsonSerializerOptions();
 
-            options.Schemas.AddContract(new JsonBindingContractResolver(serializerOptions));
-            options.Schemas.AddContract(new JsonContractResolver(serializerOptions));
+            options.Schemas.Apply(new JsonBindingContractResolver(serializerOptions));
+            options.Schemas.Apply(new JsonContractResolver(serializerOptions));
         }
     }
 }

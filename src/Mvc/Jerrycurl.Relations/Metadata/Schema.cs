@@ -11,14 +11,18 @@ namespace Jerrycurl.Relations.Metadata
         private readonly ConcurrentDictionary<MetadataKey, object> entries = new ConcurrentDictionary<MetadataKey, object>();
         private readonly ConcurrentDictionary<Type, ReaderWriterLockSlim> locks = new ConcurrentDictionary<Type, ReaderWriterLockSlim>();
 
-        public Type Model { get; }
-        public ISchemaStore Store { get; }
+        public IRelationMetadata Model { get; private set; }
+        public SchemaStore Store { get; }
         public DotNotation Notation => this.Store.Notation;
 
-        public Schema(ISchemaStore store, Type model)
+        public Schema(SchemaStore store)
         {
             this.Store = store ?? throw new ArgumentNullException(nameof(store));
-            this.Model = model ?? throw new ArgumentNullException(nameof(model));
+        }
+
+        public void Initialize(IRelationMetadata model)
+        {
+            this.Model = model;
         }
 
         public void AddMetadata<TMetadata>(TMetadata metadata)
@@ -27,10 +31,10 @@ namespace Jerrycurl.Relations.Metadata
             if (metadata == null)
                 throw new ArgumentNullException(nameof(metadata));
 
-            if (metadata.Identity == null)
-                throw new ArgumentNullException(nameof(metadata.Identity));
+            if (metadata.Relation == null)
+                throw new ArgumentNullException(nameof(metadata.Relation));
 
-            MetadataKey key = MetadataKey.FromIdentity<TMetadata>(metadata.Identity);
+            MetadataKey key = MetadataKey.FromIdentity<TMetadata>(metadata.Relation.Identity);
 
             if (!this.entries.TryAdd(key, metadata))
                 throw new InvalidOperationException("Metadata already added.");
@@ -78,6 +82,9 @@ namespace Jerrycurl.Relations.Metadata
 
             try
             {
+                MetadataIdentity identity = new MetadataIdentity(this, name);
+                IRelationMetadata relation = this.Store.RelationBuilder.GetMetadata(schema, identity);
+
                 foreach (IMetadataBuilder<TMetadata> metadataBuilder in this.Store.OfType<IMetadataBuilder<TMetadata>>())
                 {
                     MetadataIdentity identity = new MetadataIdentity(this, name);

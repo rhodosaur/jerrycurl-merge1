@@ -1,4 +1,5 @@
-﻿using Jerrycurl.Data.Metadata;
+﻿using Jerrycurl.Collections;
+using Jerrycurl.Data.Metadata;
 using Jerrycurl.Mvc.Metadata;
 using Jerrycurl.Relations.Metadata;
 using System;
@@ -8,52 +9,68 @@ namespace Jerrycurl.Mvc
 {
     public static class DomainExtensions
     {
-        public static void AddContract(this ISchemaStore schemas, IBindingContractResolver contract)
+        public static void Apply(this ISchemaStore store, ITableContractResolver resolver)
         {
-            if (schemas == null)
-                throw new ArgumentNullException(nameof(schemas));
+            if (store == null)
+                throw new ArgumentNullException(nameof(store));
 
-            if (contract == null)
-                throw new ArgumentNullException(nameof(contract));
+            if (resolver == null)
+                throw new ArgumentNullException(nameof(resolver));
 
-            BindingMetadataBuilder builder = schemas.OfType<BindingMetadataBuilder>().FirstOrDefault();
+            TableMetadataBuilder builder = store.FirstOfType<TableMetadataBuilder>();
 
             if (builder == null)
-                throw new InvalidOperationException("No binding metadata builder found.");
+                throw new InvalidOperationException("No TableMetadataBuilder instance found.");
 
-            builder.Add(contract);
+            builder.Add(resolver);
         }
 
-        public static void AddContract(this ISchemaStore schemas, IJsonContractResolver contract)
+        public static void Apply(this ISchemaStore store, IBindingContractResolver resolver)
         {
-            if (schemas == null)
-                throw new ArgumentNullException(nameof(schemas));
+            if (store == null)
+                throw new ArgumentNullException(nameof(store));
 
-            if (contract == null)
-                throw new ArgumentNullException(nameof(contract));
+            if (resolver == null)
+                throw new ArgumentNullException(nameof(resolver));
 
-            JsonMetadataBuilder builder = schemas.OfType<JsonMetadataBuilder>().FirstOrDefault();
+            BindingMetadataBuilder builder = store.FirstOfType<BindingMetadataBuilder>();
 
             if (builder == null)
-                throw new InvalidOperationException("No JSON metadata builder found.");
+                throw new InvalidOperationException("No BindingMetadataBuilder instance found.");
 
-            builder.Add(contract);
+            builder.Add(resolver);
         }
 
-        public static void AddContract(this ISchemaStore schemas, IRelationContractResolver contract)
+        public static void Apply(this ISchemaStore store, IJsonContractResolver resolver)
         {
-            if (schemas == null)
-                throw new ArgumentNullException(nameof(schemas));
+            if (store == null)
+                throw new ArgumentNullException(nameof(store));
 
-            if (contract == null)
-                throw new ArgumentNullException(nameof(contract));
+            if (resolver == null)
+                throw new ArgumentNullException(nameof(resolver));
 
-            RelationMetadataBuilder builder = schemas.OfType<RelationMetadataBuilder>().FirstOrDefault();
+            JsonMetadataBuilder builder = store.FirstOfType<JsonMetadataBuilder>();
 
             if (builder == null)
-                throw new InvalidOperationException("No relation metadata builder found.");
+                throw new InvalidOperationException("No JsonMetadataBuilder instance found.");
 
-            builder.Add(contract);
+            builder.Add(resolver);
+        }
+
+        public static void Apply(this ISchemaStore store, IRelationContractResolver resolver)
+        {
+            if (store == null)
+                throw new ArgumentNullException(nameof(store));
+
+            if (resolver == null)
+                throw new ArgumentNullException(nameof(resolver));
+
+            RelationMetadataBuilder builder = store.OfType<RelationMetadataBuilder>().FirstOrDefault();
+
+            if (builder == null)
+                throw new InvalidOperationException("No RelationMetadataBuilder instance found.");
+
+            builder.Add(resolver);
         }
     }
 }

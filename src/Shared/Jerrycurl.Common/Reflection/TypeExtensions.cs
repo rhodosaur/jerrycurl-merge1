@@ -47,29 +47,18 @@ namespace Jerrycurl.Reflection
 
             return null;
         }
+
         public static bool IsNullable(this Type type, out Type underlyingType)
-        {
-            underlyingType = Nullable.GetUnderlyingType(type);
-
-            return (underlyingType != null);
-        }
-
+            => ((underlyingType = Nullable.GetUnderlyingType(type)) != null);
 
         public static bool HasParameters(this MethodInfo methodInfo, params Type[] parameterTypes)
-        {
-            return methodInfo.GetParameters().Select(pi => pi.ParameterType).SequenceEqual(parameterTypes);
-        }
+            => methodInfo.GetParameters().Select(pi => pi.ParameterType).SequenceEqual(parameterTypes);
 
         public static bool HasSignature(this ConstructorInfo constructorInfo, params Type[] parameterTypes)
-        {
-            return constructorInfo.GetParameters().Select(pi => pi.ParameterType).SequenceEqual(parameterTypes);
-        }
-
+            => constructorInfo.GetParameters().Select(pi => pi.ParameterType).SequenceEqual(parameterTypes);
 
         public static bool HasSignature(this MethodInfo methodInfo, Type returnType, params Type[] parameterTypes)
-        {
-            return ((returnType ?? typeof(void)) == methodInfo.ReturnType && methodInfo.HasParameters(parameterTypes));
-        }
+            => ((returnType ?? typeof(void)) == methodInfo.ReturnType && methodInfo.HasParameters(parameterTypes));
 
         public static string GetSanitizedFullName(this Type type)
         {

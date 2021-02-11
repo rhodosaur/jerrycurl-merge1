@@ -6,9 +6,12 @@ namespace Jerrycurl.Relations.Metadata
 {
     public interface IRelationMetadata : IMetadata
     {
+        MetadataIdentity Identity { get; }
+        ISchema Schema { get; }
+        DotNotation Notation { get; }
         IReadOnlyList<IRelationMetadata> Properties { get; }
         IRelationMetadata Parent { get; }
-        IRelationMetadata MemberOf { get; }
+        IRelationMetadata Owner { get; }
         IRelationMetadata Item { get; }
         RelationMetadataFlags Flags { get; }
         IReadOnlyList<Attribute> Annotations { get; }

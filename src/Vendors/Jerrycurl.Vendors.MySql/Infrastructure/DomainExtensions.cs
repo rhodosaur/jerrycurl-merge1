@@ -14,7 +14,7 @@ namespace Jerrycurl.Mvc
         public static void UseMySql(this DomainOptions options, string connectionString)
         {
             options.ConnectionFactory = () => new MySqlConnection(connectionString);
-            options.Schemas.AddContract(new MySqlContractResolver());
+            options.Schemas.Apply(new MySqlContractResolver());
             options.Dialect = new MySqlDialect();
         }
     }

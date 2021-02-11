@@ -41,7 +41,7 @@ namespace Jerrycurl.Relations.Metadata
 
         public IEnumerable<Attribute> GetAnnotations(IRelationMetadata metadata)
         {
-            return metadata.Type.GetCustomAttributes(true).OfType<Attribute>().Concat(metadata.Member?.GetCustomAttributes() ?? Array.Empty<Attribute>());
+            return metadata.Type.GetCustomAttributes(inherit: true).OfType<Attribute>().Concat(metadata.Member?.GetCustomAttributes() ?? Array.Empty<Attribute>());
         }
 
         private bool IsEnumerable(IRelationMetadata metadata)

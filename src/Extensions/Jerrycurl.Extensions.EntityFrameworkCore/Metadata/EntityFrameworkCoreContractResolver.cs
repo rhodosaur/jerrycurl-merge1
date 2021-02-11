@@ -11,8 +11,10 @@ using System.Linq;
 
 namespace Jerrycurl.Extensions.EntityFrameworkCore.Metadata
 {
-    public class EntityFrameworkCoreContractResolver : IRelationContractResolver, ITableContractResolver
+    public class EntityFrameworkCoreContractResolver : ITableContractResolver
     {
+        public int Priority { get; } = 1000;
+
         private IEntityType[] entities;
 
         public EntityFrameworkCoreContractResolver(DbContext dbContext)
@@ -27,8 +29,6 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Metadata
         {
             this.entities = dbContext.Model.GetEntityTypes().ToArray();
         }
-
-        public IRelationContract GetContract(IRelationMetadata metadata) => null;
 
         public IEnumerable<Attribute> GetAnnotations(IRelationMetadata metadata)
         {

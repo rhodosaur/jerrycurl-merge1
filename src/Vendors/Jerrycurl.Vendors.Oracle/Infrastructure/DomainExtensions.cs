@@ -15,7 +15,7 @@ namespace Jerrycurl.Mvc
         public static void UseOracle(this DomainOptions options, string connectionString)
         {
             options.ConnectionFactory = () => new OracleConnection(connectionString);
-            options.Schemas.AddContract(new OracleContractResolver());
+            options.Schemas.Apply(new OracleContractResolver());
             options.Sql.Filters.Add(new OracleLongFilter());
             options.Dialect = new OracleDialect();
         }

@@ -2,15 +2,22 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Jerrycurl.Collections;
 
 namespace Jerrycurl.Relations.Metadata
 {
-    public class SchemaStore : Collection<IMetadataBuilder>, ISchemaStore
+    public class SchemaStore : ISchemaStore
     {
         private readonly ConcurrentDictionary<Type, ISchema> entries = new ConcurrentDictionary<Type, ISchema>();
+        private readonly RelationMetadataBuilder relationBuilder = new RelationMetadataBuilder();
+        private readonly List<IMetadataBuilder> builders = new List<IMetadataBuilder>();
 
         public DotNotation Notation { get; }
+        internal RelationMetadataBuilder RelationBuilder { get; }
+        internal List<IMetadataBuilder> MetadataBuilders { get; }
+
+        IEnumerable<IMetadataBuilder> ISchemaStore.Builders => new IMetadataBuilder[] { this.relationBuilder }.Concat(this.builders);
 
         public SchemaStore()
             : this(new DotNotation())
@@ -32,8 +39,7 @@ namespace Jerrycurl.Relations.Metadata
         public SchemaStore(DotNotation notation, IEnumerable<IMetadataBuilder> builders)
             : this(notation)
         {
-            foreach (IMetadataBuilder builder in builders?.NotNull() ?? Array.Empty<IMetadataBuilder>())
-                this.Add(builder);
+            this.builders.AddRange(builders ?? Array.Empty<IMetadataBuilder>());
         }
 
         public ISchema GetSchema(Type modelType)
@@ -46,17 +52,13 @@ namespace Jerrycurl.Relations.Metadata
 
         private Schema CreateSchema(Type modelType)
         {
-            Schema newSchema = new Schema(this, modelType);
+            Schema schema = new Schema(this);
 
-            foreach (IMetadataBuilder builder in this)
-            {
-                MetadataIdentity newIdentity = new MetadataIdentity(newSchema, this.Notation.Model());
-                MetadataBuilderContext context = new MetadataBuilderContext(newIdentity, newSchema);
+            IRelationMetadata model = this.relationBuilder.GetModelMetadata(schema, modelType);
 
-                builder.Initialize(context);
-            }
+            schema.Initialize(model);
 
-            return newSchema;
+            return schema;
         }
     }
 }

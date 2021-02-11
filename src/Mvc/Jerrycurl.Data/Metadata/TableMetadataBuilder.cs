@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
+using Jerrycurl.Collections;
 using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Metadata.Annotations;
 using Jerrycurl.Relations.Metadata;
@@ -32,13 +33,13 @@ namespace Jerrycurl.Data.Metadata
         {
             IRelationMetadata relation = context.Schema.Require<IRelationMetadata>(context.Identity.Name);
 
-            this.CreateBaseMetadata(context, relation, null);
+            this.CreateMetadata(context, relation);
         }
 
         private IEnumerable<TableMetadata> CreateProperties(IMetadataBuilderContext context, TableMetadata parent)
         {
             foreach (IRelationMetadata property in parent.Relation.Properties)
-                yield return this.CreateBaseMetadata(context, property, parent);
+                yield return this.CreateMetadata(context, property);
         }
 
         private TableMetadata CreateItem(IMetadataBuilderContext context, TableMetadata parent)
@@ -46,66 +47,42 @@ namespace Jerrycurl.Data.Metadata
             if (parent.Relation.Item == null)
                 return null;
 
-            return this.CreateBaseMetadata(context, parent.Relation.Item, parent);
+            return this.CreateMetadata(context, parent.Relation.Item);
         }
 
-        private TableMetadata CreateBaseMetadata(IMetadataBuilderContext context, IRelationMetadata attribute, TableMetadata parent)
+        private TableMetadata CreateMetadata(IMetadataBuilderContext context, IRelationMetadata relation)
         {
-            TableMetadata metadata = new TableMetadata(attribute);
+            TableMetadata metadata = new TableMetadata(relation);
 
             metadata.Item = this.CreateItem(context, metadata);
-            metadata.Properties = new Lazy<IReadOnlyList<TableMetadata>>(() => this.CreateProperties(context, metadata).ToList());
+            
+            this.ApplyContracts(metadata);
 
-            this.AddTableMetadata(metadata);
-            this.AddColumnMetadata(metadata, parent);
+            metadata.Properties = new Lazy<IReadOnlyList<TableMetadata>>(() => this.CreateProperties(context, metadata).ToList());
 
             context.AddMetadata<ITableMetadata>(metadata);
 
             return metadata;
         }
 
-        private void AddTableMetadata(TableMetadata metadata)
+        private void ApplyContracts(TableMetadata metadata)
         {
-            TableAttribute table = metadata.Relation.Annotations?.OfType<TableAttribute>().FirstOrDefault();
+            IEnumerable<ITableContractResolver> allResolvers = this;
 
-            if (table != null)
+            if (this.DefaultResolver != null)
+                allResolvers = new[] { this.DefaultResolver }.Concat(allResolvers);
+
+            foreach (ITableContractResolver resolver in allResolvers.NotNull().OrderBy(r => r.Priority))
             {
+                metadata.TableName = resolver.GetTableName(metadata)?.ToList() ?? metadata.TableName;
+                metadata.ColumnName = resolver.GetColumnName(metadata) ?? metadata.ColumnName;
+            }
+
+            if (metadata.TableName != null)
                 metadata.Flags |= TableMetadataFlags.Table;
-                metadata.TableName = table.Parts?.ToList();
 
-                Type declaredType = this.GetDeclaringTypeOfInheritedAttribute(metadata.Relation.Type, table);
-
-                if (metadata.TableName == null || metadata.TableName.Count == 0)
-                    metadata.TableName = new[] { declaredType?.Name ?? metadata.Relation.Type.Name };
-            }
-        }
-
-        private void AddColumnMetadata(TableMetadata metadata, TableMetadata parent)
-        {
-            if (parent == null || !parent.HasFlag(TableMetadataFlags.Table) || metadata.HasFlag(TableMetadataFlags.Table))
-                return;
-
-            TableAttribute declared = metadata.Relation.Member?.DeclaringType.GetCustomAttribute<TableAttribute>(false);
-            ColumnAttribute column = metadata.Relation.Annotations?.OfType<ColumnAttribute>().FirstOrDefault();
-
-            if (metadata.Relation.HasFlag(RelationMetadataFlags.Item))
-                column ??= parent.Relation.Annotations?.OfType<ColumnAttribute>().FirstOrDefault();
-
-            if (declared != null || column != null || metadata.Relation.HasFlag(RelationMetadataFlags.Item))
-            {
-                metadata.ColumnName = column?.Name ?? metadata.Relation.Member?.Name ?? metadata.Identity.Notation.Member(metadata.Identity.Name);
-                metadata.MemberOf = parent;
-
+            if (metadata.ColumnName != null)
                 metadata.Flags |= TableMetadataFlags.Column;
-            }
-        }
-
-        private Type GetDeclaringTypeOfInheritedAttribute(Type type, Attribute attribute)
-        {
-            while (type != null && type.BaseType != null && type.BaseType.GetCustomAttributes().Any(a => a.Equals(attribute)))
-                type = type.BaseType;
-
-            return type;
         }
     }
 }

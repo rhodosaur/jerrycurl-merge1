@@ -28,5 +28,8 @@ namespace Jerrycurl.Relations.Metadata
         {
 
         }
+
+        internal static MetadataBuilderException InvalidContract(IRelationMetadata metadata, string message)
+            => new MetadataBuilderException($"Invalid contract for {metadata.Identity}: {message}");
     }
 }

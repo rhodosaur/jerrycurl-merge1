@@ -20,7 +20,7 @@ namespace Jerrycurl.Data.Test
         {
             var store = DatabaseHelper.Default.GetSchemas(useSqlite: false);
 
-            store.AddContract(new JsonBindingContractResolver(new JsonSerializerOptions()));
+            store.Apply(new JsonBindingContractResolver(new JsonSerializerOptions()));
 
             var json = "{ \"Id\": 12, \"Title\": \"Hello World!\" }";
             var data1 = new JsonBlog();
@@ -56,7 +56,7 @@ namespace Jerrycurl.Data.Test
         {
             var options = new JsonSerializerOptions();
             var store = DatabaseHelper.Default.GetSchemas(useSqlite: false);
-            store.AddContract(new JsonBindingContractResolver(options));
+            store.Apply(new JsonBindingContractResolver(options));
 
             var data = "{ \"Id\": 12, \"Title\": \"Hello World!\" }";
             var schema = store.GetSchema(typeof(JsonBlog));
@@ -99,7 +99,7 @@ namespace Jerrycurl.Data.Test
             };
             var store = DatabaseHelper.Default.GetSchemas(useSqlite: false);
 
-            store.AddContract(new JsonBindingContractResolver(options));
+            store.Apply(new JsonBindingContractResolver(options));
 
             var data = new JsonBlog() { Blog = new Blog() { Id = 12 } };
             var model = store.From(data).Lookup("Blog");
@@ -121,7 +121,7 @@ namespace Jerrycurl.Data.Test
             };
             var store = DatabaseHelper.Default.GetSchemas(useSqlite: false);
 
-            store.AddContract(new JsonBindingContractResolver(options));
+            store.Apply(new JsonBindingContractResolver(options));
 
             var json = "{\"Hello\":\"World!\"}";
             var data1 = JsonDocument.Parse(json);
@@ -142,7 +142,7 @@ namespace Jerrycurl.Data.Test
         {
             var options = new JsonSerializerOptions();
             var store = DatabaseHelper.Default.GetSchemas(useSqlite: false);
-            store.AddContract(new JsonBindingContractResolver(options));
+            store.Apply(new JsonBindingContractResolver(options));
 
             var data = "{ \"Id\": 12, \"Title\": \"Hello World!\" }";
             var schema = store.GetSchema(typeof(JsonElement));
@@ -168,7 +168,7 @@ namespace Jerrycurl.Data.Test
         {
             var options = new JsonSerializerOptions();
             var store = DatabaseHelper.Default.GetSchemas(useSqlite: false);
-            store.AddContract(new JsonBindingContractResolver(options));
+            store.Apply(new JsonBindingContractResolver(options));
 
             var data = "{ \"Id\": 12, \"Title\": \"Hello World!\" }";
             var schema = store.GetSchema(typeof(JsonDocument));

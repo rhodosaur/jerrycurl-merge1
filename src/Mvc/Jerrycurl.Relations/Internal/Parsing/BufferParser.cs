@@ -131,7 +131,7 @@ namespace Jerrycurl.Relations.Internal.Parsing
 
                 if ((node.Item ?? node).Metadata.HasFlag(RelationMetadataFlags.Recursive))
                     nextQueue.Type = RelationQueueType.Recursive;
-                else if (prevQueue != null && !prevQueue.List.Identity.Equals(nextQueue.List.MemberOf.Parent?.Identity))
+                else if (prevQueue != null && !prevQueue.List.Identity.Equals(nextQueue.List.Owner.Parent?.Identity))
                     nextQueue.Type = RelationQueueType.Cached;
                 else if (prevQueue != null && prevQueue.Type == RelationQueueType.Cached)
                     nextQueue.Type = RelationQueueType.Cached;
