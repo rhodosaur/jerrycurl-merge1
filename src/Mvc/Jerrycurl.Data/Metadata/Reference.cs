@@ -20,6 +20,6 @@ namespace Jerrycurl.Data.Metadata
         public override bool Equals(object obj) => (obj is IReference other && this.Equals(other));
         public override int GetHashCode() => HashCode.Combine(this.Key, this.Metadata.Identity);
 
-        public override string ToString() => this.Metadata.Identity + " -> " + this.Other.Metadata.Identity;
+        public override string ToString() => $"{this.Key} -> {this.Other.Key}";
     }
 }

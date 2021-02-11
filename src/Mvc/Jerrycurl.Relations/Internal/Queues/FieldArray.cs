@@ -4,7 +4,7 @@ using Jerrycurl.Relations;
 
 namespace Jerrycurl.Data.Queries.Internal
 {
-    public class FieldArray
+    internal class FieldArray
     {
         private readonly List<IField> innerList = new List<IField>(2);
 

@@ -5,7 +5,7 @@ using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Relations.Internal.Queues
 {
-    public class RelationQueueItem<TList> : NameBuffer
+    internal class RelationQueueItem<TList> : NameBuffer
     {
         public TList List { get; }
         public List<FieldArray> Cache { get; } = new List<FieldArray>();

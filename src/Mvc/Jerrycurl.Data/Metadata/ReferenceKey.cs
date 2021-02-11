@@ -20,9 +20,9 @@ namespace Jerrycurl.Data.Metadata
 
         public override string ToString()
         {
-            string propNames = string.Join(", ", this.Properties.Select(m => m.Identity));
+            string propNames = string.Join(", ", this.Properties.Select(m => $"\"{m.Identity.Name}\""));
 
-            return $"{this.Name}({propNames}) ({this.Flags})";
+            return $"{this.Name}({propNames})";
         }
     }
 }

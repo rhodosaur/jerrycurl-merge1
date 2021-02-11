@@ -6,7 +6,7 @@ using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Relations.Internal.Queues
 {
-    public class RelationQueue<TList, TItem> : IRelationQueue
+    internal class RelationQueue<TList, TItem> : IRelationQueue
         where TList : IEnumerable<TItem>
     {
         private IEnumerator<TItem> innerEnumerator;

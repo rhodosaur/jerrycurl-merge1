@@ -4,6 +4,7 @@ using System.Linq;
 using Jerrycurl.Data.Metadata;
 using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Data.Metadata.Annotations;
+using System.Net.Security;
 
 namespace Jerrycurl.Data.Metadata
 {
@@ -170,7 +171,8 @@ namespace Jerrycurl.Data.Metadata
         {
             if (metadata.Parent != null)
             {
-                yield return metadata;
+                if (metadata.Relation.HasFlag(RelationMetadataFlags.Recursive))
+                    yield return metadata;
 
                 yield return metadata.Parent;
 
@@ -264,6 +266,13 @@ namespace Jerrycurl.Data.Metadata
                 }
             }
 
+            this.MergeRecursiveReferences(parent, references);
+
+            return references;
+        }
+
+        private void MergeRecursiveReferences(ReferenceMetadata metadata, List<Reference> references)
+        {
             foreach (Reference reference in references.ToList())
             {
                 Reference reverse = references.FirstOrDefault(r => r.Key.Equals(reference.Other.Key) && r.Other.Key.Equals(reference.Key));
@@ -272,10 +281,11 @@ namespace Jerrycurl.Data.Metadata
                 {
                     reference.Flags |= ReferenceFlags.Self;
                     reference.Other.Flags |= ReferenceFlags.Self;
+
+                    if (reverse.HasFlag(ReferenceFlags.Parent | ReferenceFlags.Foreign))
+                        references.Remove(reverse);
                 }
             }
-
-            return references;
         }
     }
 }
