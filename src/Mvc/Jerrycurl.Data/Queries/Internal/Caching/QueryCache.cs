@@ -40,7 +40,7 @@ namespace Jerrycurl.Data.Queries.Internal.Caching
         public static EnumerateReader<TItem> GetEnumerateReader<TItem>(ISchemaStore schemas, IDataRecord dataRecord)
         {
             ISchema schema = schemas.GetSchema(typeof(IList<TItem>));
-            ColumnCacheKey cacheKey = GetCacheKey(schema, dataRecord);
+            ColumnCacheKey cacheKey = GetCacheKey(schema, QueryType.List, dataRecord);
 
             return (EnumerateReader<TItem>)enumerateReaders.GetOrAdd(cacheKey, k =>
             {
@@ -55,23 +55,23 @@ namespace Jerrycurl.Data.Queries.Internal.Caching
 
         public static BufferWriter GetAggregateWriter(ISchema schema, IDataRecord dataRecord)
         {
-            ColumnCacheKey cacheKey = GetCacheKey(schema, dataRecord);
+            ColumnCacheKey cacheKey = GetCacheKey(schema, QueryType.Aggregate, dataRecord);
 
             return aggregrateWriters.GetOrAdd(cacheKey, k => GetWriter(k, QueryType.Aggregate));
         }
 
         public static BufferWriter GetListWriter(ISchema schema, IDataRecord dataRecord)
         {
-            ColumnCacheKey cacheKey = GetCacheKey(schema, dataRecord);
+            ColumnCacheKey cacheKey = GetCacheKey(schema, QueryType.Aggregate, dataRecord);
 
             return listWriters.GetOrAdd(cacheKey, k => GetWriter(k, QueryType.List));
         }
 
-        private static ColumnCacheKey GetCacheKey(ISchema schema, IDataRecord dataRecord)
+        private static ColumnCacheKey GetCacheKey(ISchema schema, QueryType type, IDataRecord dataRecord)
         {
             IEnumerable<ColumnName> columns = Enumerable.Range(0, GetFieldCount()).Select(i => GetColumnName(dataRecord, i));
 
-            return new ColumnCacheKey(schema, columns);
+            return new ColumnCacheKey(schema, type, columns);
 
             int GetFieldCount()
             {

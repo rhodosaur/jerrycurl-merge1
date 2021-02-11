@@ -16,6 +16,6 @@ namespace Jerrycurl.Data.Queries.Internal
             this.Schema = schema ?? throw new ArgumentNullException(nameof(schema));
         }
 
-        public QueryCacheKey<AggregateName> ToCacheKey() => new QueryCacheKey<AggregateName>(this.Schema, this.Names);
+        public QueryCacheKey<AggregateName> ToCacheKey() => new QueryCacheKey<AggregateName>(this.Schema, QueryType.List, this.Names);
     }
 }
