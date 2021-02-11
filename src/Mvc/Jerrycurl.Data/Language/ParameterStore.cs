@@ -6,7 +6,7 @@ using Jerrycurl.Data.Commands;
 using Jerrycurl.Data.Sessions;
 using Jerrycurl.Relations;
 
-namespace Jerrycurl.Data.V11.Language
+namespace Jerrycurl.Data.Language
 {
     public class ParameterStore2 : Collection<IParameter>
     {

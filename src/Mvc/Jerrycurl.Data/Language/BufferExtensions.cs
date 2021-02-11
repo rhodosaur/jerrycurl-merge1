@@ -9,11 +9,10 @@ using System.Threading.Tasks;
 using Jerrycurl.Data.Commands;
 using Jerrycurl.Data.Queries;
 using Jerrycurl.Data.Sessions;
-using Jerrycurl.Data.V11;
 using Jerrycurl.Relations;
 using Jerrycurl.Relations.Language;
 
-namespace Jerrycurl.Data.V11.Language
+namespace Jerrycurl.Data.Language
 {
     public static class BufferExtensions
     {

@@ -9,9 +9,9 @@ using Jerrycurl.Test;
 using Jerrycurl.Data.Sessions;
 using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Relations.Language;
-using Jerrycurl.Data.V11.Language;
 using Jerrycurl.Data.Test.Model;
 using Jerrycurl.Data.Queries;
+using Jerrycurl.Data.Language;
 
 namespace Jerrycurl.Data.Test
 {
