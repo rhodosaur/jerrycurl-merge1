@@ -11,14 +11,7 @@ namespace Jerrycurl.Relations.Test
 {
     public class RelationTests
     {
-        public void Test_Reading_UnknownProperty_Throws()
-        {
-            RootModel model = new RootModel();
-
-            Should.Throw<MetadataException>(() => DatabaseHelper.Default.Relation2(model, "Unknown123"));
-        }
-
-        public void Test_Binding_ToModel_Throws()
+        public void Test_Update_Model_Throws()
         {
             RootModel model = new RootModel();
             IRelation2 rel = DatabaseHelper.Default.Relation2(model);
@@ -30,7 +23,7 @@ namespace Jerrycurl.Relations.Test
             });
         }
 
-        public void Test_Binding_ToMissing_Throws()
+        public void Test_Update_Missing_Throws()
         {
             RootModel model = new RootModel();
             IRelation2 rel = DatabaseHelper.Default.Relation2(model, "Complex.Value");
@@ -44,7 +37,7 @@ namespace Jerrycurl.Relations.Test
             });
         }
 
-        public void Test_Binding_ToReadOnlyProperty_Throws()
+        public void Test_Update_ReadOnlyProperty_Throws()
         {
             IRelation2 rel = DatabaseHelper.Default.Relation2(new RootModel(), "ReadOnly");
             IField2 scalar = rel.Scalar();
@@ -56,7 +49,7 @@ namespace Jerrycurl.Relations.Test
             });
         }
 
-        public void Test_Binding_OfNonConvertibleValue_Throws()
+        public void Test_Update_NonConvertibleValue_Throws()
         {
             RootModel model = new RootModel();
             IRelation2 rel = DatabaseHelper.Default.Relation2(model, "Complex.Value");
@@ -71,7 +64,7 @@ namespace Jerrycurl.Relations.Test
         }
 
 
-        public void Test_Binding_NullToValueType_Throws()
+        public void Test_Update_NullToValueType_Throws()
         {
             RootModel model = new RootModel();
             IRelation2 rel = DatabaseHelper.Default.Relation2(model, "Complex.Value");
@@ -86,7 +79,7 @@ namespace Jerrycurl.Relations.Test
         }
 
 
-        public void Test_Binding_ToProperty()
+        public void Test_Update_Property()
         {
             RootModel model = new RootModel() { Complex = new RootModel.SubModel() { Value = 6 } };
             IRelation2 rel = DatabaseHelper.Default.Relation2(model, "Complex.Value");
@@ -105,7 +98,7 @@ namespace Jerrycurl.Relations.Test
             model.Complex.Value.ShouldBe(12);
         }
 
-        public void Test_Binding_ToNullValue()
+        public void Test_Update_NullValue()
         {
             RootModel model = new RootModel();
             IRelation2 rel = DatabaseHelper.Default.Relation2(model, "Complex");
@@ -113,6 +106,7 @@ namespace Jerrycurl.Relations.Test
             IField2 complex = rel.Scalar();
 
             complex.ShouldNotBeNull();
+            complex.Snapshot.ShouldBeNull();
 
             Should.NotThrow(() =>
             {
@@ -123,7 +117,7 @@ namespace Jerrycurl.Relations.Test
             model.Complex.Value.ShouldBe(10);
         }
 
-        public void Test_Binding_ToListIndexer()
+        public void Test_Update_ListIndexer()
         {
             RootModel model = new RootModel() { IntList = new List<int>() { 1, 2, 3, 4, 5 } };
             IRelation2 rel = DatabaseHelper.Default.Relation2(model, "IntList.Item");
@@ -138,7 +132,7 @@ namespace Jerrycurl.Relations.Test
             model.IntList.ShouldBe(new[] { 1, 2, 10, 4, 5 });
         }
 
-        public void Test_Binding_ToEnumerableIndexer_Throws()
+        public void Test_Update_EnumerableIndexer_Throws()
         {
             RootModel model = new RootModel() { IntEnumerable = Enumerable.Range(1, 5) };
             IRelation2 rel = DatabaseHelper.Default.Relation2(model, "IntEnumerable.Item");
@@ -151,7 +145,7 @@ namespace Jerrycurl.Relations.Test
             });
         }
 
-        public void Test_Binding_ToEnumerableListIndexer()
+        public void Test_Update_EnumerableListIndexer()
         {
             RootModel model = new RootModel() { IntEnumerable = new List<int>() { 1, 2, 3, 4, 5 } };
             IRelation2 rel = DatabaseHelper.Default.Relation2(model, "IntEnumerable.Item");
@@ -166,7 +160,7 @@ namespace Jerrycurl.Relations.Test
             model.IntEnumerable.ShouldBe(new[] { 1, 2, 10, 4, 5 });
         }
 
-        public void Test_Binding_WithContravariance()
+        public void Test_Update_Contravariant()
         {
             RootModel model = new RootModel();
             IRelation2 rel = DatabaseHelper.Default.Relation2(model, "Object");
@@ -179,7 +173,7 @@ namespace Jerrycurl.Relations.Test
             });
         }
 
-        public void Test_Binding_ToDeepObjectGraph()
+        public void Test_Update_ObjectGraph()
         {
             RootModel model = new RootModel()
             {
@@ -216,7 +210,14 @@ namespace Jerrycurl.Relations.Test
         }
 
 
-        public void Test_Reading_OfDeepObjectGraphFromDifferentSources()
+        public void Test_Select_UnknownProperty_Throws()
+        {
+            RootModel model = new RootModel();
+
+            Should.Throw<MetadataException>(() => DatabaseHelper.Default.Relation2(model, "Unknown123"));
+        }
+
+        public void Test_Select_SourceTraverse()
         {
             DeepModel model = new DeepModel()
             {
@@ -323,7 +324,7 @@ namespace Jerrycurl.Relations.Test
             rel11.Column().Select(f => (int?)f.Snapshot).ShouldBe(new int?[] { 1 });
         }
 
-        public void Test_Reading_OneToOneWithOuterJoin()
+        public void Test_Select_OneToOneOuterJoin()
         {
             RootModel model = new RootModel() { IntValue = 1 };
             ITuple2 tuple = DatabaseHelper.Default.Relation2(model, "IntValue", "Complex.Complex.Value").Row();
@@ -334,7 +335,7 @@ namespace Jerrycurl.Relations.Test
             tuple[1].Snapshot.ShouldBeNull();
         }
 
-        public void Test_Reading_OneToManyWithInnerJoin()
+        public void Test_Select_OneToManyInnerJoin()
         {
             List<RootModel> model = new List<RootModel>()
             {
@@ -373,7 +374,7 @@ namespace Jerrycurl.Relations.Test
             result[2][1].Snapshot.ShouldBe(12);
         }
 
-        public void Test_Reading_AdjacentListsWithCrossJoin()
+        public void Test_Select_AdjacentCrossJoin()
         {
             RootModel model = new RootModel()
             {
@@ -427,7 +428,7 @@ namespace Jerrycurl.Relations.Test
             pairs2[11].ShouldBe((7, 3));
         }
 
-        public void Test_Reading_ScalarList()
+        public void Test_Select_ScalarList()
         {
             RootModel model = new RootModel()
             {
@@ -439,7 +440,7 @@ namespace Jerrycurl.Relations.Test
             ints.ShouldBe(new[] { 1, 2, 3, 4, 5 });
         }
 
-        public void Test_Reading_OfValueFromNonParentSource_Throws()
+        public void Test_Select_NotReachable_Throws()
         {
             RootModel model = new RootModel()
             {
@@ -450,7 +451,7 @@ namespace Jerrycurl.Relations.Test
             IField2 nonParent = rel1.Scalar();
             
             IRelation2 rel2 = Should.NotThrow(() => nonParent.Select("IntList"));
-            Should.Throw<RelationException>(() => rel2.Scalar());
+            Should.Throw<RelationException2>(() => rel2.Scalar());
         }
 
         public void Test_Select_RecursiveBreadthFirst()

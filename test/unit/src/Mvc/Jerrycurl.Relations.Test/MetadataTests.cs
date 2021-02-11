@@ -1,7 +1,6 @@
 ﻿using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Relations.Test.Metadata;
 using Jerrycurl.Relations.Test.Models;
-using Jerrycurl.Relations.Test.Models;
 using Jerrycurl.Test;
 using Shouldly;
 using System;
@@ -42,7 +41,7 @@ namespace Jerrycurl.Relations.Test
 
         public void Test_Metadata_WithCustomListContract()
         {
-            RelationMetadataBuilder builder = new RelationMetadataBuilder() { new CustomListContractResolver() };
+            RelationMetadataBuilder builder = new RelationMetadataBuilder() { new CustomContractResolver() };
             SchemaStore customStore = new SchemaStore(new DotNotation()) { builder };
 
             ISchema schema1 = DatabaseHelper.Default.Schemas.GetSchema(typeof(CustomModel));

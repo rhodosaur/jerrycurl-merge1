@@ -40,9 +40,6 @@ namespace Jerrycurl.Relations.V11.Language
         public static IField2 From<TModel>(this ISchemaStore store, TModel model)
             => new Model2(store.GetSchema(typeof(TModel)), model);
 
-        public static RelationHeader<TItem> Join<TItem>(this RelationHeader<IEnumerable<TItem>> header)
-            => header.Join(m => m);
-
         public static RelationHeader<TModel> As<TModel>(this ISchema schema)
             => new RelationHeader<TModel>(schema);
 

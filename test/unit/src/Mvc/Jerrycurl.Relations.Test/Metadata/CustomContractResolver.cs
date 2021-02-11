@@ -8,7 +8,7 @@ using System.Reflection;
 
 namespace Jerrycurl.Relations.Test.Metadata
 {
-    public class CustomListContractResolver : IRelationContractResolver
+    public class CustomContractResolver : IRelationContractResolver
     {
         public IEnumerable<Attribute> GetAnnotations(IRelationMetadata metadata)
         {

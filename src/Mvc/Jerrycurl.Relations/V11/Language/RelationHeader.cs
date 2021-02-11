@@ -60,7 +60,7 @@ namespace Jerrycurl.Relations.V11.Language
             IRelationMetadata metadata = newIdentity.Lookup<IRelationMetadata>();
             RelationAttribute newSource = new RelationAttribute(metadata.Item);
 
-            return new RelationHeader<TTarget>(newSource, Array.Empty<RelationAttribute>());
+            return new RelationHeader<TTarget>(newSource, this.Attributes);
         }
 
         private IReadOnlyList<RelationAttribute> Add(IRelationMetadata metadata)

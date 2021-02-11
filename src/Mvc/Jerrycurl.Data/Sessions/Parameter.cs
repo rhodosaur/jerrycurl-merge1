@@ -19,7 +19,7 @@ namespace Jerrycurl.Data.Sessions
 
         public void Build(IDbDataParameter adoParameter)
         {
-            IBindingMetadata metadata = this.Field?.Identity.GetMetadata<IBindingMetadata>();
+            IBindingMetadata metadata = this.Field?.Identity.Metadata.Lookup<IBindingMetadata>();
             IBindingParameterContract contract = metadata?.Parameter;
 
             adoParameter.ParameterName = this.Name;
@@ -45,7 +45,5 @@ namespace Jerrycurl.Data.Sessions
         }
 
         public override string ToString() => this.Name;
-
-        public static Parameter Create<TValue>(ISchemaStore store, string parameterName, TValue value) => new Parameter(parameterName, Model.Create(store, value));
     }
 }

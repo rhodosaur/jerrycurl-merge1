@@ -24,14 +24,27 @@ namespace Jerrycurl.Relations.Metadata
 
         }
 
-        public TMetadata Lookup<TMetadata>()
-            where TMetadata : IMetadata
+        public TMetadata Lookup<TMetadata>() where TMetadata : IMetadata
             => this.Schema.Lookup<TMetadata>(this.Name);
 
-        public TMetadata Require<TMetadata>()
-            where TMetadata : IMetadata
+        public TMetadata Require<TMetadata>() where TMetadata : IMetadata
             => this.Schema.Require<TMetadata>(this.Name);
 
+        public override string ToString() => $"\"{this.Name}\"";
+
+        public MetadataIdentity Pop()
+        {
+            string parentName = this.Notation.Parent(this.Name);
+
+            if (parentName != null)
+                return new MetadataIdentity(this.Schema, parentName);
+
+            return null;
+        }
+
+        public MetadataIdentity Push(string propertyName) => new MetadataIdentity(this.Schema, this.Notation.Combine(this.Name, propertyName));
+
+        #region " Equality "
         public bool Equals(MetadataIdentity other)
         {
             if (other == null)
@@ -55,19 +68,6 @@ namespace Jerrycurl.Relations.Metadata
 
             return hashCode.ToHashCode();
         }
-
-        public override string ToString() => $"\"{this.Name}\"";
-
-        public MetadataIdentity Pop()
-        {
-            string parentName = this.Notation.Parent(this.Name);
-
-            if (parentName != null)
-                return new MetadataIdentity(this.Schema, parentName);
-
-            return null;
-        }
-
-        public MetadataIdentity Push(string propertyName) => new MetadataIdentity(this.Schema, this.Notation.Combine(this.Name, propertyName));
+        #endregion
     }
 }

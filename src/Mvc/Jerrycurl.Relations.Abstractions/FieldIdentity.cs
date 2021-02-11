@@ -19,15 +19,7 @@ namespace Jerrycurl.Relations
             this.Name = name ?? throw new ArgumentNullException(nameof(name));
         }
 
-        public TMetadata GetMetadata<TMetadata>()
-            where TMetadata : IMetadata
-            => this.Metadata.Lookup<TMetadata>();
-
-        public bool Equals(FieldIdentity other) => Equality.Combine(this, other, m => m.Metadata, m => m.Name);
-        public override bool Equals(object obj) => (obj is FieldIdentity other && this.Equals(other));
-        public override int GetHashCode() => HashCode.Combine(this.Metadata, this.Name);
-
-        public override string ToString() => this.Schema.Notation.Model().Equals(this.Metadata.Name) ? "<model>" : this.Name;
+        public override string ToString() => $"\"{this.Name}\"";
 
         public FieldIdentity Pop()
         {
@@ -52,5 +44,11 @@ namespace Jerrycurl.Relations
 
             return new FieldIdentity(this.Metadata.Push(itemName), newName);
         }
+
+        #region " Equality "
+        public bool Equals(FieldIdentity other) => Equality.Combine(this, other, m => m.Metadata, m => m.Name);
+        public override bool Equals(object obj) => (obj is FieldIdentity other && this.Equals(other));
+        public override int GetHashCode() => HashCode.Combine(this.Metadata, this.Name);
+        #endregion
     }
 }
