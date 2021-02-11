@@ -44,7 +44,7 @@ namespace Jerrycurl.Mvc.Projections
                 yield return new ProjectionData(data[this.indexHeader[i]], data[this.indexHeader[i + 1]], data[this.indexHeader[i + 2]]);
         }
 
-        private RelationReader CreateReader2()
+        private RelationReader CreateReader()
         {
             Dictionary<MetadataIdentity, int> indexMap = new Dictionary<MetadataIdentity, int>();
 
@@ -63,7 +63,6 @@ namespace Jerrycurl.Mvc.Projections
 
             return body.GetReader();
 
-
             void AddAttribute(IProjectionMetadata metadata)
             {
                 if (indexMap.TryGetValue(metadata.Identity, out int valueIndex))
@@ -78,26 +77,10 @@ namespace Jerrycurl.Mvc.Projections
             }
         }
 
-        private RelationReader CreateReader()
-        {
-            List<IRelationMetadata> header = new List<IRelationMetadata>();
-
-            foreach (IProjectionMetadata attribute in this.Header)
-            {
-                header.Add(attribute.Relation);
-                header.Add(attribute.Input.Relation);
-                header.Add(attribute.Output.Relation);
-            }
-
-            Relation body = new Relation(this.Source, new RelationHeader(this.Source.Identity.Schema, header));
-
-            return body.GetReader();
-        }
-
         public bool Read()
         {
             if (this.innerReader == null)
-                this.innerReader = this.CreateReader2();
+                this.innerReader = this.CreateReader();
 
             return this.innerReader.Read();
         }
