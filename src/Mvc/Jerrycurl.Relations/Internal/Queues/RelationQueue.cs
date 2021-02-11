@@ -20,12 +20,9 @@ namespace Jerrycurl.Relations.Internal.Queues
         public RelationQueueType Type { get; }
         public IRelationMetadata Metadata { get; }
         public FieldArray Cache { get; private set; }
-        public bool IsCached => this.usingCache;
+        public bool IsCached { get; private set; }
 
         private Queue<RelationQueueItem<TList>> innerQueue = new Queue<RelationQueueItem<TList>>();
-        private Queue<RelationQueueItem<TList>> innerQueue2 = new Queue<RelationQueueItem<TList>>();
-        private List<RelationQueueItem<TList>> innerCache = new List<RelationQueueItem<TList>>();
-        private bool usingCache = false;
 
         public RelationQueue(IRelationMetadata metadata, RelationQueueType queueType)
         {
@@ -35,7 +32,7 @@ namespace Jerrycurl.Relations.Internal.Queues
 
         private void Debug(RelationQueueItem<TList> item, string s)
         {
-            if (item.List == null || this.Type != RelationQueueType.Recursive)
+            if (item.List == null)
                 return;
 
             return;
@@ -44,6 +41,13 @@ namespace Jerrycurl.Relations.Internal.Queues
         }
         public void Enqueue(RelationQueueItem<TList> item)
         {
+            if (this.IsCached)
+            {
+                this.IsCached = false;
+                this.innerQueue.Clear();
+                this.Reset();
+            }
+
             if (this.innerEnumerator == null)
             {
                 this.innerQueue.Enqueue(item);
@@ -57,7 +61,13 @@ namespace Jerrycurl.Relations.Internal.Queues
 
                 this.Debug(item, "Enqueue (2)");
             }
-                
+
+            //if (this.Type == RelationQueueType.Cached)
+            //{
+            //    this.innerCache.Clear();
+            //    this.usingCache = false;
+            //    this.Reset();
+            //}
         }
 
         private void Start()
@@ -68,20 +78,20 @@ namespace Jerrycurl.Relations.Internal.Queues
             {
                 this.Debug(this.CurrentItem, "Start");
 
-                if (this.usingCache)
+                if (this.IsCached)
                     this.cacheEnumerator = this.CurrentItem.Cache.GetEnumerator();
                 else
                     this.innerEnumerator = (this.CurrentItem.List ?? (IEnumerable<TItem>)Array.Empty<TItem>()).GetEnumerator();
             }
         }
 
-        private bool IsStarted => this.usingCache ? this.cacheEnumerator != null : this.innerEnumerator != null;
+        private bool IsStarted => this.IsCached ? this.cacheEnumerator != null : this.innerEnumerator != null;
 
         private bool MoveNext()
         {
             if (!this.IsStarted)
                 return false;
-            else if (this.usingCache)
+            else if (this.IsCached)
                 return this.cacheEnumerator.MoveNext();
             else
                 return this.innerEnumerator.MoveNext();
@@ -100,7 +110,7 @@ namespace Jerrycurl.Relations.Internal.Queues
                 {
                     this.CurrentItem.Increment();
 
-                    if (this.usingCache)
+                    if (this.IsCached)
                         this.Cache = this.cacheEnumerator.Current;
                     else if (this.Type == RelationQueueType.Cached)
                         this.CurrentItem.Cache.Add(this.Cache = new FieldArray());
@@ -108,14 +118,17 @@ namespace Jerrycurl.Relations.Internal.Queues
                     return true;
                 }
 
-                this.Dequeue();
-                this.Reset();
-            }
+                if (this.Type != RelationQueueType.Cached)
+                    this.Dequeue();
+                else
+                {
+                    this.IsCached = true;
+                    this.Reset();
+                    break;
+                }
+                    
 
-            if (this.Type == RelationQueueType.Cached)
-            {
-                this.innerQueue = new Queue<RelationQueueItem<TList>>(this.innerCache);
-                this.usingCache = true;
+                this.Reset();
             }
 
             return false;
@@ -134,19 +147,7 @@ namespace Jerrycurl.Relations.Internal.Queues
         private void Dequeue()
         {
             if (this.innerQueue.Count > 0)
-            {
-                RelationQueueItem<TList> item = this.innerQueue.Dequeue();
-
-                if (!this.usingCache && this.Type == RelationQueueType.Cached)
-                    this.innerCache.Add(item);
-
-                this.Debug(item, "Dequeue");
-            }
-            else if (this.Type == RelationQueueType.Cached)
-            {
-                this.innerQueue = new Queue<RelationQueueItem<TList>>(this.innerCache);
-                this.usingCache = true;
-            }
+                this.innerQueue.Dequeue();
         }
 
         public void Dispose() => this.Reset();
