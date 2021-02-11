@@ -72,9 +72,10 @@ namespace Jerrycurl.Data.Queries.Internal.Caching
 
         private static ColumnCacheKey GetCacheKey(ISchema schema, QueryType type, IDataRecord dataRecord)
         {
-            List<ColumnAttribute> attributes = new List<ColumnAttribute>(GetFieldCount());
+            int fieldCount = GetFieldCount();
+            List<ColumnAttribute> attributes = new List<ColumnAttribute>(fieldCount);
 
-            for (int i = 0; i < attributes.Count; i++)
+            for (int i = 0; i < fieldCount; i++)
                 attributes.Add(GetColumnAttribute(dataRecord, i));
 
             return new ColumnCacheKey(schema, type, attributes);

@@ -2,18 +2,16 @@
 using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Queries.Internal.IO.Readers;
 
-namespace Jerrycurl.Data.Queries.Internal.IO.Writers
+namespace Jerrycurl.Data.Queries.Internal.IO.Initializers
 {
-    internal class ListWriter : BaseWriter
+    internal class ListInitializer
     {
-        public ListWriter(IBindingMetadata metadata)
-            : base(metadata)
+        public ListInitializer(IBindingMetadata metadata)
         {
 
         }
 
         public KeyReader JoinKey { get; set; }
-        public ListIndex Index { get; set; }
         public NewReader Value { get; set; }
     }
 }
