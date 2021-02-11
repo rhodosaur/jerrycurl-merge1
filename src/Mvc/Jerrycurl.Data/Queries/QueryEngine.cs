@@ -85,8 +85,7 @@ namespace Jerrycurl.Data.Queries
             if (this.Options.Schemas == null)
                 throw new InvalidOperationException("No schema store found.");
 
-            QueryBuffer buffer = new QueryBuffer(this.Options.Schemas.GetSchema(typeof(List<T>)), QueryType2.Aggregate);
-            //AggregateBuffer<T> buffer = new AggregateBuffer<T>(this.Options.Schemas);
+            AggregateBuffer<T> buffer = new AggregateBuffer<T>(this.Options.Schemas);
 
             using ISyncSession connection = this.Options.GetSyncSession();
 
@@ -109,8 +108,7 @@ namespace Jerrycurl.Data.Queries
             if (this.Options.Schemas == null)
                 throw new InvalidOperationException("No schema builder found.");
 
-            QueryBuffer buffer = new QueryBuffer(this.Options.Schemas.GetSchema(typeof(List<T>)), QueryType2.Aggregate);
-            //AggregateBuffer<T> buffer = new AggregateBuffer<T>(this.Options.Schemas);
+            AggregateBuffer<T> buffer = new AggregateBuffer<T>(this.Options.Schemas);
 
             await using IAsyncSession connection = this.Options.GetAsyncSession();
 
@@ -136,8 +134,7 @@ namespace Jerrycurl.Data.Queries
             if (this.Options.Schemas == null)
                 throw new InvalidOperationException("No schema store found.");
 
-            QueryBuffer buffer = new QueryBuffer(this.Options.Schemas.GetSchema(typeof(List<T>)), QueryType2.List);
-            //ListBuffer<TItem> buffer = new ListBuffer<TItem>(this.Options.Schemas);
+            ListBuffer<T> buffer = new ListBuffer<T>(this.Options.Schemas);
 
             using ISyncSession connection = this.Options.GetSyncSession();
 
@@ -160,8 +157,7 @@ namespace Jerrycurl.Data.Queries
             if (this.Options.Schemas == null)
                 throw new InvalidOperationException("No schema builder found.");
 
-            QueryBuffer buffer = new QueryBuffer(this.Options.Schemas.GetSchema(typeof(List<T>)), QueryType2.List);
-            //ListBuffer<TItem> buffer = new ListBuffer<TItem>(this.Options.Schemas);
+            ListBuffer<T> buffer = new ListBuffer<T>(this.Options.Schemas);
 
             await using IAsyncSession connection = this.Options.GetAsyncSession();
 

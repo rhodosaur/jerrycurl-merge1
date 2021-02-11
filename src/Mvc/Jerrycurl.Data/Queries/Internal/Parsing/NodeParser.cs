@@ -22,10 +22,13 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
         {
             IBindingMetadata metadata = identity.Lookup<IBindingMetadata>() ?? FindDynamicMetadata(identity);
 
-            if (metadata.HasFlag(BindingMetadataFlags.Dynamic))
-                AddDynamicNode(tree, identity, metadata);
-            else
-                AddStaticNode(tree, metadata);
+            if (metadata != null)
+            {
+                if (metadata.HasFlag(BindingMetadataFlags.Dynamic))
+                    AddDynamicNode(tree, identity, metadata);
+                else
+                    AddStaticNode(tree, metadata);
+            }
         }
 
         private static Node AddDynamicNode(NodeTree tree, MetadataIdentity identity, IBindingMetadata metadata)
