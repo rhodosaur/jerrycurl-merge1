@@ -13,7 +13,7 @@ namespace Jerrycurl.Mvc.Test
 
         private IServiceProvider GetServiceProvider()
         {
-            ServiceCollection services = new ServiceCollection();
+            var services = new ServiceCollection();
 
             services.AddSingleton<MyService>();
             services.AddSingleton<DiDomain>();
@@ -23,8 +23,8 @@ namespace Jerrycurl.Mvc.Test
 
         public void Test_Projection_WithoutServiceProvider()
         {
-            PageDescriptor page = this.locator.FindPage("ProjectedQuery", typeof(MiscAccessor));
-            ProcEngine engine = new ProcEngine(null);
+            var page = this.locator.FindPage("ProjectedQuery", typeof(MiscAccessor));
+            var engine = new ProcEngine(null);
 
             ISqlContent result = engine.Proc(page, new ProcArgs(typeof(object), typeof(object)))(null).Buffer.ReadToEnd();
 
@@ -33,16 +33,16 @@ namespace Jerrycurl.Mvc.Test
 
         public void Test_Injection_WithoutServiceProvider()
         {
-            PageDescriptor page = this.locator.FindPage("InjectedQuery", typeof(MiscAccessor));
-            ProcEngine engine = new ProcEngine(null);
+            var page = this.locator.FindPage("InjectedQuery", typeof(MiscAccessor));
+            var engine = new ProcEngine(null);
 
             Should.Throw<NotSupportedException>(() => engine.Proc(page, new ProcArgs(typeof(object), typeof(object)))(null));
         }
 
         public void Test_ProjectionAndInjection_WithServiceProvider()
         {
-            PageDescriptor page = this.locator.FindPage("DiQuery", typeof(DiAccessor));
-            ProcEngine engine = new ProcEngine(this.GetServiceProvider());
+            var page = this.locator.FindPage("DiQuery", typeof(DiAccessor));
+            var engine = new ProcEngine(this.GetServiceProvider());
 
             ISqlContent result = engine.Proc(page, new ProcArgs(typeof(object), typeof(object)))(null).Buffer.ReadToEnd();
 

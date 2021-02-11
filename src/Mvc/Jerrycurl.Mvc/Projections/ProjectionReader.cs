@@ -17,6 +17,7 @@ namespace Jerrycurl.Mvc.Projections
         public IEnumerable<IProjectionMetadata> Header { get; }
 
         private RelationReader innerReader;
+        private List<int> indexHeader;
 
         public ProjectionReader(IField source, IEnumerable<IProjectionMetadata> header)
         {
@@ -39,8 +40,42 @@ namespace Jerrycurl.Mvc.Projections
         {
             ITuple data = this.innerReader;
 
-            for (int i = 0; i < data.Degree; i += 3)
-                yield return new ProjectionData(data[i], data[i + 1], data[i + 2]);
+            for (int i = 0; i < this.indexHeader.Count; i += 3)
+                yield return new ProjectionData(data[this.indexHeader[i]], data[this.indexHeader[i + 1]], data[this.indexHeader[i + 2]]);
+        }
+
+        private RelationReader CreateReader2()
+        {
+            Dictionary<MetadataIdentity, int> indexMap = new Dictionary<MetadataIdentity, int>();
+
+            List<IRelationMetadata> header = new List<IRelationMetadata>();
+
+            this.indexHeader = new List<int>();
+
+            foreach (IProjectionMetadata attribute in this.Header)
+            {
+                AddAttribute(attribute);
+                AddAttribute(attribute.Input);
+                AddAttribute(attribute.Output);
+            }
+
+            Relation body = new Relation(this.Source, new RelationHeader(this.Source.Identity.Schema, header));
+
+            return body.GetReader();
+
+
+            void AddAttribute(IProjectionMetadata metadata)
+            {
+                if (indexMap.TryGetValue(metadata.Identity, out int valueIndex))
+                    this.indexHeader.Add(valueIndex);
+                else
+                {
+                    header.Add(metadata.Relation);
+                    this.indexHeader.Add(indexMap.Count);
+
+                    indexMap.Add(metadata.Identity, indexMap.Count);
+                }
+            }
         }
 
         private RelationReader CreateReader()
@@ -62,7 +97,7 @@ namespace Jerrycurl.Mvc.Projections
         public bool Read()
         {
             if (this.innerReader == null)
-                this.innerReader = this.CreateReader();
+                this.innerReader = this.CreateReader2();
 
             return this.innerReader.Read();
         }

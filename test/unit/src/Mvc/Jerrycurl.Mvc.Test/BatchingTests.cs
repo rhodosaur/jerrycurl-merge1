@@ -11,7 +11,7 @@ namespace Jerrycurl.Mvc.Test
         private readonly ProcLocator locator = new ProcLocator();
         private readonly ProcEngine engine = new ProcEngine(null);
 
-        public void SqlBuffer_Batching_HasCorrectValue()
+        public void Test_SqlBuffer_Batching()
         {
             PageDescriptor page = this.locator.FindPage("../Commands/Batching/BatchedCommand.cssql", typeof(LocatorAccessor));
             ProcFactory factory = this.engine.Proc(page, new ProcArgs(typeof(object), typeof(object)));
