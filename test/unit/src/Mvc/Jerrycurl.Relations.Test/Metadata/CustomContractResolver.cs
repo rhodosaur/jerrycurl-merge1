@@ -20,7 +20,7 @@ namespace Jerrycurl.Relations.Test.Metadata
         {
             if (metadata.Type.IsOpenGeneric(typeof(CustomList<>), out Type itemType))
             {
-                PropertyInfo indexer = metadata.Type.GetProperties().FirstOrDefault(pi => pi.Name == "Item" && pi.GetIndexParameters().FirstOrDefault()?.ParameterType == typeof(int));
+                var indexer = metadata.Type.GetProperties().FirstOrDefault(pi => pi.Name == "Item" && pi.GetIndexParameters().FirstOrDefault()?.ParameterType == typeof(int));
 
                 return new RelationContract()
                 {

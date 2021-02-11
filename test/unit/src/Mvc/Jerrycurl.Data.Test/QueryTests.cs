@@ -12,6 +12,7 @@ using Jerrycurl.Relations.Metadata;
 using System.Drawing;
 using Jerrycurl.Data.Test.Model.Custom;
 using Jerrycurl.Data.Test.Model.Blogging;
+using Jerrycurl.Data.Test.Metadata;
 
 namespace Jerrycurl.Data.Test
 {
@@ -229,7 +230,7 @@ namespace Jerrycurl.Data.Test
         }
         public void Test_Insert_AllTypes()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public void Test_Insert_DualRecursiveTree()
@@ -579,6 +580,66 @@ namespace Jerrycurl.Data.Test
             result2.Count.ShouldBe(1);
             result2[0].ShouldBe(11);
             result2.Capacity.ShouldNotBe(11);
+        }
+
+        public void Test_Insert_ManyToOne_CustomList()
+        {
+            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false, contracts: new[] { new CustomContractResolver() });
+            var schema = store.GetSchema(typeof(List<PriorityModel>));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            buffer.Insert(44, ("", "Item.Id1"));
+            buffer.Insert(44, ("", "Item.Custom.Item.PriorityId1"));
+
+            var result = buffer.Commit<List<PriorityModel>>();
+
+            result.ShouldNotBeNull();
+            result.Count.ShouldBe(1);
+            result[0].Custom.ShouldNotBeNull();
+            result[0].Custom.Count.ShouldBe(1);
+            result[0].Custom[0].PriorityId1.ShouldBe(44);
+        }
+
+        public void Test_Insert_Priority_ManyToOne_Object()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(List<PriorityModel>));
+            var buffer1 = new QueryBuffer(schema, QueryType.List);
+            var buffer2 = new QueryBuffer(schema, QueryType.List);
+
+            buffer1.Insert((34, 34), ("Item1", "Item.Id1"), ("Item2", "Item.One2.PriorityId1"));
+            buffer2.Insert((34, 34), ("Item2", "Item.One2.PriorityId1"), ("Item1", "Item.Id1"));
+
+            var result1 = buffer1.Commit<List<PriorityModel>>();
+            var result2 = buffer2.Commit<List<PriorityModel>>();
+
+            result1.ShouldNotBeNull();
+            result1.Count.ShouldBe(1);
+            result1[0].One2.ShouldNotBeNull();
+            result1[0].One2.PriorityId1.ShouldBe(34);
+
+            result2.ShouldNotBeNull();
+            result2.Count.ShouldBe(1);
+            result2[0].One2.ShouldNotBeNull();
+            result2[0].One2.PriorityId1.ShouldBe(34);
+        }
+
+        public void Test_Insert_Priority_Value()
+        {
+            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false, contracts: new[] { new CustomContractResolver() });
+            var schema = store.GetSchema(typeof(List<PriorityModel>));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            buffer.Insert((44, 43), ("Item1", "Item.Id1"), ("Item2", "Item.Custom"));
+            buffer.Insert(44, ("", "Item.Custom.Item.PriorityId1"));
+
+            var result = buffer.Commit<List<PriorityModel>>();
+
+            result.ShouldNotBeNull();
+            result.Count.ShouldBe(1);
+            result[0].Custom.ShouldNotBeNull();
+            result[0].Custom.Count.ShouldBe(1);
+            result[0].Custom[0].ShouldBeNull();
         }
 
         public void Test_Insert_Priority_Keys()
@@ -1097,8 +1158,8 @@ namespace Jerrycurl.Data.Test
             DynamicShould.HaveProperty(result, "Text");
             DynamicShould.HaveProperty(result.Text, "String");
 
-            int id = Should.NotThrow(() => (int)result.Id);
-            string text = Should.NotThrow(() => (string)result.Text.String);
+            var id = Should.NotThrow(() => (int)result.Id);
+            var text = Should.NotThrow(() => (string)result.Text.String);
 
             id.ShouldBe(3);
             text.ShouldBe("L3");
@@ -1133,11 +1194,10 @@ namespace Jerrycurl.Data.Test
             DynamicShould.HaveProperty(result[1], "Text");
             DynamicShould.HaveProperty(result[1].Text, "String");
 
-            int id0 = Should.NotThrow(() => (int)result[0].Id);
-            string text0 = Should.NotThrow(() => (string)result[0].Text.String);
-            int id1 = Should.NotThrow(() => (int)result[1].Id);
-            string text1 = Should.NotThrow(() => (string)result[1].Text.String);
-
+            var id0 = Should.NotThrow(() => (int)result[0].Id);
+            var text0 = Should.NotThrow(() => (string)result[0].Text.String);
+            var id1 = Should.NotThrow(() => (int)result[1].Id);
+            var text1 = Should.NotThrow(() => (string)result[1].Text.String);
 
             id0.ShouldBe(1);
             text0.ShouldBe("L1");

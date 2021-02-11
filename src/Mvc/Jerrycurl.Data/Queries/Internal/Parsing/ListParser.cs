@@ -37,11 +37,6 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             return result;
         }
 
-        private void PrioritizeWriters(ListResult result)
-        {
-
-        }
-
         private void AddAggregates(ListResult result, NodeTree nodeTree)
         {
             foreach (Node node in nodeTree.Nodes.Where(n => n.Data != null && this.IsAggregateValue(n.Metadata)))
@@ -109,7 +104,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         private void AddWriters(ListResult result, NodeTree nodeTree)
         {
-            foreach (Node node in nodeTree.Items.Where(n => this.IsWriterList(n.Metadata)))
+            foreach (Node node in nodeTree.Items.Where(n => this.IsWriterList(n.Metadata)).OrderByDescending(n => n.Depth))
             {
                 TargetWriter writer = new TargetWriter()
                 {
@@ -122,9 +117,11 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 result.Writers.Add(writer);
             }
 
-            //result.Joins = result.Joins.OrderByDescending(w => w.Depth).ThenByDescending(GetNameDepth).ToList();
+            TargetWriter resultWriter = result.Writers.FirstOrDefault(w => w.Source.Metadata.Relation.Depth == 0);
+            TargetWriter resultItemWriter = result.Writers.FirstOrDefault(w => w.Source.Metadata.Relation.Depth == 1);
 
-            //int GetNameDepth(JoinWriter writer) => result.Schema.Notation.Depth(writer.Metadata.Identity.Name);
+            if (resultWriter != null && resultItemWriter != null)
+                result.Writers.Remove(resultWriter);
         }
 
         protected override BaseReader CreateReader(BaseResult result, Node node)
@@ -224,8 +221,10 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
         private void AddParentKeys(ListResult result, NewReader reader)
         {
             IEnumerable<KeyReader> joinKeys = this.GetParentReferences(reader.Metadata).Select(r => this.FindParentKey(reader, r));
+            IEnumerable<KeyReader> validKeys = joinKeys.NotNull().Where(k => this.IsValidJoinKey(k));
+            IEnumerable<KeyReader> newKeys = validKeys.Where(k => !this.HasJoinKeyOverride(reader, k));
 
-            foreach (KeyReader joinKey in joinKeys.NotNull().Where(k => this.IsValidJoinKey(k)).DistinctBy(k => k.Target.Identity))
+            foreach (KeyReader joinKey in newKeys.DistinctBy(k => k.Target.Identity))
             {
                 this.InitializeKey(joinKey);
 
@@ -238,6 +237,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 reader.Properties.Add(join);
             }
         }
+
         private void AddChildKey(ListResult result, TargetWriter writer)
         {
             IList<IReference> references = this.GetChildReferences(writer.Source.Metadata).ToList();
@@ -293,6 +293,14 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         private ParameterExpression GetNamedVariable(Type type, BaseReader reader, string suffix = "")
             => this.GetNamedVariable(type, reader.Identity, suffix);
+
+        private bool HasJoinKeyOverride(NewReader reader, KeyReader joinKey)
+        {
+            IReference childReference = joinKey.Reference.Find(ReferenceFlags.Child);
+            IReferenceMetadata targetMetadata = childReference.List ?? childReference.Metadata;
+
+            return reader.Properties.Any(r => r.Metadata.Identity.Equals(targetMetadata.Identity));
+        }
 
         private bool IsValidJoinKey(KeyReader joinKey, bool throwOnInvalid = false)
         {

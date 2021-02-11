@@ -34,7 +34,7 @@ namespace Jerrycurl.Test
             this.CommandOptions = this.GetCommandOptions();
         }
 
-        public SchemaStore GetSchemas(bool useSqlite = true, DotNotation notation = null)
+        public SchemaStore GetSchemas(bool useSqlite = true, DotNotation notation = null, IEnumerable<object> contracts = null)
         {
             RelationMetadataBuilder relationBuilder = new RelationMetadataBuilder();
             BindingMetadataBuilder bindingBuilder = new BindingMetadataBuilder();
@@ -44,6 +44,18 @@ namespace Jerrycurl.Test
 
             if (useSqlite)
                 bindingBuilder.Add(new SqliteContractResolver());
+
+            if (contracts != null)
+            {
+                foreach (var contract in contracts)
+                {
+                    if (contract is IRelationContractResolver relationResolver)
+                        relationBuilder.Add(relationResolver);
+
+                    if (contract is IBindingContractResolver bindingResolver)
+                        bindingBuilder.Add(bindingResolver);
+                }
+            }
 
             return store;
         }

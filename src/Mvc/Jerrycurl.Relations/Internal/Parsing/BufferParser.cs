@@ -144,13 +144,13 @@ namespace Jerrycurl.Relations.Internal.Parsing
 
         private string GetNamePart(Node node, QueueIndex queue, BufferTree tree)
         {
-            /*if (queue != null && queue.Type == RelationQueueType.Recursive)
+            if (node.Metadata.HasFlag(RelationMetadataFlags.Recursive | RelationMetadataFlags.List))
             {
                 string itemName = tree.Notation.Combine(node.Metadata.Identity.Name, tree.Notation.Member(queue.Item.Identity.Name));
 
                 return tree.Notation.Path(queue.Item.Identity.Name, itemName);
             }
-            else */if (queue != null)
+            else if (queue != null)
                 return tree.Notation.Path(queue.Item.Identity.Name, node.Metadata.Identity.Name);
             else
                 return tree.Notation.Path(tree.Source.Metadata.Identity.Name, node.Metadata.Identity.Name);

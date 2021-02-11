@@ -31,7 +31,7 @@ namespace Jerrycurl.Relations.Test.Metadata
             }
             else if (metadata.Member == typeof(CustomModel).GetProperty(nameof(CustomModel.List3)))
             {
-                PropertyInfo indexer = this.GetIndexer(metadata.Type, typeof(int));
+                var indexer = this.GetIndexer(metadata.Type, typeof(int));
 
                 return new RelationContract()
                 {
@@ -42,12 +42,11 @@ namespace Jerrycurl.Relations.Test.Metadata
             }
             else if (metadata.Type.IsOpenGeneric(typeof(CustomList<>), out Type itemType))
             {
-                PropertyInfo indexer = this.GetIndexer(metadata.Type, typeof(int));
+                var indexer = this.GetIndexer(metadata.Type, typeof(int));
 
                 return new RelationContract()
                 {
                     ItemType = itemType,
-                    //Indexer = indexer,
                     ReadIndex = indexer.GetMethod,
                     WriteIndex = indexer.SetMethod,
                 };
