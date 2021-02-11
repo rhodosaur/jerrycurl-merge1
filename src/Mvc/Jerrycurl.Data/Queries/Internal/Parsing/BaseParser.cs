@@ -118,11 +118,14 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 this.InitializePrimaryKey(binder.PrimaryKey);
         }
 
-        protected KeyReader FindChildKey(NewReader binder, IReference reference) => this.FindKey(binder, reference.FindChildKey(), reference);
-        protected KeyReader FindParentKey(NewReader binder, IReference reference) => this.FindKey(binder, reference.FindParentKey(), reference);
-        protected KeyReader FindPrimaryKey(NewReader binder, IReferenceKey primaryKey) => this.FindKey(binder, primaryKey, null);
+        protected KeyReader FindChildKey(BaseReader reader, IReference reference)
+            => reader is NewReader newReader ? this.FindKey(newReader, reference.FindChildKey(), reference) : null;
 
-        private KeyReader FindKey(NewReader binder, IReferenceKey referenceKey, IReference reference)
+        protected KeyReader FindChildKey(NewReader reader, IReference reference) => this.FindKey(reader, reference.FindChildKey(), reference);
+        protected KeyReader FindParentKey(NewReader reader, IReference reference) => this.FindKey(reader, reference.FindParentKey(), reference);
+        protected KeyReader FindPrimaryKey(NewReader reader, IReferenceKey primaryKey) => this.FindKey(reader, primaryKey, null);
+
+        private KeyReader FindKey(NewReader reader, IReferenceKey referenceKey, IReference reference)
         {
             if (referenceKey == null)
                 return null;
@@ -131,13 +134,19 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
             foreach (MetadataIdentity identity in referenceKey.Properties.Select(m => m.Identity))
             {
-                DataReader value = binder.Properties.FirstOfType<DataReader>(m => m.Metadata.Identity.Equals(identity));
+                DataReader value = reader.Properties.FirstOfType<DataReader>(m => m.Metadata.Identity.Equals(identity));
 
                 values.Add(value);
             }
 
             if (values.All(v => v != null))
-                return new KeyReader() { Values = values };
+            {
+                return new KeyReader()
+                {
+                    Values = values,
+                    Reference = reference,
+                };
+            }
 
             return null;
         }

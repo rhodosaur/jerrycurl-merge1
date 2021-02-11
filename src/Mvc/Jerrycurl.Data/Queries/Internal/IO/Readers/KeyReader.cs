@@ -10,6 +10,7 @@ namespace Jerrycurl.Data.Queries.Internal.IO.Readers
     internal class KeyReader
     {
         public IList<DataReader> Values { get; set; }
+        public IReference Reference { get; set; }
         public ParameterExpression Variable { get; set; }
     }
 }

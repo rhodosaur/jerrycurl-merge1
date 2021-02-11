@@ -1,16 +1,16 @@
 ﻿using System.Linq.Expressions;
 using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Queries.Internal.Extensions;
+using Jerrycurl.Data.Queries.Internal.IO.Targets;
 using Jerrycurl.Data.Queries.Internal.Parsing;
 
 namespace Jerrycurl.Data.Queries.Internal.IO.Readers
 {
-    internal class ListReader : BaseReader
+    internal class JoinReader : BaseReader
     {
-        public ListTarget Index { get; set; }
-        public NewReader List { get; set; }
+        public JoinTarget Target { get; set; }
 
-        public ListReader(IReference reference)
+        public JoinReader(IReference reference)
         {
             IReferenceMetadata metadata = reference.List ?? reference.Find(ReferenceFlags.Child).Metadata;
 

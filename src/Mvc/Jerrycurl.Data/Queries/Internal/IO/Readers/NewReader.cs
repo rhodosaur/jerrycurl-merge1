@@ -1,11 +1,16 @@
 ﻿using System.Collections.Generic;
 using Jerrycurl.Data.Metadata;
+using Jerrycurl.Data.Queries.Internal.IO.Targets;
 using Jerrycurl.Data.Queries.Internal.Parsing;
 
 namespace Jerrycurl.Data.Queries.Internal.IO.Readers
 {
     internal class NewReader : BaseReader
     {
+        public KeyReader PrimaryKey { get; set; }
+        public IList<JoinTarget> Joins { get; } = new List<JoinTarget>();
+        public IList<BaseReader> Properties { get; set; } = new List<BaseReader>();
+
         public NewReader(IBindingMetadata metadata)
         {
             this.Metadata = metadata;
@@ -17,9 +22,5 @@ namespace Jerrycurl.Data.Queries.Internal.IO.Readers
         {
 
         }
-
-        public KeyReader PrimaryKey { get; set; }
-        public IList<ListTarget> Joins { get; } = new List<ListTarget>();
-        public IList<BaseReader> Properties { get; set; } = new List<BaseReader>();
     }
 }

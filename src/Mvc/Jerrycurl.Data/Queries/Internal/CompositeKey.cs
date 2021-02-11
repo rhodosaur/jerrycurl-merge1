@@ -31,22 +31,6 @@ namespace Jerrycurl.Data.Queries.Internal
         }
     }
 
-    internal struct CompositeKey<T1> : IEquatable<CompositeKey<T1>>
-    {
-        private readonly T1 item1;
-
-        public CompositeKey(T1 item1)
-        {
-            this.item1 = item1;
-        }
-
-        public bool Equals(CompositeKey<T1> other) => Equality.Combine(this.item1, other.item1);
-        public override bool Equals(object obj) => (obj is CompositeKey<T1> c && this.Equals(c));
-        public override int GetHashCode() => HashCode.Combine(this.item1);
-
-        public override string ToString() => $"({this.item1})";
-    }
-
     internal struct CompositeKey<T1, T2> : IEquatable<CompositeKey<T1, T2>>
     {
         private readonly T1 item1;

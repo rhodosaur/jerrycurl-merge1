@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 using Jerrycurl.Data.Queries.Internal.IO.Readers;
 using Jerrycurl.Data.Queries.Internal.IO.Writers;
 using System.Runtime.CompilerServices;
+using Jerrycurl.Data.Queries.Internal.IO.Targets;
 
 namespace Jerrycurl.Data.Queries.Internal.Parsing
 {
@@ -102,71 +103,79 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         private void AddPrimaryKey(ListWriter writer)
         {
-            if (writer.Value is NewReader newValue)
+            if (writer.Source is NewReader newReader)
             {
-                writer.PrimaryKey = newValue.PrimaryKey;
-                newValue.PrimaryKey = null;
+                writer.PrimaryKey = newReader.PrimaryKey;
+                newReader.PrimaryKey = null;
             }
         }
 
-        private ListTarget CreateTarget(BaseReader source, KeyReader key, IReference reference)
+        private BaseTarget CreateTarget(BaseReader source, KeyReader joinKey)
         {
-            if (reference == null)
+            if (joinKey == null)
             {
                 ListTarget target = new ListTarget();
 
+                if (source.Metadata.HasFlag(BindingMetadataFlags.Model) || source.Metadata.Parent.HasFlag(BindingMetadataFlags.Model))
+                    target.BufferIndex = this.Buffer.GetResultIndex();
+                else
+                    target.BufferIndex = this.Buffer.GetListIndex(source.Identity);
+
+                if (source.Metadata.HasFlag(BindingMetadataFlags.Item))
                 {
-                    BufferIndex = this.Buffer.GetListIndex()
+                    target.NewList = new NewReader(source.Metadata.Parent);
+                    target.Variable = Expression.Variable(source.Metadata.Parent.Composition.Construct.Type, $"_list{target.BufferIndex}");
+                    target.AddMethod = source.Metadata.Parent.Composition.Add;
                 }
+
+                return target;
             }
-            ListTarget index = new ListTarget()
+            else
             {
-                BufferIndex = this.Buffer.GetParentIndex(reference),
-            };
-
-            if (reference.List != null)
-            {
-                IBindingMetadata listMetadata = reference.List.Identity.Require<IBindingMetadata>();
-
-                index.NewList = new NewReader(listMetadata);
-                index.Variable = Expression.Variable(listMetadata.Composition.Construct.Type);
-            }
-
-            if (reference != null)
-            {
-                Type compositeType = CompositeKey.Create(key.Values.Select(v => v.KeyType));
-
-                index.Variable = Expression.Variable(typeof(Dictionary<,>).MakeGenericType(compositeType, typeof(ElasticArray)));
-                index.Join = new JoinTarget()
+                int bufferIndex = this.Buffer.GetParentIndex(joinKey.Reference);
+                JoinTarget target = new JoinTarget()
                 {
-                    Buffer = Expression.Variable(typeof(ElasticArray)),
-                    BufferIndex = this.Buffer.GetChildIndex(reference),
-                    Key = key,
-                    Reference = reference,
+                    BufferIndex = bufferIndex,
+                    JoinBuffer = Expression.Variable(typeof(ElasticArray), $"_join{bufferIndex}"),
+                    JoinIndex = this.Buffer.GetChildIndex(joinKey.Reference),
+                    Key = joinKey,
                 };
-            }
 
-            return index;
+                IReference childReference = joinKey.Reference.Find(ReferenceFlags.Child);
+                IBindingMetadata childMetadata = childReference.Metadata.Identity.Require<IBindingMetadata>();
+
+                if (childMetadata.HasFlag(BindingMetadataFlags.Item))
+                {
+                    Type dictionaryType = typeof(Dictionary<,>).MakeGenericType(joinKey.Variable.Type, typeof(ElasticArray));
+
+                    target.NewList = new NewReader(childMetadata.Parent);
+                    target.Variable = Expression.Variable(dictionaryType, $"_dict{target.BufferIndex}");
+                    target.AddMethod = source.Metadata.Parent.Composition.Add;
+                }
+                    
+
+                return target;
+            }
         }
 
         private void AddParentKeys(ListResult result, NewReader reader)
         {
             foreach (IReference reference in this.GetParentReferences(reader.Metadata))
             {
-                KeyReader key = this.FindParentKey(reader, reference);
+                KeyReader joinKey = this.FindParentKey(reader, reference);
 
-                if (key != null)
+                if (joinKey != null)
                 {
-                    this.InitializeKey(key, reference);
+                    this.InitializeKey(joinKey);
 
-                    ListReader join = new ListReader(reference)
+                    JoinReader join = new JoinReader(reference)
                     {
-                        Index = this.CreateIndex(reader, key, reference),
+                        Target = (JoinTarget)this.CreateTarget(reader, joinKey),
                     };
 
-                    reader.Joins.Add(join.Index);
+                    reader.Joins.Add(join.Target);
                     reader.Properties.Add(join);
-                    result.Indices.Add(join.Index);
+                    result.Targets.Add(join.Target);
                 }
             }
         }
@@ -188,53 +197,44 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             }
         }
 
-        private BaseTarget CreateTarget()
-
         private void AddChildKey(ListResult result, ListWriter writer)
         {
-            IEnumerable<IReference> references = this.GetChildReferences(writer.Metadata);
+            IList<IReference> references = this.GetChildReferences(writer.Source.Metadata).ToList();
+            KeyReader childKey = references.Select(r => this.FindChildKey(writer.Source, r)).NotNull().FirstOrDefault();
 
-            if (writer.Source is NewReader reader)
-            {
-                foreach (IReference reference in references)
-                {
-                    KeyReader key = this.FindChildKey(reader, reference);
+            if (childKey != null)
+                this.InitializeKey(childKey, throwOnInvalid: true);
 
-                    if (key != null)
-                    {
-                        this.InitializeKey(key, reference, throwOnInvalid: true);
+            if (childKey == null && this.RequiresReference(writer))
+                throw new InvalidOperationException();
 
-                        writer.Index = this.CreateIndex(writer.Value, key, reference);
-                        result.Indices.Add(writer.Index);
-
-                        break;
-                    }
-                }
-            }
-
-            //if (writer.JoinKey == null && references.Any())
-            //{
-            //    IReference reference = references.First();
-
-            //    throw BindingException.NoReferenceFound(reference.Metadata.Identity, reference.Other.Metadata.Identity);
-            //}
+            writer.Target = this.CreateTarget(writer.Source, childKey);
+            result.Targets.Add(writer.Target);
         }
 
-        private void InitializeKey(KeyReader key, IReference reference, bool throwOnInvalid = false)
+        private bool RequiresReference(ListWriter writer)
+        {
+            return false;
+        }
+
+        private void InitializeKey(KeyReader key, bool throwOnInvalid = false)
         {
             foreach (DataReader value in key.Values)
             {
-                value.CanBeDbNull = true;
                 value.IsDbNull ??= Expression.Variable(typeof(bool), "kv_isnull");
                 value.Variable ??= Expression.Variable(value.Metadata.Type, "kv");
             }
 
-            IList<Type> keyTypes = this.GetReferenceKeyTypes(reference, throwOnInvalid).ToList();
+            if (key.Reference != null)
+            {
+                IList<Type> keyTypes = this.GetReferenceKeyTypes(key.Reference, throwOnInvalid).ToList();
 
-            foreach (var (value, keyType) in key.Values.Zip(keyTypes))
-                value.KeyType = keyType;
+                foreach (var (value, keyType) in key.Values.Zip(keyTypes))
+                    value.KeyType = keyType;
 
-            key.Variable = Expression.Variable(CompositeKey.Create(keyTypes));
+                key.Variable = Expression.Variable(CompositeKey.Create(keyTypes));
+            }
+
         }
 
         private IReference GetRecursiveReference(IBindingMetadata metadata)
