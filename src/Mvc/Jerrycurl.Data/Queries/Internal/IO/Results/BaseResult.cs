@@ -8,7 +8,7 @@ using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Data.Queries.Internal.IO
 {
-    [DebuggerDisplay("Enumerate: {Schema,nq}")]
+    [DebuggerDisplay("{GetType().Name,nq}: {Schema,nq}")]
     internal abstract class BaseResult
     {
         public ISchema Schema { get; }

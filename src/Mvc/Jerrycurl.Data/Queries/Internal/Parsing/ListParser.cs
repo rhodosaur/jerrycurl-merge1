@@ -82,16 +82,12 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 this.AddPrimaryKey(writer);
                 this.AddChildKey(result, writer);
 
-                if (writer.JoinKey == null)
-                    writer.ListIndex = this.Buffer.GetListIndex(node.Identity);
-
                 result.Joins.Add(writer);
             }
 
             result.Joins = result.Joins.OrderByDescending(w => w.Depth).ThenByDescending(GetNameDepth).ToList();
 
-            int GetNameDepth(JoinWriter writer)
-                => result.Schema.Notation.Depth(writer.Metadata.Identity.Name);
+            int GetNameDepth(JoinWriter writer) => result.Schema.Notation.Depth(writer.Metadata.Identity.Name);
         }
 
         protected override BaseReader CreateReader(BaseResult result, Node node)
@@ -128,14 +124,6 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                     Metadata = joinKey.Reference.Other.Metadata.Identity.Require<IBindingMetadata>(),
                 };
 
-                if (joinKey.Reference.List != null)
-                {
-                    IBindingMetadata metadata = joinKey.Reference.List.Identity.Require<IBindingMetadata>();
-
-                    join.Metadata = metadata;
-                    join.List = new NewReader(metadata);
-                }
-
                 reader.JoinKeys.Add(joinKey);
                 reader.Properties.Add(join);
             }
@@ -145,7 +133,13 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
         {
             IEnumerable<IReference> references = this.GetChildReferences(writer.Metadata);
 
-            if (writer.Value is NewReader reader)
+            if (!references.Any())
+            {
+                KeyReader listKey = new KeyReader(writer.Metadata);
+
+                this.InitializeJoinKey(result, listKey);
+            }
+            else if (writer.Value is NewReader reader)
             {
                 IEnumerable<KeyReader> joinKeys = references.Select(r => this.FindChildKey(reader, r));
 
@@ -169,32 +163,45 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         private void InitializeJoinKey(ListResult result, KeyReader joinKey)
         {
-            int index = 0;
-
-            foreach (DataReader valueReader in joinKey.Values)
+            if (joinKey.Reference != null)
             {
-                valueReader.CanBeDbNull = false;
-                valueReader.IsDbNull ??= Expression.Variable(typeof(bool), $"key_{index++}_isnull");
-                valueReader.Variable ??= Expression.Variable(valueReader.KeyType, $"key_{index}");
+                int index = 0;
+
+                foreach (DataReader valueReader in joinKey.Values)
+                {
+                    valueReader.CanBeDbNull = false;
+                    valueReader.IsDbNull ??= Expression.Variable(typeof(bool), $"key_{index++}_isnull");
+                    valueReader.Variable ??= Expression.Variable(valueReader.KeyType, $"key_{index}");
+                }
+
+                if (joinKey.Reference.HasFlag(ReferenceFlags.Self))
+                    joinKey.Reference = this.GetRecursiveReference(joinKey.Metadata);
+
+                this.InitializeKeyTypes(joinKey);
+
+                joinKey.BufferIndex = this.Buffer.GetParentIndex(joinKey.Reference);
+                joinKey.List = this.GetListVariable(joinKey);
+                joinKey.Array = Expression.Variable(typeof(ElasticArray));
+                joinKey.ArrayIndex = this.Buffer.GetChildIndex(joinKey.Reference);
             }
+            else
+            {
+                joinKey.List = this.GetListVariable(joinKey);
+                joinKey.BufferIndex = this.Buffer.GetListIndex(joinKey.Metadata.Identity);
+            }
+            
+            this.InitializeList(result, joinKey);
+        }
 
-            ListWriter writer = result.Lists.FirstOrDefault(w => w.Identity.Equals(joinKey.Metadata.Identity));
-
-            if (joinKey.Reference.HasFlag(ReferenceFlags.Self))
-                joinKey.Reference = this.GetRecursiveReference(joinKey.Metadata);
-
-            joinKey.Array = Expression.Variable(typeof(ElasticArray));
-            joinKey.BufferIndex = this.Buffer.GetChildIndex(joinKey.Reference);
-
-            this.InitializeKeyTypes(joinKey);
+        private void InitializeList(ListResult result, KeyReader joinKey)
+        {
+            ListWriter writer = result.Lists.FirstOrDefault(w => w.JoinKey.BufferIndex == joinKey.BufferIndex);
 
             if (writer == null)
             {
                 writer = new ListWriter(joinKey.Metadata)
                 {
-                    BufferIndex = this.Buffer.GetParentIndex(joinKey.Reference),
                     JoinKey = joinKey,
-                    Variable = joinKey.List,
                 };
 
                 result.Lists.Add(writer);
@@ -225,7 +232,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         private ParameterExpression GetListVariable(KeyReader joinKey)
         {
-            if (joinKey.Reference.List == null)
+            if (joinKey.Reference == null)
                 return Expression.Variable(joinKey.Metadata.Composition.Construct.Type);
 
             Type dictionaryType = typeof(Dictionary<,>).MakeGenericType(joinKey.KeyType, typeof(ElasticArray));

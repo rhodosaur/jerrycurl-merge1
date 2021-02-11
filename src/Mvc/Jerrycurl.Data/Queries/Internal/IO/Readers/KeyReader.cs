@@ -13,6 +13,7 @@ namespace Jerrycurl.Data.Queries.Internal.IO.Readers
         public ParameterExpression Array { get; set; }
         public ParameterExpression Variable { get; set; }
         public int BufferIndex { get; set; }
+        public int? ArrayIndex { get; set; }
         public IReference Reference { get; set; }
 
         public KeyReader(IBindingMetadata metadata)

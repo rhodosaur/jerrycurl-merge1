@@ -7,9 +7,9 @@ using Jerrycurl.Data.Queries.Internal.Parsing;
 namespace Jerrycurl.Data.Queries.Internal.IO.Writers
 {
     [DebuggerDisplay("{GetType().Name,nq}: {Metadata.Identity,nq}")]
-    internal class JoinWriter : BaseWriter
+    internal class BufferWriter : BaseWriter
     {
-        public JoinWriter(Node node)
+        public BufferWriter(Node node)
             : base(node)
         {
 
@@ -18,6 +18,7 @@ namespace Jerrycurl.Data.Queries.Internal.IO.Writers
         public BaseReader Value { get; set; }
         public KeyReader PrimaryKey { get; set; }
         public KeyReader JoinKey { get; set; }
+        public JoinIndex Join { get; set; }
         public int Depth { get; set; }
     }
 }

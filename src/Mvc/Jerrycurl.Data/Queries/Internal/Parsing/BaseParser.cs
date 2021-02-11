@@ -138,7 +138,10 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
             if (values.All(v => v != null))
             {
-                return new KeyReader(binder.Metadata)
+                IReferenceMetadata metadata = reference?.List ?? reference.Find(ReferenceFlags.Child).Metadata;
+                IBindingMetadata binding = metadata?.Identity.Require<IBindingMetadata>();
+
+                return new KeyReader(binding)
                 {
                     Values = values,
                     Reference = reference,
