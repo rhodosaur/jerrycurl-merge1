@@ -163,12 +163,12 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 Variable = this.GetListVariable(source, joinKey),
             };
 
-            if (source.Metadata.HasFlag(BindingMetadataFlags.Item))
+            if (joinKey == null && source.Metadata.HasFlag(BindingMetadataFlags.Item))
             {
                 target.NewList = target.NewTarget = source.Metadata.Parent.Composition.Construct;
                 target.AddMethod = source.Metadata.Parent.Composition.Add;
             }
-            else if (source.Metadata.HasFlag(BindingMetadataFlags.List))
+            else if (joinKey == null && source.Metadata.HasFlag(BindingMetadataFlags.List))
             {
                 target.NewList = source.Metadata.Composition.Construct;
                 target.AddMethod = source.Metadata.Composition.Add;
@@ -252,15 +252,6 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         private void InitializeKey(KeyReader key, bool throwOnInvalid = false)
         {
-            foreach (DataReader value in key.Values)
-            {
-                value.IsDbNull ??= Expression.Variable(typeof(bool), "kv_isnull");
-                value.Variable ??= Expression.Variable(value.Metadata.Type, "kv");
-
-                if (key.Reference.HasFlag(ReferenceFlags.Child))
-                    value.CanBeDbNull = false;
-            }
-
             if (key.Reference != null)
             {
                 IList<Type> keyTypes = this.GetReferenceKeyTypes(key.Reference, throwOnInvalid).ToList();
@@ -274,6 +265,15 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                     key.Reference = this.GetRecursiveReference(key.Reference);
             }
 
+            foreach (DataReader value in key.Values)
+            {
+                value.IsDbNull ??= Expression.Variable(typeof(bool), "kv_isnull");
+                value.Variable ??= Expression.Variable(value.KeyType, "kv");
+
+                if (key.Reference.HasFlag(ReferenceFlags.Child))
+                    value.CanBeDbNull = false;
+            }
+
         }
 
         private IEnumerable<Type> GetReferenceKeyTypes(IReference reference, bool throwOnInvalid = false)
@@ -283,8 +283,8 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
             foreach (var (childValue, parentValue) in childKey.Properties.Zip(parentKey.Properties))
             {
-                Type childType = Nullable.GetUnderlyingType(childValue.Type) ?? childValue.Type;
-                Type parentType = Nullable.GetUnderlyingType(parentValue.Type) ?? parentValue.Type;
+                Type childType = this.GetKeyType(childValue.Type);
+                Type parentType = this.GetKeyType(parentValue.Type);
 
                 if (throwOnInvalid && childType != parentType)
                     throw BindingException.IncompatibleReference(reference);
@@ -293,6 +293,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             }
         }
 
+        private Type GetKeyType(Type type) => (Nullable.GetUnderlyingType(type) ?? type);
 
         private IReference GetRecursiveReference(IReference reference)
         {

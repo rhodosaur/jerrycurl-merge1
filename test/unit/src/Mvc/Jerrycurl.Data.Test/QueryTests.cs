@@ -126,20 +126,6 @@ namespace Jerrycurl.Data.Test
             verifyResult(result2);
         }
 
-        public async Task Test_Binding_OfScalarNullIntResult()
-        {
-            SqliteTable table1 = new SqliteTable("Item")
-            {
-                new object[] { 1 },
-                new object[] { null },
-                new object[] { 2 },
-            };
-
-            DatabaseHelper.Default.Query<int?>(table1).ShouldBe(new int?[] { 1, null, 2 });
-            DatabaseHelper.Default.Enumerate<int?>(table1).ShouldBe(new int?[] { 1, null, 2 });
-            (await DatabaseHelper.Default.QueryAsync<int?>(table1)).ShouldBe(new int?[] { 1, null, 2 });
-        }
-
         public async Task Test_Binding_OfOneToOneSelfJoins()
         {
             SqliteTable table1 = new SqliteTable("Item.Parent.Id", "Item.Parent.ParentId")
@@ -262,27 +248,6 @@ namespace Jerrycurl.Data.Test
 
             verifyResult(result1);
             verifyResult(result2);
-        }
-
-        public async Task Test_Binding_OfAggregateWithEmptySets()
-        {
-            Query query = new Query()
-            {
-                QueryText = @"SELECT 1 AS `Item.NotUsedOne.Value` FROM sqlite_master WHERE 0 = 1;
-                              SELECT 1 AS `Item.NotUsedMany.Item.Value` FROM sqlite_master WHERE 0 = 1",
-            };
-
-            BigAggregate result1 = DatabaseHelper.Default.Aggregate<BigAggregate>(query);
-            BigAggregate result2 = await DatabaseHelper.Default.AggregateAsync<BigAggregate>(query);
-
-            result1.ShouldNotBeNull();
-            result2.ShouldNotBeNull();
-
-            result1.NotUsedOne.ShouldBeNull();
-            result2.NotUsedOne.ShouldBeNull();
-
-            result1.NotUsedMany.ShouldBeNull();
-            result2.NotUsedMany.ShouldBeNull();
         }
     }
 }

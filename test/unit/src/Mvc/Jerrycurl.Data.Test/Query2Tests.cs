@@ -371,28 +371,28 @@ namespace Jerrycurl.Data.Test
             var buffer4 = new QueryBuffer(schema2, QueryType.Aggregate);
 
             var data = (50, new List<int>());
-            var relation = store.From(data).Select("Item1", "Item2.Item");
+            var empty = store.From(data).Select("Item1", "Item2.Item");
 
-            buffer1.Insert(relation, "Id", "Foo");
-            buffer2.Insert(relation, "Item.Id", "Foo");
-            buffer3.Insert(relation, "Id", "Foo");
-            buffer4.Insert(relation, "Item.Id", "Foo");
+            //buffer1.Insert(empty, "Id", "Foo");
+            //buffer2.Insert(empty, "Item.Id", "Foo");
+            //buffer3.Insert(empty, "Id", "Foo");
+            buffer4.Insert(empty, "Item.Id", "Foo");
 
-            var result1 = buffer1.Commit<Blog>();
-            var result2 = buffer2.Commit<List<Blog>>();
-            var result3 = buffer3.Commit<Blog>();
+            //var result1 = buffer1.Commit<Blog>();
+            //var result2 = buffer2.Commit<List<Blog>>();
+            //var result3 = buffer3.Commit<Blog>();
             var result4 = buffer4.Commit<List<Blog>>();
 
-            result1.ShouldBeNull();
-            result3.ShouldBeNull();
+            //result1.ShouldBeNull();
+            //result3.ShouldBeNull();
 
-            result2.ShouldNotBeNull();
-            result2.Count.ShouldBe(0);
+            //result2.ShouldNotBeNull();
+            //result2.Count.ShouldBe(0);
 
-            result4.ShouldNotBeNull();
-            result4.Count.ShouldBe(1);
-            result4[0].ShouldNotBeNull();
-            result4[0].Id.ShouldBe(50);
+            //result4.ShouldNotBeNull();
+            //result4.Count.ShouldBe(1);
+            //result4[0].ShouldNotBeNull();
+            //result4[0].Id.ShouldBe(50);
         }
 
 
@@ -788,17 +788,17 @@ namespace Jerrycurl.Data.Test
             result2.Select(d => (int?)d).ShouldBe(new int?[] { 1, 2, null });
         }
 
-        public void Test_Aggregate_InvalidDataType()
+        public void Test_Aggregate_Invalid_DataType()
         {
             var store = DatabaseHelper.Default.Store;
             var schema = store.GetSchema(typeof(Blog));
             var buffer = new QueryBuffer(schema, QueryType.Aggregate);
 
-            //Should.Throw<BindingException>(() => buffer.Insert("Text", ("", "Id"))); // compile time
+            Should.Throw<BindingException>(() => buffer.Insert("Text", ("", "Id"))); // compile time
             Should.Throw<BindingException>(() => buffer.Insert((object)12, ("", "Title"))); // runtime
         }
 
-        public void Test_Insert_InvalidDataType()
+        public void Test_Insert_Invalid_DataType()
         {
             var store = DatabaseHelper.Default.Store;
             var schema = store.GetSchema(typeof(Blog));
@@ -808,7 +808,7 @@ namespace Jerrycurl.Data.Test
             Should.Throw<BindingException>(() => buffer.Insert((object)12, ("", "Title"))); // runtime
         }
 
-        public void Test_Insert_ThrowingProperty()
+        public void Test_Insert_Invalid_Property()
         {
             var store = DatabaseHelper.Default.Store;
             var schema = store.GetSchema(typeof(Blog));

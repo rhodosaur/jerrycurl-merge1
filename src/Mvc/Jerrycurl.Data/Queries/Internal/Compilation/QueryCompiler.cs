@@ -95,9 +95,6 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 allList.Add(prepareVariable);
 
                 variables.Add(target.Variable);
-
-                //if (target is JoinTarget join)
-                //    variables.Add(join.JoinBuffer);
             }
 
             foreach (HelperWriter writer in result.Helpers)
@@ -210,7 +207,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             Expression body;
             List<KeyReader> primaryKeys = new List<KeyReader>() { writer.PrimaryKey };
 
-            if (writer.Join.NewList == null)
+            if (writer.List.NewList == null && writer.Join?.NewList == null)
             {
                 Expression convertValue = this.GetConvertOrExpression(value, typeof(object));
 
@@ -257,7 +254,8 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                     value = this.GetTryCatchExpression(writer.Value, value);
             }
 
-            Expression nullBlock = Expression.Condition(isDbNull, Expression.Constant(null), this.GetConvertOrExpression(value, typeof(object)));
+            Expression objectValue = Expression.Convert(value, typeof(object));
+            Expression nullBlock = Expression.Condition(isDbNull, Expression.Constant(null, typeof(object)), objectValue);
 
             return Expression.Assign(bufferIndex, nullBlock);
         }

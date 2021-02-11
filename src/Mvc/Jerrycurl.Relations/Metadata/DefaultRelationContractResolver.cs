@@ -88,7 +88,7 @@ namespace Jerrycurl.Relations.Metadata
         private MethodInfo GetListIndexReader(IRelationMetadata metadata) => this.GetListIndexer(metadata)?.GetMethod;
 
         private Type GetArrayItemType(IRelationMetadata metadata) => metadata.Type.GetElementType();
-        private MethodInfo GetArrayIndexWriter(IRelationMetadata metadata) => metadata.Type.GetMethod("Set", new[] { typeof(int), metadata.Type });
+        private MethodInfo GetArrayIndexWriter(IRelationMetadata metadata) => metadata.Type.GetMethod("Set", new[] { typeof(int), metadata.Type.GetElementType() });
         private MethodInfo GetArrayIndexReader(IRelationMetadata metadata) => metadata.Type.GetMethod("Get", new[] { typeof(int) });
 
         private PropertyInfo GetListIndexer(IRelationMetadata metadata)
