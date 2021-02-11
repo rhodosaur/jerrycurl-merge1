@@ -57,7 +57,7 @@ class BlogView : Blog
 }
 ```
 
-#### Command/query layer
+#### Command/query (view) layer
 To dive into the command/query layer, we use *projections* the models above, which power customized Razor SQL syntax. Each query or command is represented a a file with the `.cssql` extension, which ensures that they are included in the usual build process.
 
 They are placed in either the `Queries` or `Commands` folders based on whether they *read* or *write* data in the underlying database.
