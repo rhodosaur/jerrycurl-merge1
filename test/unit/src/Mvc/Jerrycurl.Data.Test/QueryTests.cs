@@ -15,6 +15,7 @@ using System;
 using Jerrycurl.Relations.Metadata;
 using System.ComponentModel;
 using System.Drawing;
+using Jerrycurl.Data.Test.Model.Custom;
 
 namespace Jerrycurl.Data.Test
 {
@@ -602,7 +603,43 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Insert_CompositeKey()
         {
-            throw new NotImplementedException();
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(IList<CompositeModel>));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            var data = new (string, Guid, int)[]
+            {
+                ("X", Guid.Parse("9a48597e-707f-49b9-ba75-b1630e7a9c8f"), 1),
+                ("Y", Guid.Parse("0bfb24da-9f64-4779-a6b7-8ae474ef07cb"), 2),
+            };
+
+            var data2 = new (string, Guid, int)[]
+            {
+                ("X", Guid.Parse("9a48597e-707f-49b9-ba75-b1630e7a9c8f"), 1),
+                ("X", Guid.Parse("9a48597e-707f-49b9-ba75-b1630e7a9c8f"), 2),
+                ("Y", Guid.Parse("0bfb24da-9f64-4779-a6b7-8ae474ef07cb"), 2),
+            };
+
+            buffer.Insert(data,
+                ("Item.Item1", "Item.Key1"),
+                ("Item.Item2", "Item.Key2"),
+                ("Item.Item3", "Item.Key3")
+            );
+
+            buffer.Insert(data2,
+                ("Item.Item1", "Item.Refs.Item.Ref1"),
+                ("Item.Item2", "Item.Refs.Item.Ref2"),
+                ("Item.Item3", "Item.Refs.Item.Ref3")
+            );
+
+            var result = buffer.Commit<IList<CompositeModel>>();
+
+            result.ShouldNotBeNull();
+            result.Count.ShouldBe(2);
+            result[0].ShouldNotBeNull();
+            result[0].Refs.Count.ShouldBe(1);
+            result[1].ShouldNotBeNull();
+            result[1].Refs.Count.ShouldBe(1);
         }
 
         public void Test_Insert_CaseInsensitive()

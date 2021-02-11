@@ -345,7 +345,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
                 Expression isNotNull = this.GetAndConditionExpression(values, this.GetIsNotDbNullExpression);
 
-                return Expression.IfThen(isNotNull, block);
+                return Expression.Condition(isNotNull, block, Expression.Default(block.Type));
             }
 
             return block;
