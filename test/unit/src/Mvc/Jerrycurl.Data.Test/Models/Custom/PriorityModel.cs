@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Jerrycurl.Data.Metadata.Annotations;
-using Jerrycurl.Data.Test.Models;
 using Jerrycurl.Relations;
 
 namespace Jerrycurl.Data.Test.Models.Custom

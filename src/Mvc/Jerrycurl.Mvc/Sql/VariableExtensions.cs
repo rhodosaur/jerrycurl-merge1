@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
 using Jerrycurl.Mvc.Projections;
-using Jerrycurl.Relations;
 
 namespace Jerrycurl.Mvc.Sql
 {

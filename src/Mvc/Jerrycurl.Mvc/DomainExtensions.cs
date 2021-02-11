@@ -5,7 +5,6 @@ using Jerrycurl.Mvc.Metadata;
 using Jerrycurl.Relations.Language;
 using Jerrycurl.Relations.Metadata;
 using System;
-using System.Linq;
 
 namespace Jerrycurl.Mvc
 {

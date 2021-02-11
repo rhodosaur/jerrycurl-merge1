@@ -1,5 +1,4 @@
 ﻿using Jerrycurl.Mvc.Projections;
-using Jerrycurl.Mvc.Test.Conventions.Models;
 
 namespace Jerrycurl.Mvc.Test.Conventions.Queries.Crud
 {

@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Runtime.Serialization.Formatters;
-using System.Threading.Tasks;
-using System.Text.Json;
+﻿using System.Text.Json;
 using Shouldly;
 
 namespace Jerrycurl.Test.Extensions

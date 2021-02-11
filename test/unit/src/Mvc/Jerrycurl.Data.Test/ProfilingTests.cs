@@ -1,13 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Jerrycurl.Relations;
-using Jerrycurl.Data.Commands;
-using Jerrycurl.Data.Language;
-using Shouldly;
-using Jerrycurl.Test;
-using Jerrycurl.Data.Sessions;
-using Jerrycurl.Relations.Language;
+﻿using Shouldly;
 using System.Data;
 using Microsoft.Data.Sqlite;
 using Jerrycurl.Test.Profiling;

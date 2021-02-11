@@ -1,7 +1,5 @@
 ﻿using Jerrycurl.Mvc;
 using Jerrycurl.Test;
-using Jerrycurl.Test.Extensions;
-using Jerrycurl.Test.Profiling;
 using Npgsql;
 
 namespace Jerrycurl.Vendors.Postgres.Test

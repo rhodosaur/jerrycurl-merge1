@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Jerrycurl.Diagnostics;
 using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Data.Metadata

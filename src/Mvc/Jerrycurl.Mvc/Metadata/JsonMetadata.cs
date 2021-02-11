@@ -1,5 +1,4 @@
 ﻿using System;
-using Jerrycurl.Diagnostics;
 using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Mvc.Metadata

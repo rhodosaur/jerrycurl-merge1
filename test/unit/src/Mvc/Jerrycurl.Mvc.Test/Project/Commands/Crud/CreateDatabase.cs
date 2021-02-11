@@ -1,6 +1,5 @@
 ﻿using System;
 using Jerrycurl.Mvc.Projections;
-using Jerrycurl.Mvc.Sql;
 
 namespace Jerrycurl.Mvc.Test.Conventions.Queries.Crud
 {

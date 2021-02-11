@@ -1,5 +1,4 @@
 ﻿using Jerrycurl.Mvc.Projections;
-using Jerrycurl.Mvc.Sql;
 using System;
 using System.Linq.Expressions;
 using Jerrycurl.Relations;

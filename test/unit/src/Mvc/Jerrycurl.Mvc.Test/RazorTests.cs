@@ -1,11 +1,9 @@
-﻿using Jerrycurl.Mvc.Test.Conventions.Accessors;
-using Jerrycurl.Mvc.Test.Conventions.Models;
+﻿using Jerrycurl.Mvc.Test.Conventions.Models;
 using Jerrycurl.Test.Project.Models;
 using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Jerrycurl.Test.Models;
 using Jerrycurl.Mvc.Sql;
 using Jerrycurl.Test.Project.Accessors;
 using Jerrycurl.Test.Models.Database;

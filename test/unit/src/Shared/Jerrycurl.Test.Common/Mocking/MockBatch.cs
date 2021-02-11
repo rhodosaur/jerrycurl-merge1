@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using System.Data.Common;
 using Jerrycurl.Data.Sessions;
 
 namespace Jerrycurl.Test

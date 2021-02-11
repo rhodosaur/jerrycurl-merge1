@@ -6,8 +6,6 @@ using Jerrycurl.Data.Commands;
 using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Sessions;
 using Jerrycurl.Mvc.Metadata;
-using Jerrycurl.Mvc.Projections;
-using Jerrycurl.Relations;
 using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Mvc.Projections

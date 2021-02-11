@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Jerrycurl.Relations.Metadata
+﻿namespace Jerrycurl.Relations.Metadata
 {
     public interface ISchema
     {

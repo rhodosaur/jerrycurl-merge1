@@ -3,9 +3,7 @@ using Jerrycurl.Test;
 using Jerrycurl.Relations.Language;
 using Jerrycurl.Data.Metadata;
 using System.Linq;
-using System;
 using Jerrycurl.Data.Test.Models.Custom;
-using Jerrycurl.Test.Models.Database;
 using Jerrycurl.Data.Test.Models.Views;
 
 namespace Jerrycurl.Data.Test

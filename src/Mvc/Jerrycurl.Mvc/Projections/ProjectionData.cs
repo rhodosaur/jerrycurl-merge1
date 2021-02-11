@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Jerrycurl.Mvc.Metadata;
 using Jerrycurl.Relations;
-using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Mvc.Projections
 {

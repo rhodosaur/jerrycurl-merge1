@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Jerrycurl.Data.Metadata.Annotations;
+﻿using System.Collections.Generic;
 using Jerrycurl.Relations;
 using Jerrycurl.Test.Models.Database;
 

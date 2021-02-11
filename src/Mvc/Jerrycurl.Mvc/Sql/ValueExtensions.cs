@@ -5,8 +5,6 @@ using System.Linq.Expressions;
 using Jerrycurl.Collections;
 using Jerrycurl.Mvc.Metadata;
 using Jerrycurl.Mvc.Projections;
-using Jerrycurl.Relations;
-using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Mvc.Sql
 {

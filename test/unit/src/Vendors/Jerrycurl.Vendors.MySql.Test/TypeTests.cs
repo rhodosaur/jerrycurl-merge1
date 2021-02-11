@@ -1,5 +1,4 @@
 ﻿using Jerrycurl.Mvc.Sql;
-using Jerrycurl.Test;
 using Jerrycurl.Test.Project.Accessors;
 using Jerrycurl.Test.Project.Models;
 using Jerrycurl.Vendors.MySql.Test.Models;

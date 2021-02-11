@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reflection;
 using Jerrycurl.Collections;
-using Jerrycurl.Data.Metadata;
-using Jerrycurl.Data.Metadata.Annotations;
 using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Data.Metadata

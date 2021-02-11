@@ -1,5 +1,4 @@
-﻿using Jerrycurl.Mvc.Test.Conventions.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Jerrycurl.Mvc.Test.Conventions.Accessors
 {

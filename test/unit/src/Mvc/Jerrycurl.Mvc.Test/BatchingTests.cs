@@ -1,7 +1,6 @@
 ﻿using Jerrycurl.Data.Commands;
 using Jerrycurl.Mvc.Test.Conventions.Accessors;
 using Shouldly;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Jerrycurl.Mvc.Test

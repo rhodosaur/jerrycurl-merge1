@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Jerrycurl.Mvc;
 using Jerrycurl.Mvc.Projections;
-using Jerrycurl.Mvc.Sql;
 using Jerrycurl.Test.Project.Models;
 
 namespace Jerrycurl.Test.Project.Accessors

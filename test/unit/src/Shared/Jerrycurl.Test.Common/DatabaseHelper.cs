@@ -10,8 +10,6 @@ using Microsoft.Data.Sqlite;
 using Jerrycurl.Data.Language;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Jerrycurl.Test
 {
