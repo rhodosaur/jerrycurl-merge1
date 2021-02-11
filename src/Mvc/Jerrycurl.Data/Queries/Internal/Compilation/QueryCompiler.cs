@@ -92,7 +92,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 allList.Add(writeExpresssion);
                 allList.Add(initExpression);
 
-                variables.Add(writer.JoinKey.List);
+                variables.Add(writer.Variable);
             }
 
             foreach (HelperWriter writer in result.Helpers)
@@ -163,10 +163,10 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
         #region " Initialize "
         private Expression GetInitializeExpression(ListWriter writer)
         {
-            Expression listIndex = this.GetElasticIndexExpression(Arguments.Lists, writer.JoinKey.BufferIndex);
-            Expression listValue = Expression.Convert(listIndex, writer.JoinKey.List.Type);
+            Expression listIndex = this.GetElasticIndexExpression(Arguments.Lists, writer.BufferIndex);
+            Expression listValue = Expression.Convert(listIndex, writer.Variable.Type);
 
-            return Expression.Assign(writer.JoinKey.List, listValue);
+            return Expression.Assign(writer.Variable, listValue);
         }
         private Expression GetInitializeExpression(NewReader reader)
         {
@@ -181,14 +181,14 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
         #region " Writers "
         private Expression GetWriterExpression(ListWriter writer)
         {
-            Expression listIndex = this.GetElasticIndexExpression(Arguments.Lists, writer.JoinKey.BufferIndex);
+            Expression listIndex = this.GetElasticIndexExpression(Arguments.Lists, writer.BufferIndex);
             NewExpression newList;
 
             if (writer.JoinKey == null)
                 newList = writer.Metadata.Composition.Construct;
             else
             {
-                Type dictionaryType = this.GetDictionaryType(writer.JoinKey.KeyType);
+                Type dictionaryType = this.GetDictionaryType(writer.JoinKey.CompositeType);
 
                 newList = Expression.New(dictionaryType);
             }
@@ -198,22 +198,17 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
             return Expression.IfThen(isNull, assignList);
         }
-        private Expression GetXXX(JoinIndex index)
-        {
-            Expression value = null;
 
-
-        }
         private Expression GetWriterExpression(JoinWriter writer)
         {
             Expression value = this.GetBinderExpression(writer.Value);
             Expression writeItem;
 
-            if (writer.JoinKey.ArrayIndex == null && writer.JoinKey.List == null)
-                writeItem = Expression.Call(writer.JoinKey.List, writer.Metadata.Composition.Add, value);
+            if (writer.JoinKey == null && writer.List != null)
+                writeItem = Expression.Call(writer.List, writer.Metadata.Composition.Add, value);
             else if (writer.JoinKey == null)
             {
-                Expression listIndex = this.GetElasticIndexExpression(Arguments.Lists, writer.JoinKey.BufferIndex);
+                Expression listIndex = this.GetElasticIndexExpression(Arguments.Lists, writer.BufferIndex);
                 Expression listValue = Expression.Convert(value, typeof(object));
 
                 writeItem = Expression.Assign(listIndex, listValue);
@@ -221,9 +216,9 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             else
             {
                 Expression arrayIsNotNull = Expression.ReferenceNotEqual(writer.JoinKey.Array, Expression.Constant(null));
-                Expression arrayIndex = this.GetElasticIndexExpression(writer.JoinKey.Array, writer.JoinKey.ArrayIndex.Value);
+                Expression arrayIndex = this.GetElasticIndexExpression(writer.JoinKey.Array, writer.BufferIndex);
 
-                if (writer.JoinKey.List != null)
+                if (writer.List != null)
                 {
                     Expression arrayIndexIsNotNull = Expression.ReferenceNotEqual(arrayIndex, Expression.Constant(null));
                     Expression assignIndex = Expression.Assign(arrayIndex, writer.Metadata.Composition.Construct);
@@ -297,6 +292,8 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
         private Expression GetKeyInitArrayExpression(KeyReader reader)
         {
+            IEnumerable<ParameterExpression> isNullVars = reader.Values.Where(v => v.CanBeDbNull).Select(v => v.IsDbNull).ToList();
+
             Expression newKey = this.GetNewCompositeKeyExpression(reader);
             Expression setKey = Expression.Assign(reader.Variable, newKey);
             Expression tryGet = this.GetDictionaryTryGetExpression(reader.List, setKey, reader.Array);
@@ -304,8 +301,6 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             Expression setArray = Expression.Assign(reader.Array, newArray);
             Expression addArray = this.GetDictionaryAddExpression(reader.List, reader.Variable, setArray);
             Expression getOrAdd = Expression.IfThenElse(tryGet, Expression.Default(typeof(void)), addArray);
-
-            IEnumerable<ParameterExpression> isNullVars = reader.Values.Where(v => v.CanBeDbNull).Select(v => v.IsDbNull).ToList();
 
             if (isNullVars.Any())
             {
@@ -370,7 +365,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
         private Expression GetBinderExpression(JoinReader reader)
         {
             Expression arrayIsNull = Expression.ReferenceNotEqual(reader.JoinKey.Array, Expression.Constant(null));
-            Expression arrayIndex = this.GetElasticIndexExpression(reader.JoinKey.Array, reader.JoinKey.BufferIndex);
+            Expression arrayIndex = this.GetElasticIndexExpression(reader.JoinKey.Array, reader.JoinIndex);
 
             if (reader.List == null)
             {

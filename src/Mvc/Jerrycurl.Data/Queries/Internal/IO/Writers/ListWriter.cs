@@ -12,8 +12,9 @@ namespace Jerrycurl.Data.Queries.Internal.IO.Writers
 
         }
 
+        public int BufferIndex { get; set; }
+        public ParameterExpression Variable { get; set; }
         public KeyReader JoinKey { get; set; }
-        public ListIndex Index { get; set; }
         public NewReader Value { get; set; }
     }
 }

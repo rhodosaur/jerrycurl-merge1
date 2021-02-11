@@ -15,7 +15,7 @@
         <repository type="git" url="$RepositoryUrl$" commit="$GitCommitId$" />
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <developmentDependency>true</developmentDependency>
-        <description>Compile-time engine for Jerrycurl.</description>
+        <description>Razor SQL build targets for Jerrycurl.</description>
     </metadata>
     <files>
         <file src="$SourceFiles$" target="" />

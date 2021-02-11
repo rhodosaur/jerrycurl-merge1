@@ -9,7 +9,6 @@ namespace Jerrycurl.Data.Queries.Internal.IO.Readers
         public NewReader(IBindingMetadata metadata)
         {
             this.Metadata = metadata;
-            this.Identity = metadata.Identity;
         }
 
         public KeyReader PrimaryKey { get; set; }

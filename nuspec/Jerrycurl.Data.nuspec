@@ -13,7 +13,7 @@
         <tags>$PackageTags$</tags>
         <repository type="git" url="$RepositoryUrl$" commit="$GitCommitId$" />
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>ORM engine for Jerrycurl.</description>
+        <description>Object mapper for Jerrycurl.</description>
         <dependencies>
             <group targetFramework="netstandard2.0">
                 <dependency id="Jerrycurl.Relations" version="$PackageVersion$" />
