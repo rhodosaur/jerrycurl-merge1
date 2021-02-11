@@ -30,7 +30,7 @@ namespace Jerrycurl.Mvc.Projections
 
         IProjection With(IProjectionMetadata metadata = null,
                          IEnumerable<IProjectionAttribute> attributes = null,
-                         IField field = null,
+                         IField source = null,
                          IProjectionOptions options = null);
     }
 }
