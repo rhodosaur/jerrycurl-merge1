@@ -6,6 +6,7 @@ namespace Jerrycurl.Data.Metadata
 {
     public interface IReferenceMetadata : IMetadata
     {
+        MetadataIdentity Identity { get; }
         Type Type { get; }
         IReadOnlyList<IReference> References { get; }
         IReadOnlyList<IReferenceKey> Keys { get; }

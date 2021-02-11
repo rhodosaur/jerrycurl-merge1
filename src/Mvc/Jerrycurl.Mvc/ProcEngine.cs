@@ -363,15 +363,14 @@ namespace Jerrycurl.Mvc
             return new DomainOptions()
             {
                 Dialect = new IsoDialect(),
-                Schemas = new SchemaStore(new DotNotation())
+                Schemas = new SchemaStore(new DotNotation(), new IMetadataBuilder[]
                 {
-                    new RelationMetadataBuilder(),
                     new BindingMetadataBuilder(),
                     new ReferenceMetadataBuilder(),
                     new TableMetadataBuilder(),
                     new ProjectionMetadataBuilder(),
                     new JsonMetadataBuilder(),
-                },
+                }),
                 Engine = this,
                 ConnectionFactory = () => throw new InvalidOperationException("No connection factory specified."),
                 Services = new ProcServices(this.serviceProvider),

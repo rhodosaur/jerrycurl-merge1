@@ -1,4 +1,5 @@
-﻿using Jerrycurl.Diagnostics;
+﻿using System;
+using Jerrycurl.Diagnostics;
 using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Mvc.Metadata
@@ -13,7 +14,7 @@ namespace Jerrycurl.Mvc.Metadata
 
         public JsonMetadata(IRelationMetadata relation)
         {
-            this.Relation = relation;
+            this.Relation = relation ?? throw new ArgumentNullException(nameof(relation));
         }
 
         public override string ToString() => $"IJsonMetadata: {this.Identity}";

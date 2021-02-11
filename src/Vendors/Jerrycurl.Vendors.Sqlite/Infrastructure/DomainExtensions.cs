@@ -13,7 +13,7 @@ namespace Jerrycurl.Mvc
         public static void UseSqlite(this DomainOptions options, string connectionString)
         {
             options.ConnectionFactory = () => new SqliteConnection(connectionString);
-            options.Schemas.Apply(new SqliteContractResolver());
+            options.Use(new SqliteContractResolver());
         }
     }
 }

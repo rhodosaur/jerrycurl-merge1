@@ -6,6 +6,7 @@ namespace Jerrycurl.Data.Metadata
 {
     public interface ITableMetadata : IMetadata
     {
+        MetadataIdentity Identity { get; }
         TableMetadataFlags Flags { get; }
         ITableMetadata MemberOf { get; }
         IReadOnlyList<ITableMetadata> Properties { get; }

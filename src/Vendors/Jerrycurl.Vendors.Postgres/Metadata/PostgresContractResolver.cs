@@ -33,7 +33,7 @@ namespace Jerrycurl.Vendors.Postgres.Metadata
         {
             IBindingParameterContract fallback = metadata.Parameter;
 
-            if (metadata.Annotations.OfType<JsonAttribute>().Any())
+            if (metadata.Relation.Annotations.OfType<JsonAttribute>().Any())
             {
                 return new BindingParameterContract()
                 {

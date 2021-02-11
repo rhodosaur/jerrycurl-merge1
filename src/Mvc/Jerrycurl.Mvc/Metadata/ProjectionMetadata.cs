@@ -9,7 +9,6 @@ namespace Jerrycurl.Mvc.Metadata
     {
         public MetadataIdentity Identity => this.Relation.Identity;
         public Type Type => this.Relation.Type;
-
         public ITableMetadata Table { get; }
         public IReferenceMetadata Reference { get; }
         public IRelationMetadata Relation { get; }

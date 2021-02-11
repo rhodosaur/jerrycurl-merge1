@@ -14,6 +14,6 @@ namespace Jerrycurl.Mvc
         }
 
         public static void UseEntityFrameworkCore(this DomainOptions options, DbContext dbContext)
-            => options.Schemas.Apply(new EntityFrameworkCoreContractResolver(dbContext));
+            => options.Use(new EntityFrameworkCoreContractResolver(dbContext));
     }
 }

@@ -1,4 +1,6 @@
-﻿using Jerrycurl.Relations.Metadata;
+﻿using Jerrycurl.Data.Language;
+using Jerrycurl.Relations.Language;
+using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Relations.Test.Metadata;
 using Jerrycurl.Relations.Test.Models;
 using Jerrycurl.Test;
@@ -45,7 +47,7 @@ namespace Jerrycurl.Relations.Test
 
         public void Test_SchemaStore_DisallowsRecursion()
         {
-            var store = new SchemaStore(new DotNotation(StringComparer.Ordinal)) { new RecursiveMetadataBuilder() };
+            var store = new SchemaStore(new DotNotation(StringComparer.Ordinal), new RecursiveMetadataBuilder());
             var schema = store.GetSchema(typeof(TupleModel));
 
             schema.ShouldNotBeNull();
@@ -55,8 +57,8 @@ namespace Jerrycurl.Relations.Test
 
         public void Test_Notation_StringComparison()
         {
-            var sensitive = new SchemaStore(new DotNotation(StringComparer.Ordinal)) { new RelationMetadataBuilder() };
-            var insensitive = new SchemaStore(new DotNotation()) { new RelationMetadataBuilder() };
+            var sensitive = new SchemaStore(new DotNotation(StringComparer.Ordinal));
+            var insensitive = new SchemaStore(new DotNotation());
 
             var sensitive1 = sensitive.GetSchema(typeof(TupleModel)).Lookup<IRelationMetadata>("List.Item.Name");
             var sensitive2 = sensitive.GetSchema(typeof(TupleModel)).Lookup<IRelationMetadata>("list.item.name");
@@ -73,8 +75,9 @@ namespace Jerrycurl.Relations.Test
 
         public void Test_Metadata_Custom_Contract()
         {
-            var builder = new RelationMetadataBuilder() { new CustomContractResolver() };
-            var store = new SchemaStore(new DotNotation()) { builder };
+            var store = new SchemaStore(new DotNotation());
+
+            store.Use(new CustomContractResolver());
 
             var schema1 = DatabaseHelper.Default.Store.GetSchema(typeof(CustomModel));
             var schema2 = store.GetSchema(typeof(CustomModel));
@@ -90,8 +93,8 @@ namespace Jerrycurl.Relations.Test
 
         public void Test_Metadata_Invalid_Constract()
         {
-            var builder = new RelationMetadataBuilder() { new InvalidContractResolver() };
-            var customStore = new SchemaStore(new DotNotation()) { builder };
+            var customStore = new SchemaStore(new DotNotation());
+            customStore.Use(new InvalidContractResolver());
 
             var schema = customStore.GetSchema(typeof(CustomModel));
 

@@ -52,8 +52,8 @@ namespace Jerrycurl.Mvc.Projections
             return new ProjectionException(message, innerException);
         }
 
-        public static ProjectionException FromProjection(IProjection projection, string message = null, Exception innerException = null) => FromAttribute(projection.Metadata?.Identity.Schema.Model, projection.Metadata?.Identity.Name, message, innerException);
-        public static ProjectionException FromProjection(IProjectionAttribute attribute, string message = null, Exception innerException = null) => FromAttribute(attribute.Metadata?.Identity.Schema.Model, attribute.Metadata?.Identity.Name, message, innerException);
+        public static ProjectionException FromProjection(IProjection projection, string message = null, Exception innerException = null) => FromAttribute(projection.Metadata?.Identity.Schema.Model.Type, projection.Metadata?.Identity.Name, message, innerException);
+        public static ProjectionException FromProjection(IProjectionAttribute attribute, string message = null, Exception innerException = null) => FromAttribute(attribute.Metadata?.Identity.Schema.Model.Type, attribute.Metadata?.Identity.Name, message, innerException);
         public static ProjectionException FromAttribute(string attributeName, string message = null, Exception innerException = null) => FromAttribute(null, attributeName, message, innerException);
 
         public static ProjectionException ArgumentNull(string argumentName, IProjection projection = null) => FromProjection(projection, innerException: new ArgumentNullException(argumentName));

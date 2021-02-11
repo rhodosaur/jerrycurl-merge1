@@ -14,27 +14,21 @@ namespace Jerrycurl.Data.Metadata
     {
         public ITableContractResolver DefaultResolver { get; set; } = new DefaultTableContractResolver();
 
-        public ITableMetadata GetMetadata(IMetadataBuilderContext context) => this.GetMetadata(context, context.Identity);
+        public ITableMetadata GetMetadata(IMetadataBuilderContext context) => this.GetMetadata(context, context.Relation);
 
-        private ITableMetadata GetMetadata(IMetadataBuilderContext context, MetadataIdentity identity)
+        private ITableMetadata GetMetadata(IMetadataBuilderContext context, IRelationMetadata relation)
         {
-            MetadataIdentity parentIdentity = identity.Pop();
-            ITableMetadata parent = context.GetMetadata<ITableMetadata>(parentIdentity.Name) ?? this.GetMetadata(context, parentIdentity);
+            ITableMetadata parent = context.GetMetadata<ITableMetadata>(relation.Parent.Identity.Name) ?? this.GetMetadata(context, relation.Parent);
 
             if (parent == null)
                 return null;
-            else if (parent.Item != null && parent.Item.Identity.Equals(identity))
+            else if (parent.Item != null && parent.Item.Identity.Equals(relation.Identity))
                 return parent.Item;
 
-            return parent.Properties.FirstOrDefault(m => m.Identity.Equals(identity));
+            return parent.Properties.FirstOrDefault(m => m.Identity.Equals(relation.Identity));
         }
 
-        public void Initialize(IMetadataBuilderContext context)
-        {
-            IRelationMetadata relation = context.Schema.Require<IRelationMetadata>(context.Identity.Name);
-
-            this.CreateMetadata(context, relation);
-        }
+        public void Initialize(IMetadataBuilderContext context) => this.CreateMetadata(context, context.Relation);
 
         private IEnumerable<TableMetadata> CreateProperties(IMetadataBuilderContext context, TableMetadata parent)
         {

@@ -5,14 +5,7 @@ namespace Jerrycurl.Relations.Test.Metadata
     public class RecursiveMetadataBuilder : IMetadataBuilder<CustomMetadata>
     {
         public CustomMetadata GetMetadata(IMetadataBuilderContext context)
-        {
-            MetadataIdentity parentIdentity = context.Identity.Pop();
-
-            if (parentIdentity != null)
-                return context.Schema.Lookup<CustomMetadata>(parentIdentity.Name);
-
-            return null;
-        }
+            => context.Relation.Identity.Lookup<CustomMetadata>();
 
         public void Initialize(IMetadataBuilderContext context)
         {

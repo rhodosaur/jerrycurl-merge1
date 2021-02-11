@@ -11,8 +11,8 @@ namespace Jerrycurl.Mvc
         {
             settings ??= JsonConvert.DefaultSettings?.Invoke() ?? new JsonSerializerSettings();
 
-            options.Schemas.Apply(new NewtonsoftJsonBindingContractResolver(settings));
-            options.Schemas.Apply(new NewtonsoftJsonContractResolver(settings));
+            options.Use(new NewtonsoftJsonBindingContractResolver(settings));
+            options.Use(new NewtonsoftJsonContractResolver(settings));
         }
     }
 }
