@@ -57,7 +57,7 @@ namespace Jerrycurl.Vendors.Postgres.Metadata
                     Convert = fallback.Convert,
                     Write = pi =>
                     {
-                        fallback.Write(pi);
+                        fallback?.Write?.Invoke(pi);
 
                         if (pi.Parameter is NpgsqlParameter npgParam)
                             npgParam.NpgsqlDbType = NpgsqlDbType.Xml;
@@ -73,7 +73,7 @@ namespace Jerrycurl.Vendors.Postgres.Metadata
                     Convert = fallback.Convert,
                     Write = pi =>
                     {
-                        fallback.Write(pi);
+                        fallback?.Write?.Invoke(pi);
 
                         this.SetInputParameter(pi);
                     }
