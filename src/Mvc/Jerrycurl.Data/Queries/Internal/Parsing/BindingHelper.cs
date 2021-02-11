@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Jerrycurl.Collections;
 using Jerrycurl.Data.Metadata;
-using Jerrycurl.Data.Queries.Internal.Binding;
+using Jerrycurl.Data.Queries.Internal.IO;
 using Jerrycurl.Data.Queries.Internal.Caching;
 using Jerrycurl.Data.Queries.Internal.Extensions;
 using Jerrycurl.Reflection;

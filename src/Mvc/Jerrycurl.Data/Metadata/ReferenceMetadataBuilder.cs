@@ -277,15 +277,5 @@ namespace Jerrycurl.Data.Metadata
 
             return references;
         }
-
-        private bool IsPreferredSelfJoin(IReference reference, IReference other)
-        {
-            if (reference.Other.HasFlag(ReferenceFlags.Many) && other.HasFlag(ReferenceFlags.Foreign))
-                return true;
-            else if (reference.Other.HasFlag(ReferenceFlags.One) && other.HasFlag(ReferenceFlags.Candidate))
-                return true;
-
-            return false;
-        }
     }
 }

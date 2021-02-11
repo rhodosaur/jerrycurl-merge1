@@ -10,7 +10,7 @@ using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Queries.Internal.Parsing;
 using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Reflection;
-using Jerrycurl.Data.Queries.Internal.Binding;
+using Jerrycurl.Data.Queries.Internal.IO;
 using Jerrycurl.Data.Queries.Internal.Caching;
 
 namespace Jerrycurl.Data.Queries.Internal.Compilation

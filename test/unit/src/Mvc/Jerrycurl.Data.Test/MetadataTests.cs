@@ -44,8 +44,8 @@ namespace Jerrycurl.Data.Test
             var blogPr = blogRefs.First(r => r.Key.Name == "PK_Blog");
             var blogNpr = blogRefs.First(r => r.Key.Name == "PK_Blog_2");
 
-            var postsPr = blogRefs.First(r => r.Key.Other == "PK_Blog");
-            var postsNpr = blogRefs.First(r => r.Key.Other == "PK_Blog_2");
+            var postsPr = postRefs.First(r => r.Key.Other == "PK_Blog");
+            var postsNpr = postRefs.First(r => r.Key.Other == "PK_Blog_2");
 
             blogPr.HasFlag(ReferenceFlags.Primary).ShouldBeTrue();
             blogNpr.HasFlag(ReferenceFlags.Candidate).ShouldBeTrue();

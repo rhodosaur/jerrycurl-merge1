@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 using Jerrycurl.Data.Metadata;
 
-namespace Jerrycurl.Data.Queries.Internal.Binding
+namespace Jerrycurl.Data.Queries.Internal.IO
 {
     [DebuggerDisplay("{GetType().Name,nq}: {Metadata.Identity.Name,nq}")]
     internal class ListWriter

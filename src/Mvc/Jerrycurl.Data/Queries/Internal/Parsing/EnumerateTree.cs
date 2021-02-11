@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Jerrycurl.Data.Queries.Internal.Binding;
+using Jerrycurl.Data.Queries.Internal.IO;
 using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Data.Queries.Internal.Parsing

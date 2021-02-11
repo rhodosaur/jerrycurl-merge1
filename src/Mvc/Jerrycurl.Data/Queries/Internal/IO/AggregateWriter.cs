@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace Jerrycurl.Data.Queries.Internal.Binding
+namespace Jerrycurl.Data.Queries.Internal.IO
 {
     [DebuggerDisplay("{Data,nq}")]
     internal class AggregateWriter

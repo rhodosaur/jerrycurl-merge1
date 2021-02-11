@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace Jerrycurl.Data.Queries.Internal.Binding
+namespace Jerrycurl.Data.Queries.Internal.IO
 {
     internal class HelperWriter
     {

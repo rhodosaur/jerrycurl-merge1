@@ -1,6 +1,6 @@
 ﻿using Jerrycurl.Data.Queries.Internal.Parsing;
 
-namespace Jerrycurl.Data.Queries.Internal.Binding
+namespace Jerrycurl.Data.Queries.Internal.IO
 {
     internal class AggregateBinder : ValueBinder
     {

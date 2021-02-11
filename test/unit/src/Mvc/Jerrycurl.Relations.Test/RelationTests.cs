@@ -480,28 +480,24 @@ namespace Jerrycurl.Relations.Test
                                             Subs = new List<RecursiveModel>()
                                             {
                                                 new RecursiveModel() { Name = "1.1.1.3.1" },
-                                                new RecursiveModel() { Name = "1.1.1.3.2" },
                                             }
                                         },
                                         new RecursiveModel() { Name = "1.1.1.4" },
                                     }
                                 },
-                                new RecursiveModel() { Name = "1.1.2" },
+                                new RecursiveModel()
+                                {
+                                    Name = "1.1.2",
+                                    Subs = new List<RecursiveModel>()
+                                    {
+                                        new RecursiveModel() { Name = "1.1.2.1" },
+                                        new RecursiveModel() { Name = "1.1.2.2" },
+                                    }
+                                },
                                 new RecursiveModel()
                                 {
                                     Name = "1.1.3",
-                                    Subs = new List<RecursiveModel>()
-                                    {
-                                        new RecursiveModel()
-                                        {
-                                            Name = "1.1.3.1",
-                                            Subs = new List<RecursiveModel>()
-                                            {
-                                                new RecursiveModel() { Name = "1.1.3.1.1" },
-                                            }
-                                        },
-                                    }
-                                },
+                                }
                             }
                         }
                     }
@@ -518,7 +514,16 @@ namespace Jerrycurl.Relations.Test
                             {
                                 new RecursiveModel() { Name = "2.1.1" },
                                 new RecursiveModel() { Name = "2.1.2" },
-                                new RecursiveModel() { Name = "2.1.3" },
+                                new RecursiveModel()
+                                {
+                                    Name = "2.1.3",
+                                    Subs = new List<RecursiveModel>()
+                                    {
+                                        new RecursiveModel() { Name = "2.1.3.1" },
+                                        new RecursiveModel() { Name = "2.1.3.2" },
+                                        new RecursiveModel() { Name = "2.1.3.3" },
+                                    }
+                                }
                             }
                         },
                         new RecursiveModel()
@@ -543,7 +548,14 @@ namespace Jerrycurl.Relations.Test
             IList<string> actual2 = rel2.Body.Select(t => (string)t[0].Snapshot).ToList();
 
             actual1.ShouldBe(new[] { "1", "2", "3", "4" });
-            actual2.ShouldBe(new[] { "1.1", "1.1.1", "1.1.2", "1.1.1.1", "1.1.1.2", "1.1.1.3", "1.1.1.4", "1.1.1.3.1", "1.1.1.3.2", "2.1", "2.2", "2.1.1", "2.1.2", "2.1.3", "2.2.1", "2.2.2" });
+            actual2.ShouldBe(new[] { "1.1",
+                                       "1.1.1", "1.1.2", "1.1.3",
+                                         "1.1.1.1", "1.1.1.2", "1.1.1.3", "1.1.1.4", "1.1.2.1", "1.1.2.2",
+                                           "1.1.1.3.1",
+                                     "2.1", "2.2",
+                                       "2.1.1", "2.1.2", "2.1.3", "2.2.1", "2.2.2",
+                                         "2.1.3.1", "2.1.3.2", "2.1.3.3"
+            });
         }
     }
 }

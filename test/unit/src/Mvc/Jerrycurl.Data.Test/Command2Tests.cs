@@ -126,8 +126,8 @@ namespace Jerrycurl.Data.Test
             var buffer = new CommandBuffer();
 
             buffer.Add(new ParameterBinding(target1, "P0"));
-            buffer.Add(new CascadeBinding(target1, target2));
-            buffer.Add(new CascadeBinding(target2, target3));
+            buffer.Add(new CascadeBinding(target2, target1));
+            buffer.Add(new CascadeBinding(target3, target2));
 
             var parameters = buffer.Prepare(() => new MockParameter());
 

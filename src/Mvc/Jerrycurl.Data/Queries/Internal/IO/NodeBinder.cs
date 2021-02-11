@@ -3,7 +3,7 @@ using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Queries.Internal.Parsing;
 using Jerrycurl.Relations.Metadata;
 
-namespace Jerrycurl.Data.Queries.Internal.Binding
+namespace Jerrycurl.Data.Queries.Internal.IO
 {
     [DebuggerDisplay("{GetType().Name,nq}: {Metadata.Identity.ToString(),nq}")]
     internal abstract class NodeBinder

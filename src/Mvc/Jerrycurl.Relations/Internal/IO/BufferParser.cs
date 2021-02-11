@@ -103,7 +103,7 @@ namespace Jerrycurl.Relations.Internal.IO
                 reader.Writers.Add(fieldWriter);
                 tree.Fields.Add(fieldWriter);
 
-                if (queue.Type == RelationQueueType.Cached)
+                if (queue != null && queue.Type == RelationQueueType.Cached)
                 {
                     CacheWriter cacheWriter = new CacheWriter(node)
                     {
