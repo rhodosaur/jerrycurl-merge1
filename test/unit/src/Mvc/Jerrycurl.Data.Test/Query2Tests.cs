@@ -65,6 +65,54 @@ namespace Jerrycurl.Data.Test
             result[1].Posts.ShouldBeNull();
         }
 
+        public async Task Test_Insert_OneToMany_NonPrimary_Async()
+        {
+            var store = DatabaseHelper.Default.Schemas2;
+
+            var data1 = new (int?, string)[]
+            {
+                ( 1, "Blog 1" ),
+                ( null, "Blog 2" ),
+            };
+            var data2 = new (int, int, string)[]
+            {
+                ( 1, 1, "Post 1.1" ),
+                ( 2, 1, "Post 1.2" ),
+                ( 3, 2, "Post 2.1" ),
+            };
+
+            var buffer = new ListBuffer<Blog>(store);
+
+            await buffer.InsertAsync(data1,
+                ("Item.Item1", "Item.Id2"),
+                ("Item.Item2", "Item.Title")
+            );
+
+            await buffer.InsertAsync(data2,
+                ("Item.Item1", "Item.Posts.Item.Id"),
+                ("Item.Item2", "Item.Posts.Item.BlogId2"),
+                ("Item.Item3", "Item.Posts.Item.Headline")
+            );
+
+            var result = buffer.Commit();
+
+            result.Count.ShouldBe(2);
+
+            result[0].Id2.ShouldBe(1);
+            result[0].Title.ShouldBe("Blog 1");
+
+            result[0].Posts.Count.ShouldBe(2);
+            result[0].Posts[0].BlogId2.ShouldBe(result[0].Id2);
+            result[0].Posts[0].Headline.ShouldBe("Post 1.1");
+            result[0].Posts[1].BlogId2.ShouldBe(result[0].Id2);
+            result[0].Posts[1].Headline.ShouldBe("Post 1.2");
+
+            result[1].Id2.ShouldBe(0);
+            result[1].Title.ShouldBe("Blog 2");
+
+            result[1].Posts.ShouldBeNull();
+        }
+
         public async Task Test_Insert_OneToMany_Async()
         {
             var store = DatabaseHelper.Default.Schemas2;

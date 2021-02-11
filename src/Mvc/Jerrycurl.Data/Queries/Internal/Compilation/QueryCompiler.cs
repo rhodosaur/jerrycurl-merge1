@@ -278,9 +278,10 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
             if (isNullVars.Any())
             {
-                Expression notNull = Expression.Not(this.GetOrConditionExpression(isNullVars));
+                Expression isNull = this.GetAndConditionExpression(isNullVars);
+                Expression setNull = Expression.Assign(binder.Array, Expression.Constant(null, binder.Array.Type));
 
-                getOrAdd = Expression.IfThen(notNull, getOrAdd);
+                getOrAdd = Expression.IfThenElse(isNull, setNull, getOrAdd);
             }
 
             return getOrAdd;
