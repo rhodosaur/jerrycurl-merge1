@@ -14,22 +14,15 @@ namespace Jerrycurl.Mvc.Sql.Oracle
         /// <returns>A new attribute containing the appended buffer.</returns>
         public static IProjectionAttribute Json(this IProjectionAttribute attribute)
         {
-            IJsonMetadata json = ProjectionHelper.GetJsonMetadata(attribute);
+            IJsonMetadata json = attribute.Metadata.Identity.Require<IJsonMetadata>();
 
-            IProjectionMetadata metadata = attribute.Metadata;
+            IProjectionMetadata valueMetadata = attribute.Metadata;
             IProjectionMetadata rootMetadata = json.MemberOf.Identity.Lookup<IProjectionMetadata>();
 
             attribute = attribute.Append("JSON_VALUE(");
-            try
-            {
-                attribute = attribute.With(metadata: rootMetadata).Col();
-            }
-            catch (ProjectionException ex)
-            {
-                throw ProjectionException.FromProjection(attribute, "JSON value requires a column to read from.", innerException: ex);
-            }
+            attribute = attribute.With(metadata: rootMetadata).Col();
             attribute = attribute.Append(",");
-            attribute = attribute.With(metadata: metadata).JsonPath();
+            attribute = attribute.With(metadata: valueMetadata).JsonPath();
             attribute = attribute.Append(")");
 
             return attribute;
