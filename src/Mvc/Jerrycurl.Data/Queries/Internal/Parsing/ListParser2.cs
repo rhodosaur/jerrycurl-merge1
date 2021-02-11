@@ -18,12 +18,12 @@ using System.IO;
 
 namespace Jerrycurl.Data.Queries.Internal.Parsing
 {
-    internal class ListParser : BaseParser
+    internal class ListParser2 : BaseParser
     {
         public BufferCache Buffer { get; }
         public QueryType QueryType { get; }
 
-        public ListParser(BufferCache cache, QueryType queryType)
+        public ListParser2(BufferCache cache, QueryType queryType)
             : base(cache?.Schema)
         {
             this.Buffer = cache ?? throw new ArgumentException(nameof(cache));
@@ -69,22 +69,6 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                     return true;
 
                 return false;
-            }
-        }
-
-        private void CreateTargetWriters(ListResult result, NodeTree nodeTree)
-        {
-            foreach (Node node in nodeTree.Items)
-            {
-                TargetWriter writer = new TargetWriter()
-                {
-                    Source = this.CreateReader(result, node),
-                };
-
-                this.AddPrimaryKey(writer);
-                this.AddChildKey(result, writer);
-
-                result.Writers.Add(writer);
             }
         }
 
@@ -141,12 +125,21 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
             };
 
+            if (source.Metadata.HasFlag(BindingMetadataFlags.Item))
+            {
+                target.NewList = null;
+                target.Variable = Expression.Variable(source.Metadata.Parent.Composition.Construct.Type, $"_list{target.BufferIndex}");
+                target.AddMethod = source.Metadata.Parent.Composition.Add;
+            }
+
             return target;
         }
 
         private JoinTarget2 GetJoinTarget(ListResult result, BaseReader source, KeyReader joinKey)
         {
             ListTarget2 list = this.GetListTarget(result, source, joinKey);
+
+            Type dictionaryType = typeof(Dictionary<,>).MakeGenericType(joinKey.Variable.Type, typeof(ElasticArray));
 
             return new JoinTarget2()
             {
@@ -262,20 +255,6 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
                 yield return parentType;
             }
-        }
-
-        private void AddTargets(ListResult result, ListWriter writer)
-        {
-            IList<IReference> references = this.GetChildReferences(writer.Source.Metadata).ToList();
-            KeyReader childKey = references.Select(r => this.FindChildKey(writer.Source, r)).NotNull().FirstOrDefault();
-
-            if (childKey != null)
-                this.InitializeKey(childKey, throwOnInvalid: true);
-
-            if (childKey == null && this.RequiresReference(writer))
-                throw new InvalidOperationException();
-
-            writer.Target = this.CreateTarget(result, writer.Source, childKey);
         }
 
         private void AddChildKey(ListResult result, ListWriter writer)

@@ -12,6 +12,7 @@ using System.Linq;
 using Newtonsoft.Json.Serialization;
 using System.IO;
 using System;
+using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Data.Test
 {
@@ -394,6 +395,20 @@ namespace Jerrycurl.Data.Test
             result4[0].Id.ShouldBe(50);
         }
 
+        public void Test_Insert_Invalid_Constructor()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Test_Insert_Invalid_ParentKey()
+        {
+            throw new NotImplementedException();
+        }
+        public void Test_Insert_Invalid_ChildKey()
+        {
+            throw new NotImplementedException();
+        }
+
         public void Test_Insert_CaseInsensitive()
         {
             var store = DatabaseHelper.Default.Store;
@@ -406,6 +421,19 @@ namespace Jerrycurl.Data.Test
 
             result.Count.ShouldBe(1);
             result[0].Id.ShouldBe(50);
+        }
+
+        public void Test_Insert_CaseSensitive()
+        {
+            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false, new DotNotation(StringComparer.OrdinalIgnoreCase));
+            var schema = store.GetSchema(typeof(IList<Blog>));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            buffer.Insert(50, ("", "ITEM.id"));
+
+            var result = buffer.Commit<IList<Blog>>();
+
+            result.ShouldBeNull();
         }
 
         public async Task Test_Insert_OneToMany_NonPrimary_Async()

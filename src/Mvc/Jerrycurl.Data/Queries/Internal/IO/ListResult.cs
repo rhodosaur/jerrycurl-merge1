@@ -13,7 +13,9 @@ namespace Jerrycurl.Data.Queries.Internal.IO
     {
         public QueryType QueryType { get; }
         public List<ListWriter> Lists { get; set; } = new List<ListWriter>();
+        public List<TargetWriter> Writers { get; set; } = new List<TargetWriter>();
         public List<BaseTarget> Targets { get; set; } = new List<BaseTarget>();
+        public List<ListTarget2> Targets2 { get; set; } = new List<ListTarget2>();
         public List<AggregateWriter> Aggregates { get; set; } = new List<AggregateWriter>();
 
         public ListResult(ISchema schema, QueryType queryType)

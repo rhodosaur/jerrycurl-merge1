@@ -35,13 +35,13 @@ namespace Jerrycurl.Test
             this.CommandOptions = this.GetCommandOptions();
         }
 
-        public SchemaStore GetSchemas(bool useSqlite = true)
+        public SchemaStore GetSchemas(bool useSqlite = true, DotNotation notation = null)
         {
             RelationMetadataBuilder relationBuilder = new RelationMetadataBuilder();
             BindingMetadataBuilder bindingBuilder = new BindingMetadataBuilder();
             ReferenceMetadataBuilder referenceBuilder = new ReferenceMetadataBuilder();
 
-            SchemaStore store = new SchemaStore(new DotNotation(), relationBuilder, bindingBuilder, referenceBuilder);
+            SchemaStore store = new SchemaStore(notation ?? new DotNotation(), relationBuilder, bindingBuilder, referenceBuilder);
 
             if (useSqlite)
                 bindingBuilder.Add(new SqliteContractResolver());

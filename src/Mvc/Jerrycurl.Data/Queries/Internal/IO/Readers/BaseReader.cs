@@ -18,7 +18,7 @@ namespace Jerrycurl.Data.Queries.Internal.IO.Readers
         public BaseReader(Node node)
         {
             this.Metadata = node.Metadata;
-            this.Identity = node.Metadata.Identity;
+            this.Identity = node.Identity;
         }
 
         public BaseReader(IBindingMetadata metadata)

@@ -84,7 +84,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
             List<Expression> body = new List<Expression>();
 
-            foreach (BaseTarget target in result.Targets.Where(t => t.NewList != null).DistinctBy(i => i.BufferIndex))
+            foreach (BaseTarget target in result.Targets.Where(t => t.NewList != null || t is JoinTarget).DistinctBy(i => i.BufferIndex))
             {
                 Expression prepareBuffer = this.GetPrepareBufferExpression(target);
                 Expression prepareVariable = this.GetPrepareVariableExpression(target);
@@ -180,6 +180,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             JoinTarget t => this.GetPrepareBufferExpression(t),
             _ => throw new InvalidOperationException(),
         };
+
         private Expression GetPrepareBufferExpression(ListTarget target)
         {
             if (target.NewList == null)
@@ -316,12 +317,12 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             if (isNullVars.Any())
             {
                 Expression isNull = this.GetAndConditionExpression(isNullVars);
-                Expression setNull = Expression.Assign(join.JoinBuffer, Expression.Constant(null));
+                Expression setNull = Expression.Assign(join.JoinBuffer, Expression.Constant(null, typeof(ElasticArray)));
 
                 getOrAdd = Expression.IfThenElse(isNull, setNull, getOrAdd);
             }
 
-            return Expression.Block(new[] { join.Key.Variable }, getOrAdd);
+            return getOrAdd;
         }
 
         private Expression GetKeyBlockExpression(IEnumerable<KeyReader> primaryKeys, IEnumerable<JoinTarget> joins, Expression body)
@@ -342,9 +343,10 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             foreach (JoinTarget join in joins)
             {
                 expressions.Add(this.GetKeyInitializeBufferExpression(join));
-
                 variables.Add(join.JoinBuffer);
+                variables.Add(join.Key.Variable);
             }
+                
 
             expressions.Add(body);
 
@@ -372,6 +374,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             AggregateReader r => this.GetReaderExpression(r, r.IsDbNull, r.Variable, r.CanBeDbNull),
             NewReader r => this.GetReaderExpression(r),
             JoinReader r => this.GetReaderExpression(r),
+            DynamicReader r => this.GetReaderExpression(r),
             _ => throw new InvalidOperationException(),
         };
 
@@ -382,10 +385,10 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
             if (reader.Target.NewList == null)
             {
-                Expression convertedValue = this.GetConvertOrExpression(bufferIndex, reader.Target.NewList.Metadata.Type);
+                Expression convertedValue = this.GetConvertOrExpression(bufferIndex, reader.Metadata.Type);
                 Expression ifThen = Expression.Condition(bufferNotNull, convertedValue, Expression.Default(convertedValue.Type));
 
-                return this.GetConvertOrExpression(ifThen, reader.Target.NewList.Metadata.Type);
+                return this.GetConvertOrExpression(ifThen, reader.Metadata.Type);
             }
             else
             {
@@ -609,6 +612,8 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
         {
             if (!expression.Type.IsValueType && type.IsValueType)
                 return Expression.Convert(expression, type);
+            else if (!type.IsValueType && expression.Type.IsValueType)
+                return Expression.Convert(expression, type);
             else if (!type.IsAssignableFrom(expression.Type))
                 return Expression.Convert(expression, type); 
 
@@ -699,6 +704,13 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
         private Type GetDictionaryType(Type keyType)
             => typeof(Dictionary<,>).MakeGenericType(keyType, typeof(ElasticArray));
+
+        private NewExpression GetNewDictionaryExpression(Type keyType)
+        {
+            Type dictType = this.GetDictionaryType(keyType);
+
+            return Expression.New(dictType);
+        }
 
         private Expression GetElasticIndexExpression(Expression arrayExpression, int index)
         {

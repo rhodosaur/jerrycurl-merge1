@@ -51,6 +51,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 ColumnReader reader = new ColumnReader(node)
                 {
                     Column = new ColumnMetadata(column.Name, column.Type, column.TypeName, column.Index),
+                    CanBeDbNull = true,
                 };
 
                 this.AddHelper(result, reader);
