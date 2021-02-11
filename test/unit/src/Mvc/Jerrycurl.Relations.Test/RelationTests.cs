@@ -174,7 +174,8 @@ namespace Jerrycurl.Relations.Test
 
         public void Test_Update_ObjectGraph()
         {
-            RootModel model = new RootModel()
+            var store = DatabaseHelper.Default.Store;
+            var model = new RootModel()
             {
                 Complex = new RootModel.SubModel()
                 {
@@ -190,17 +191,17 @@ namespace Jerrycurl.Relations.Test
                     new RootModel.SubModel() { Complex = new RootModel.SubModel2() { Value = "String 3" } },
                 },
             };
-            IRelation rel1 = DatabaseHelper.Default.Relation(model, "Complex.Value", "Complex.Complex.Value");
-            IRelation rel2 = DatabaseHelper.Default.Relation(model, "ComplexList.Item.Complex.Value");
 
-            ITuple tuple1 = rel1.Row();
-            IField[] tuple2 = rel2.Column().ToArray();
+            var rel1 = DatabaseHelper.Default.Relation(model, "Complex.Value", "Complex.Complex.Value");
+            var rel2 = DatabaseHelper.Default.Relation(model, "ComplexList.Item.Complex.Value");
+
+            var tuple1 = rel1.Row();
+            var tuple2 = rel2.Column().ToArray();
 
             tuple1[0].Update(100); tuple1[0].Commit();
             tuple1[1].Update("String 3"); tuple1[1].Commit();
             tuple2[0].Update("String 4"); tuple2[0].Commit();
             tuple2[1].Update("String 5"); tuple2[1].Commit();
-
 
             model.Complex.Value.ShouldBe(100);
             model.Complex.Complex.Value.ShouldBe("String 3");
@@ -211,9 +212,10 @@ namespace Jerrycurl.Relations.Test
 
         public void Test_Select_UnknownProperty_Throws()
         {
-            RootModel model = new RootModel();
+            var model = new RootModel();
+            var store = DatabaseHelper.Default.Store;
 
-            Should.Throw<MetadataException>(() => DatabaseHelper.Default.Relation(model, "Unknown123"));
+            Should.Throw<MetadataException>(() => store.From(model).Select("Unknown123"));
         }
 
         public void Test_Select_SourceTraverse()
@@ -326,8 +328,9 @@ namespace Jerrycurl.Relations.Test
 
         public void Test_Select_OneToOne_OuterJoin()
         {
-            RootModel model = new RootModel() { IntValue = 1 };
-            ITuple tuple = DatabaseHelper.Default.Relation(model, "IntValue", "Complex.Complex.Value").Row();
+            var store = DatabaseHelper.Default.Store;
+            var model = new RootModel() { IntValue = 1 };
+            var tuple = store.From(model).Select("IntValue", "Complex.Complex.Value").Row();
 
             tuple.Degree.ShouldBe(2);
 

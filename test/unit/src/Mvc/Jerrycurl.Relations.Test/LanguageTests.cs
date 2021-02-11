@@ -12,13 +12,12 @@ namespace Jerrycurl.Relations.Test
     {
         public static void Test_Select_ZeroDimensional()
         {
-            ISchemaStore store = DatabaseHelper.Default.Store;
-
-            RelationHeader actual = store.For<RootModel>()
+            var store = DatabaseHelper.Default.Store;
+            var actual = store.For<RootModel>()
                                          .Select(m => m.Object)
                                          .Select(m => m.ReadOnly);
 
-            RelationHeader expected = store.GetSchema<RootModel>()
+            var expected = store.GetSchema<RootModel>()
                                            .Select("Object", "ReadOnly");
 
             actual.ShouldBe(expected);
@@ -26,15 +25,14 @@ namespace Jerrycurl.Relations.Test
 
         public static void Test_Select_OneDimensional()
         {
-            ISchemaStore store = DatabaseHelper.Default.Store;
-
-            RelationHeader actual = store.For<List<RootModel>>()
+            var store = DatabaseHelper.Default.Store;
+            var actual = store.For<List<RootModel>>()
                                          .Join(m => m)
                                          .Select(m => m.Object)
                                          .Select(m => m.ReadOnly)
                                          .Select(m => m.Complex.Value);
 
-            RelationHeader expected = store.GetSchema<List<RootModel>>()
+            var expected = store.GetSchema<List<RootModel>>()
                                            .Select("Item.Object", "Item.ReadOnly", "Item.Complex.Value");
 
             actual.ShouldBe(expected);
@@ -42,17 +40,16 @@ namespace Jerrycurl.Relations.Test
 
         public static void Test_LambdaSelect_TwoDimensional()
         {
-            ISchemaStore store = DatabaseHelper.Default.Store;
+            var store = DatabaseHelper.Default.Store;
+            var actual = store.For<List<RootModel>>()
+                              .Join(m => m)
+                              .Select()
+                              .Select(m => m.IntValue)
+                              .Select(m => m.Complex)
+                              .Join(m => m.IntList)
+                              .Select();
 
-            RelationHeader actual = store.For<List<RootModel>>()
-                                         .Join(m => m)
-                                         .Select()
-                                         .Select(m => m.IntValue)
-                                         .Select(m => m.Complex)
-                                         .Join(m => m.IntList)
-                                         .Select();
-
-            RelationHeader expected = store.GetSchema<List<RootModel>>()
+            var expected = store.GetSchema<List<RootModel>>()
                                            .Select("Item", "Item.IntValue", "Item.Complex", "Item.IntList.Item");
 
             actual.ShouldBe(expected);
@@ -60,13 +57,12 @@ namespace Jerrycurl.Relations.Test
 
         public static void Test_LambdaSelect_SelectAll()
         {
-            ISchemaStore store = DatabaseHelper.Default.Store;
+            var store = DatabaseHelper.Default.Store;
+            var actual = store.For<RootModel>()
+                              .SelectAll(m => m.Complex);
 
-            RelationHeader actual = store.For<RootModel>()
-                                         .SelectAll(m => m.Complex);
-
-            RelationHeader expected = store.GetSchema<RootModel>()
-                                           .Select("Complex.Value", "Complex.Complex");
+            var expected = store.GetSchema<RootModel>()
+                                .Select("Complex.Value", "Complex.Complex");
 
             actual.ShouldBe(expected);
         }

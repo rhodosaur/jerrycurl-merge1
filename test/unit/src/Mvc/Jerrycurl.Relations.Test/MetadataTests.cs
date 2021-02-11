@@ -12,8 +12,8 @@ namespace Jerrycurl.Relations.Test
     {
         public void Test_SchemaStore_CachesProperly()
         {
-            SchemaStore store1 = DatabaseHelper.Default.GetSchemas(useSqlite: false);
-            SchemaStore store2 = DatabaseHelper.Default.GetSchemas(useSqlite: false);
+            var store1 = DatabaseHelper.Default.GetSchemas(useSqlite: false);
+            var store2 = DatabaseHelper.Default.GetSchemas(useSqlite: false);
 
             var schema1_1 = store1.GetSchema(typeof(RootModel));
             var schema1_2 = store1.GetSchema(typeof(RootModel));
@@ -27,8 +27,8 @@ namespace Jerrycurl.Relations.Test
 
         public void Test_Schema_CachesProperly()
         {
-            SchemaStore store1 = DatabaseHelper.Default.GetSchemas(useSqlite: false);
-            SchemaStore store2 = DatabaseHelper.Default.GetSchemas(useSqlite: false);
+            var store1 = DatabaseHelper.Default.GetSchemas(useSqlite: false);
+            var store2 = DatabaseHelper.Default.GetSchemas(useSqlite: false);
 
             var schema1 = store1.GetSchema(typeof(RootModel));
             var schema2 = store2.GetSchema(typeof(RootModel));
@@ -45,9 +45,8 @@ namespace Jerrycurl.Relations.Test
 
         public void Test_SchemaStore_DisallowsRecursion()
         {
-            SchemaStore store = new SchemaStore(new DotNotation(StringComparer.Ordinal)) { new RecursiveMetadataBuilder() };
-
-            ISchema schema = store.GetSchema(typeof(TupleModel));
+            var store = new SchemaStore(new DotNotation(StringComparer.Ordinal)) { new RecursiveMetadataBuilder() };
+            var schema = store.GetSchema(typeof(TupleModel));
 
             schema.ShouldNotBeNull();
 
@@ -56,14 +55,14 @@ namespace Jerrycurl.Relations.Test
 
         public void Test_Notation_StringComparison()
         {
-            SchemaStore sensitive = new SchemaStore(new DotNotation(StringComparer.Ordinal)) { new RelationMetadataBuilder() };
-            SchemaStore insensitive = new SchemaStore(new DotNotation()) { new RelationMetadataBuilder() };
+            var sensitive = new SchemaStore(new DotNotation(StringComparer.Ordinal)) { new RelationMetadataBuilder() };
+            var insensitive = new SchemaStore(new DotNotation()) { new RelationMetadataBuilder() };
 
-            IRelationMetadata sensitive1 = sensitive.GetSchema(typeof(TupleModel)).Lookup<IRelationMetadata>("List.Item.Name");
-            IRelationMetadata sensitive2 = sensitive.GetSchema(typeof(TupleModel)).Lookup<IRelationMetadata>("list.item.name");
+            var sensitive1 = sensitive.GetSchema(typeof(TupleModel)).Lookup<IRelationMetadata>("List.Item.Name");
+            var sensitive2 = sensitive.GetSchema(typeof(TupleModel)).Lookup<IRelationMetadata>("list.item.name");
 
-            IRelationMetadata insensitive1 = insensitive.GetSchema(typeof(TupleModel)).Lookup<IRelationMetadata>("List.Item.Name");
-            IRelationMetadata insensitive2 = insensitive.GetSchema(typeof(TupleModel)).Lookup<IRelationMetadata>("list.item.name");
+            var insensitive1 = insensitive.GetSchema(typeof(TupleModel)).Lookup<IRelationMetadata>("List.Item.Name");
+            var insensitive2 = insensitive.GetSchema(typeof(TupleModel)).Lookup<IRelationMetadata>("list.item.name");
 
             sensitive1.ShouldNotBeNull();
             sensitive2.ShouldBeNull();
@@ -74,14 +73,14 @@ namespace Jerrycurl.Relations.Test
 
         public void Test_Metadata_Custom_Contract()
         {
-            RelationMetadataBuilder builder = new RelationMetadataBuilder() { new CustomContractResolver() };
-            SchemaStore customStore = new SchemaStore(new DotNotation()) { builder };
+            var builder = new RelationMetadataBuilder() { new CustomContractResolver() };
+            var store = new SchemaStore(new DotNotation()) { builder };
 
-            ISchema schema1 = DatabaseHelper.Default.Store.GetSchema(typeof(CustomModel));
-            ISchema schema2 = customStore.GetSchema(typeof(CustomModel));
+            var schema1 = DatabaseHelper.Default.Store.GetSchema(typeof(CustomModel));
+            var schema2 = store.GetSchema(typeof(CustomModel));
 
-            IRelationMetadata notFound = schema1.Lookup<IRelationMetadata>("Values.Item");
-            IRelationMetadata found = schema2.Lookup<IRelationMetadata>("Values.Item");
+            var notFound = schema1.Lookup<IRelationMetadata>("Values.Item");
+            var found = schema2.Lookup<IRelationMetadata>("Values.Item");
 
             notFound.ShouldBeNull();
             found.ShouldNotBeNull();
@@ -91,23 +90,23 @@ namespace Jerrycurl.Relations.Test
 
         public void Test_Metadata_Invalid_Constract()
         {
-            RelationMetadataBuilder builder = new RelationMetadataBuilder() { new InvalidContractResolver() };
-            SchemaStore customStore = new SchemaStore(new DotNotation()) { builder };
+            var builder = new RelationMetadataBuilder() { new InvalidContractResolver() };
+            var customStore = new SchemaStore(new DotNotation()) { builder };
 
-            ISchema schema = customStore.GetSchema(typeof(CustomModel));
+            var schema = customStore.GetSchema(typeof(CustomModel));
 
             Should.Throw<MetadataBuilderException>(() => schema.Lookup<IRelationMetadata>("List1"));
         }
 
         public void Test_OneType_Equality()
         {
-            One<int> empty = new One<int>();
-            One<int> zero = new One<int>(0);
-            One<int> one = new One<int>(1);
+            var empty = new One<int>();
+            var zero = new One<int>(0);
+            var one = new One<int>(1);
 
-            One<int> empty2 = new One<int>();
-            One<int> zero2 = new One<int>(0);
-            One<int> one2 = new One<int>(1);
+            var empty2 = new One<int>();
+            var zero2 = new One<int>(0);
+            var one2 = new One<int>(1);
 
             empty.Equals(empty2).ShouldBeTrue();
             empty.Equals(zero).ShouldBeFalse();
