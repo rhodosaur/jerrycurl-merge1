@@ -9,8 +9,8 @@ namespace Jerrycurl.Mvc.Metadata
     {
         public MetadataIdentity Identity => this.Relation.Identity;
         public Type Type => this.Relation.Type;
-
-        public ITableMetadata Table { get; }
+        public ITableMetadata Table { get; set; }
+        public ITableMetadata Column { get; set; }
         public IReferenceMetadata Reference { get; }
         public IRelationMetadata Relation { get; }
         public Lazy<IReadOnlyList<ProjectionMetadata>> Properties { get; set; }
@@ -24,7 +24,6 @@ namespace Jerrycurl.Mvc.Metadata
         public ProjectionMetadata(IRelationMetadata relation)
         {
             this.Relation = relation ?? throw new ArgumentNullException(nameof(relation));
-            this.Table = relation.Identity.Lookup<ITableMetadata>();
             this.Reference = relation.Identity.Lookup<IReferenceMetadata>();
         }
 

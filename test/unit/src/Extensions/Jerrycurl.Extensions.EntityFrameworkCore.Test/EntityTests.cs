@@ -8,12 +8,55 @@ using Shouldly;
 using Jerrycurl.Relations.Language;
 using Jerrycurl.Data.Metadata;
 using System.Linq;
+using Jerrycurl.Extensions.EntityFrameworkCore.Metadata;
+using Jerrycurl.Collections;
 
 namespace Jerrycurl.Extensions.EntityFrameworkCore.Test
 {
     public class EntityTests
     {
-        public void Test_EfCore_Metadata_Inheritance()
+        public void Test_EFCore_TableMetadata()
+        {
+            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false, contracts: new[] { new EntityFrameworkCoreContractResolver(new EntityContext()) });
+            var address = store.GetSchema<Address>().Lookup<ITableMetadata>();
+            var addressView = store.GetSchema<AddressView>().Lookup<ITableMetadata>();
+
+            address.ColumnName.ShouldBeNull();
+            address.TableName.ShouldBe(new[] { "Address" });
+            address.Properties.Select(m => m.ColumnName).NotNull().ShouldBe(new[] { "Id", "Street" });
+
+            addressView.ColumnName.ShouldBeNull();
+            addressView.TableName.ShouldBe(new[] { "Address" });
+            addressView.Properties.Select(m => m.ColumnName).NotNull().ShouldBe(new[] { "Id", "Street" });
+        }
+
+        public void Test_EfCore_ReferenceMetadata()
+        {
+            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false, contracts: new[] { new EntityFrameworkCoreContractResolver(new EntityContext()) });
+            var schema = store.GetSchema<List<Order>>();
+
+            var orderRefs = schema.Require<IReferenceMetadata>("Item").References;
+            var lineRefs = schema.Require<IReferenceMetadata>("Item.OrderLine.Item").References;
+            var addressRefs = schema.Require<IReferenceMetadata>("Item.BillingAddress").References;
+
+            var pk1 = orderRefs.FirstOrDefault(r => r.Key.Properties[0].Identity.Name == "Item.Id");
+            var fk1 = lineRefs.FirstOrDefault(r => r.Key.Properties[0].Identity.Name == "Item.OrderLine.Item.OrderId");
+
+            var pk2 = addressRefs.FirstOrDefault(r => r.Key.Properties[0].Identity.Name == "Item.BillingAddress.Id");
+            var fk2 = orderRefs.FirstOrDefault(r => r.Key.Properties[0].Identity.Name == "Item.BillingAddressId");
+
+            pk1.ShouldNotBeNull();
+            pk1.HasFlag(ReferenceFlags.Primary | ReferenceFlags.One).ShouldBeTrue();
+            fk1.ShouldNotBeNull();
+            fk1.HasFlag(ReferenceFlags.Foreign | ReferenceFlags.Many).ShouldBeTrue();
+
+            pk2.ShouldNotBeNull();
+            pk2.HasFlag(ReferenceFlags.Primary | ReferenceFlags.One).ShouldBeTrue();
+            fk1.ShouldNotBeNull();
+            fk1.HasFlag(ReferenceFlags.Foreign | ReferenceFlags.One).ShouldBeTrue();
+        }
+
+        public void Test_EfCore_Crud()
         {
             Runnable<object, AddressView> table = new Runnable<object, AddressView>();
 

@@ -40,7 +40,7 @@ namespace Jerrycurl.Vendors.SqlServer
             {
                 GetHeadingMetadata(key, out IBindingMetadata[] bindingMetadata, out ITableMetadata[] columnMetadata);
 
-                ITableMetadata tableMetadata = columnMetadata[0].HasFlag(TableMetadataFlags.Table) ? columnMetadata[0] : columnMetadata[0].MemberOf;
+                ITableMetadata tableMetadata = columnMetadata[0].HasFlag(TableMetadataFlags.Table) ? columnMetadata[0] : columnMetadata[0].Owner;
 
                 string tvpName = string.Join(".", tableMetadata.TableName);
                 string[] columnNames = columnMetadata.Select(m => m.ColumnName).ToArray();

@@ -21,6 +21,6 @@ namespace Jerrycurl.Data.Queries.Internal.Extensions
 
         public static TMetadata To<TMetadata>(this IMetadata metadata)
             where TMetadata : IMetadata
-            => metadata.Identity.Lookup<TMetadata>();
+            => metadata.Relation.Identity.Lookup<TMetadata>();
     }
 }

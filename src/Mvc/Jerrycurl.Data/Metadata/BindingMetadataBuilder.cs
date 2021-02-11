@@ -13,7 +13,7 @@ namespace Jerrycurl.Data.Metadata
     {
         public IBindingContractResolver DefaultResolver { get; set; } = new DefaultBindingContractResolver();
 
-        public IBindingMetadata GetMetadata(IMetadataBuilderContext context) => this.GetMetadata(context, context.Identity);
+        public IBindingMetadata GetMetadata(IMetadataBuilderContext context) => this.GetMetadata(context, context.Relation.Identity);
 
         public BindingMetadataBuilder()
         {
@@ -42,12 +42,7 @@ namespace Jerrycurl.Data.Metadata
             return parent.Properties.FirstOrDefault(m => m.Identity.Equals(identity));
         }
 
-        public void Initialize(IMetadataBuilderContext context)
-        {
-            IRelationMetadata relation = context.Schema.Require<IRelationMetadata>(context.Identity.Name);
-
-            this.CreateBaseMetadata(context, relation, null);
-        }
+        public void Initialize(IMetadataBuilderContext context) => this.CreateBaseMetadata(context, context.Relation, null);
 
         private Lazy<IReadOnlyList<BindingMetadata>> CreateLazyProperties(IMetadataBuilderContext context, BindingMetadata parent)
         {

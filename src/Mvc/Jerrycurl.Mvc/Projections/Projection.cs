@@ -24,7 +24,7 @@ namespace Jerrycurl.Mvc.Projections
         {
             this.Identity = identity ?? throw ProjectionException.ArgumentNull(nameof(identity));
             this.Context = context ?? throw ProjectionException.ArgumentNull(nameof(context));
-            this.Metadata = identity.Schema?.Require<IProjectionMetadata>() ?? throw ProjectionException.FromAttribute(identity.Schema.Model, null, message: "Projection metadata not found.");
+            this.Metadata = identity.Schema?.Require<IProjectionMetadata>() ?? throw ProjectionException.FromAttribute(identity.Schema.Model.Type, null, message: "Projection metadata not found.");
             this.Source = identity.Field;
             this.Options = new ProjectionOptions();
             this.Attributes = this.CreateDefaultAttributes(this.Metadata);
@@ -34,7 +34,7 @@ namespace Jerrycurl.Mvc.Projections
         {
             this.Identity = identity ?? throw ProjectionException.ArgumentNull(nameof(identity));
             this.Context = context ?? throw ProjectionException.ArgumentNull(nameof(context));
-            this.Metadata = metadata ?? throw ProjectionException.FromAttribute(identity.Schema.Model, null, message: "Projection metadata not found.");
+            this.Metadata = metadata ?? throw ProjectionException.FromAttribute(identity.Schema.Model.Type, null, message: "Projection metadata not found.");
             this.Source = identity.Field;
             this.Options = new ProjectionOptions();
             this.Attributes = this.CreateDefaultAttributes(this.Metadata);

@@ -82,9 +82,9 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
         {
             if (this.QueryType != QueryType.Aggregate)
                 return false;
-            else if (metadata.Relation.Depth == 1 && !metadata.MemberOf.Parent.HasFlag(BindingMetadataFlags.Model))
+            else if (metadata.Relation.Depth == 1 && !metadata.Owner.Parent.HasFlag(BindingMetadataFlags.Model))
                 return true;
-            else if (metadata.Relation.Depth == 2 && metadata.MemberOf.Parent.MemberOf.Parent.HasFlag(BindingMetadataFlags.Model))
+            else if (metadata.Relation.Depth == 2 && metadata.Owner.Parent.Owner.Parent.HasFlag(BindingMetadataFlags.Model))
                 return true;
 
             return false;
@@ -96,7 +96,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 return false;
             else if (metadata.Relation.Depth == 0)
                 return true;
-            else if (metadata.Relation.Depth == 1 && metadata.MemberOf.Parent.HasFlag(BindingMetadataFlags.Model))
+            else if (metadata.Relation.Depth == 1 && metadata.Owner.Parent.HasFlag(BindingMetadataFlags.Model))
                 return true;
 
             return false;

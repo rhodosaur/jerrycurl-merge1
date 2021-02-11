@@ -1,6 +1,8 @@
 ﻿using System;
 using Fixie;
 using Jerrycurl.Mvc;
+using Jerrycurl.Relations.Language;
+using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Test
 {

@@ -17,7 +17,7 @@ namespace Jerrycurl.Mvc
         public static void UseSqlServer(this DomainOptions options, string connectionString)
         {
             options.ConnectionFactory = () => new SqlConnection(connectionString);
-            options.Schemas.AddContract(new SqlServerContractResolver());
+            options.Use(new SqlServerContractResolver());
 
             if (options.Sql == null)
                 options.Sql = new SqlOptions();

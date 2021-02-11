@@ -14,7 +14,7 @@ namespace Jerrycurl.Mvc.Sql
         /// <returns>A new attribute containing the appended buffer.</returns>
         public static IProjectionAttribute ColName(this IProjectionAttribute attribute)
         {
-            ITableMetadata column = ProjectionHelper.GetPreferredColumnMetadata(attribute);
+            ITableMetadata column = ProjectionHelper.GetColumnMetadata(attribute);
 
             string identifier = attribute.Context.Domain.Dialect.Identifier(column.ColumnName);
 

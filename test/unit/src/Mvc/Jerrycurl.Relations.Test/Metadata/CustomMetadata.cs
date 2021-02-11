@@ -5,11 +5,11 @@ namespace Jerrycurl.Relations.Test.Metadata
 {
     public class CustomMetadata : IMetadata
     {
-        public MetadataIdentity Identity { get; }
+        public IRelationMetadata Relation { get; }
 
-        public CustomMetadata(MetadataIdentity identity)
+        public CustomMetadata(IRelationMetadata relation)
         {
-            this.Identity = identity ?? throw new ArgumentNullException(nameof(identity));
+            this.Relation = relation ?? throw new ArgumentNullException(nameof(relation));
         }
     }
 }
