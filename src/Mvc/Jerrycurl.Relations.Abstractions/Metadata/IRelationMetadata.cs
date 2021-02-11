@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Jerrycurl.Relations.Metadata
 {
-    public interface IRelationMetadata : IMetadata, IEquatable<IRelationMetadata>
+    public interface IRelationMetadata : IMetadata
     {
         IReadOnlyList<IRelationMetadata> Properties { get; }
         IRelationMetadata Parent { get; }

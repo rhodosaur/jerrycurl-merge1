@@ -4,7 +4,7 @@ using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Data.Metadata
 {
-    public interface ITableMetadata : IMetadata, IEquatable<ITableMetadata>
+    public interface ITableMetadata : IMetadata
     {
         TableMetadataFlags Flags { get; }
         ITableMetadata MemberOf { get; }

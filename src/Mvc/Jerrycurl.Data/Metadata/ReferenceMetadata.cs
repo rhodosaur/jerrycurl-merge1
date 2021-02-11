@@ -39,10 +39,6 @@ namespace Jerrycurl.Data.Metadata
             this.Relation = relation;
         }
 
-        public bool Equals(IReferenceMetadata other) => Equality.Combine(this.Identity, other?.Identity);
-        public override int GetHashCode() => this.Identity.GetHashCode();
-        public override bool Equals(object obj) => (obj is IReferenceMetadata other && this.Equals(other));
-
         public override string ToString() => $"IReferenceMetadata: {this.Identity}";
 
     }

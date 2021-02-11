@@ -5,7 +5,7 @@ using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Data.Metadata
 {
-    public interface IBindingMetadata : IMetadata, IEquatable<IBindingMetadata>
+    public interface IBindingMetadata : IMetadata
     {
         Type Type { get; }
         MemberInfo Member { get; }

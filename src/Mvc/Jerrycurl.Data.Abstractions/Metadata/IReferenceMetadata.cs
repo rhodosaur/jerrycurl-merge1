@@ -4,7 +4,7 @@ using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Data.Metadata
 {
-    public interface IReferenceMetadata : IMetadata, IEquatable<IReferenceMetadata>
+    public interface IReferenceMetadata : IMetadata
     {
         Type Type { get; }
         IReadOnlyList<IReference> References { get; }

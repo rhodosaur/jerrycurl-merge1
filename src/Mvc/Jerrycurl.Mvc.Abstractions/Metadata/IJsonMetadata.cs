@@ -3,7 +3,7 @@ using System;
 
 namespace Jerrycurl.Mvc.Metadata
 {
-    public interface IJsonMetadata : IMetadata, IEquatable<IJsonMetadata>
+    public interface IJsonMetadata : IMetadata
     {
         string Path { get; }
         bool IsRoot { get; }

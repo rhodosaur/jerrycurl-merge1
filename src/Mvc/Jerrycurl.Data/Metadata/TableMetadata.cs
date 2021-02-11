@@ -25,10 +25,6 @@ namespace Jerrycurl.Data.Metadata
             this.Relation = relation ?? throw new ArgumentNullException(nameof(relation));
         }
 
-        public bool Equals(ITableMetadata other) => Equality.Combine(this.Identity, other?.Identity);
-        public override int GetHashCode() => this.Identity.GetHashCode();
-        public override bool Equals(object obj) => (obj is ITableMetadata other && this.Equals(other));
-
         public override string ToString() => $"ITableMetadata: {this.Identity}";
     }
 }
