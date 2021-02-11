@@ -39,11 +39,11 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Test
             var lineRefs = schema.Require<IReferenceMetadata>("Item.OrderLine.Item").References;
             var addressRefs = schema.Require<IReferenceMetadata>("Item.BillingAddress").References;
 
-            var pk1 = orderRefs.FirstOrDefault(r => r.Key.Properties[0].Identity.Name == "Item.Id");
-            var fk1 = lineRefs.FirstOrDefault(r => r.Key.Properties[0].Identity.Name == "Item.OrderLine.Item.OrderId");
+            var pk1 = orderRefs.FirstOrDefault(r => r.HasFlag(ReferenceFlags.Parent) && r.Key.Properties[0].Identity.Name == "Item.Id");
+            var fk1 = lineRefs.FirstOrDefault(r => r.HasFlag(ReferenceFlags.Child) && r.Key.Properties[0].Identity.Name == "Item.OrderLine.Item.OrderId");
 
-            var pk2 = addressRefs.FirstOrDefault(r => r.Key.Properties[0].Identity.Name == "Item.BillingAddress.Id");
-            var fk2 = orderRefs.FirstOrDefault(r => r.Key.Properties[0].Identity.Name == "Item.BillingAddressId");
+            var pk2 = addressRefs.FirstOrDefault(r => r.HasFlag(ReferenceFlags.Child) && r.Key.Properties[0].Identity.Name == "Item.BillingAddress.Id");
+            var fk2 = orderRefs.FirstOrDefault(r => r.HasFlag(ReferenceFlags.Parent) && r.Key.Properties[0].Identity.Name == "Item.BillingAddressId");
 
             pk1.ShouldNotBeNull();
             pk1.HasFlag(ReferenceFlags.Primary | ReferenceFlags.One).ShouldBeTrue();
@@ -52,8 +52,8 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Test
 
             pk2.ShouldNotBeNull();
             pk2.HasFlag(ReferenceFlags.Primary | ReferenceFlags.One).ShouldBeTrue();
-            fk1.ShouldNotBeNull();
-            fk1.HasFlag(ReferenceFlags.Foreign | ReferenceFlags.One).ShouldBeTrue();
+            fk2.ShouldNotBeNull();
+            fk2.HasFlag(ReferenceFlags.Foreign | ReferenceFlags.One).ShouldBeTrue();
         }
 
         public void Test_EfCore_Crud()
