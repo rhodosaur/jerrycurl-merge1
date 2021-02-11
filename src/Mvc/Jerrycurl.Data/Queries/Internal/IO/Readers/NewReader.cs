@@ -12,6 +12,12 @@ namespace Jerrycurl.Data.Queries.Internal.IO.Readers
             this.Identity = metadata.Identity;
         }
 
+        public NewReader(IReferenceMetadata metadata)
+            : this(metadata.Identity.Require<IBindingMetadata>())
+        {
+
+        }
+
         public KeyReader PrimaryKey { get; set; }
         public IList<KeyReader> JoinKeys { get; } = new List<KeyReader>();
         public IList<BaseReader> Properties { get; set; } = new List<BaseReader>();

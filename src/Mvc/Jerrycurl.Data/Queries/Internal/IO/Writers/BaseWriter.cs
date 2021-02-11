@@ -11,6 +11,10 @@ namespace Jerrycurl.Data.Queries.Internal.IO.Writers
         public IBindingMetadata Metadata { get; protected set; }
         public MetadataIdentity Identity { get; protected set; }
 
+        public BaseWriter()
+        {
+
+        }
         public BaseWriter(Node node)
         {
             this.Metadata = node.Metadata;

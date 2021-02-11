@@ -8,52 +8,46 @@ using HashCode = Jerrycurl.Diagnostics.HashCode;
 
 namespace Jerrycurl.Data.Queries.Internal.Caching
 {
-    internal class BufferCacheKey2 : IEquatable<BufferCacheKey>
+    internal class BufferCacheKey2 : IEquatable<BufferCacheKey2>
     {
-        public IReadOnlyList<Type> ParentKey { get; }
-        public MetadataIdentity Metadata { get; }
-        public IReadOnlyList<MetadataIdentity> ParentKey { get; set; }
-        public IReadOnlyList<MetadataIdentity> ChildKey { get; set; }
+        public MetadataIdentity Target { get; set; }
+        public IReadOnlyList<Type> Key { get; set; }
 
-        public BufferCacheKey(MetadataIdentity metadata)
+        public BufferCacheKey2(IEnumerable<Type> key)
         {
-            this.Metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
+            this.Key = key?.ToList() ?? throw new ArgumentNullException(nameof(key));
         }
 
-        public BufferCacheKey(MetadataIdentity metadata, IReferenceKey parentKey)
-            : this(metadata)
+        public BufferCacheKey2(MetadataIdentity target)
         {
-            this.ParentKey = parentKey.Properties.Select(m => m.Identity).ToList() ?? throw new ArgumentNullException(nameof(parentKey));
+            this.Target = target ?? throw new ArgumentNullException(nameof(target));
         }
 
-        public BufferCacheKey(MetadataIdentity metadata, IReferenceKey parentKey, IReferenceKey childKey)
-            : this(metadata, parentKey)
+        public BufferCacheKey2(MetadataIdentity target, IEnumerable<Type> key)
         {
-            this.ChildKey = childKey?.Properties.Select(m => m.Identity).ToList() ?? throw new ArgumentNullException(nameof(childKey));
+            this.Target = target ?? throw new ArgumentNullException(nameof(target));
+            this.Key = key?.ToList() ?? throw new ArgumentNullException(nameof(key));
         }
 
-        public bool Equals(BufferCacheKey other)
+        public bool Equals(BufferCacheKey2 other)
         {
+            if (other == null)
+                return false;
+
             Equality eq = new Equality();
 
-            eq.Add(this.Metadata, other?.Metadata);
-            eq.AddRange(this.ParentKey, other?.ParentKey);
-            eq.AddRange(this.ChildKey, other?.ChildKey);
+            eq.Add(this.Target, other?.Target);
+            eq.AddRange(this.Key, other?.Key);
 
             return eq.ToEquals();
         }
-        public override bool Equals(object obj) => (obj is BufferCacheKey other && this.Equals(other));
+        public override bool Equals(object obj) => (obj is BufferCacheKey2 other && this.Equals(other));
         public override int GetHashCode()
         {
             HashCode hashCode = new HashCode();
 
-            hashCode.Add(this.Metadata);
-
-            if (this.ParentKey != null)
-                hashCode.AddRange(this.ParentKey);
-
-            if (this.ChildKey != null)
-                hashCode.AddRange(this.ChildKey);
+            hashCode.Add(this.Target);
+            hashCode.AddRange(this.Key);
 
             return hashCode.ToHashCode();
         }
