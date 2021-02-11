@@ -280,7 +280,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
         {
             IReference childReference = reference.Find(ReferenceFlags.Child);
 
-            if (childReference.HasFlag(ReferenceFlags.Self) && childReference.HasFlag(ReferenceFlags.Primary))
+            if (childReference.HasFlag(ReferenceFlags.Self) && childReference.HasFlag(ReferenceFlags.Candidate))
                 return false;
 
             return (childReference.HasFlag(ReferenceFlags.Many) || this.HasOneAttribute(childReference));

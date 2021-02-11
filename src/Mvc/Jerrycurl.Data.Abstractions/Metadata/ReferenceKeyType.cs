@@ -1,16 +1,13 @@
-﻿namespace Jerrycurl.Data.Metadata
+﻿using System;
+
+namespace Jerrycurl.Data.Metadata
 {
-    public enum ReferenceKeyType
-    {
-
-        CandidateKey = 0,
-        ForeignKey = 1,
-    }
-
+    [Flags]
     public enum ReferenceKeyFlags
     {
-        CandidateKey = 1,
-        PrimaryKey = CandidateKey | 2,
-        ForeignKey = 4,
+        None = 0,
+        Candidate = 1,
+        Primary = Candidate | 2,
+        Foreign = 4,
     }
 }

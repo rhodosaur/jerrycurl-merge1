@@ -11,6 +11,7 @@ namespace Jerrycurl.Data.Commands.Internal
         public bool HasSource => (this.Parameter != null);
         public bool HasTarget { get; set; }
         public bool HasChanged => this.HasTarget;
+        public string Name { get; set; }
 
         public object Value
         {

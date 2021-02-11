@@ -9,9 +9,8 @@ namespace Jerrycurl.Data.Metadata
     {
         public string Name { get; set; }
         public string Other { get; set; }
-        public ReferenceKeyType Type { get; set; }
+        public ReferenceKeyFlags Flags { get; set; }
         public List<ReferenceMetadata> Properties { get; set; } = new List<ReferenceMetadata>();
-        public bool IsPrimaryKey { get; set; }
 
         IReadOnlyList<IReferenceMetadata> IReferenceKey.Properties => this.Properties;
 
@@ -21,14 +20,9 @@ namespace Jerrycurl.Data.Metadata
 
         public override string ToString()
         {
-            string propNames = string.Join(", ", this.Properties.Select(m => m.Identity.Name));
+            string propNames = string.Join(", ", this.Properties.Select(m => m.Identity));
 
-            return this.Type switch
-            {
-                ReferenceKeyType.CandidateKey when this.IsPrimaryKey => $"PK: {this.Name}({propNames})",
-                ReferenceKeyType.ForeignKey => $"FK: {this.Name}({propNames}) -> {this.Other}",
-                _ => $"CK: {this.Name}({propNames})",
-            };
+            return $"{this.Name}({propNames}) ({this.Flags})";
         }
     }
 }

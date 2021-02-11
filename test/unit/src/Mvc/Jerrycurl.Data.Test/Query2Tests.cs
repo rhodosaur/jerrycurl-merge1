@@ -12,16 +12,23 @@ namespace Jerrycurl.Data.Test
         public async Task Test_Insert_OneToMany_Async()
         {
             var store = DatabaseHelper.Default.Schemas;
-            var data1 = new (int?, string)[]
+            var data1 = new (int, string)[]
             {
                 ( 1, "Blog 1" ),
-                ( 2, "Blog 2" )
+                ( 2, "Blog 2" ),
             };
-            var data2 = new (int?, string)[]
+            var data2 = new (int, int, string)[]
             {
-                ( 1, "Blog post 1.1" ),
-                ( 1, "Blog post 1.2" ),
-                ( 2, "Blog post 2.1" )
+                ( 1, 1, "Post 1.1" ),
+                ( 2, 1, "Post 1.2" ),
+                ( 3, 2, "Post 2.1" ),
+            };
+            var data3 = new (int, int, string)[]
+            {
+                ( 1, 2, "Comment 1.2.1" ),
+                ( 2, 2, "Comment 1.2.2" ),
+                ( 3, 2, "Comment 1.2.3" ),
+                ( 4, 3, "Comment 2.1.1" ),
             };
 
             var buffer = new ListBuffer<Blog>(store);
@@ -32,8 +39,15 @@ namespace Jerrycurl.Data.Test
             );
 
             await buffer.InsertAsync(data2,
-                ("Item.Item1", "Item.Posts.Item.BlogId"),
-                ("Item.Item2", "Item.Posts.Item.Headline")
+                ("Item.Item1", "Item.Posts.Item.Id"),
+                ("Item.Item2", "Item.Posts.Item.BlogId"),
+                ("Item.Item3", "Item.Posts.Item.Headline")
+            );
+
+            await buffer.InsertAsync(data3,
+                ("Item.Item1", "Item.Posts.Item.Comments.Item.Id"),
+                ("Item.Item2", "Item.Posts.Item.Comments.Item.BlogPostId"),
+                ("Item.Item3", "Item.Posts.Item.Comments.Item.Comment")
             );
 
             var result = buffer.Commit();
@@ -45,28 +59,49 @@ namespace Jerrycurl.Data.Test
 
             result[0].Posts.Count.ShouldBe(2);
             result[0].Posts[0].BlogId.ShouldBe(result[0].Id);
-            result[0].Posts[0].Headline.ShouldBe("Blog post 1.1");
+            result[0].Posts[0].Headline.ShouldBe("Post 1.1");
             result[0].Posts[1].BlogId.ShouldBe(result[0].Id);
-            result[0].Posts[1].Headline.ShouldBe("Blog post 1.2");
+            result[0].Posts[1].Headline.ShouldBe("Post 1.2");
+
+            result[0].Posts[0].Comments.Count.ShouldBe(0);
+
+            result[0].Posts[1].Comments.Count.ShouldBe(3);
+            result[0].Posts[1].Comments[0].BlogPostId.ShouldBe(result[0].Posts[1].Id);
+            result[0].Posts[1].Comments[0].Comment.ShouldBe("Comment 1.2.1");
+            result[0].Posts[1].Comments[1].BlogPostId.ShouldBe(result[0].Posts[1].Id);
+            result[0].Posts[1].Comments[1].Comment.ShouldBe("Comment 1.2.2");
+            result[0].Posts[1].Comments[2].BlogPostId.ShouldBe(result[0].Posts[1].Id);
+            result[0].Posts[1].Comments[2].Comment.ShouldBe("Comment 1.2.3");
 
             result[1].Posts.Count.ShouldBe(1);
             result[1].Posts[0].BlogId.ShouldBe(result[1].Id);
-            result[1].Posts[0].Headline.ShouldBe("Blog post 2.1");
+            result[1].Posts[0].Headline.ShouldBe("Post 2.1");
+
+            result[1].Posts[0].Comments.Count.ShouldBe(1);
+            result[1].Posts[0].Comments[0].BlogPostId.ShouldBe(result[1].Posts[0].Id);
+            result[1].Posts[0].Comments[0].Comment.ShouldBe("Comment 2.1.1");
         }
 
         public void Test_Insert_OneToMany()
         {
             var store = DatabaseHelper.Default.Schemas;
-            var data1 = new (int?, string)[]
+            var data1 = new (int, string)[]
             {
                 ( 1, "Blog 1" ),
-                ( 2, "Blog 2" )
+                ( 2, "Blog 2" ),
             };
-            var data2 = new (int?, string)[]
+            var data2 = new (int, int, string)[]
             {
-                ( 1, "Blog post 1.1" ),
-                ( 1, "Blog post 1.2" ),
-                ( 2, "Blog post 2.1" )
+                ( 1, 1, "Post 1.1" ),
+                ( 2, 1, "Post 1.2" ),
+                ( 3, 2, "Post 2.1" ),
+            };
+            var data3 = new (int, int, string)[]
+            {
+                ( 1, 2, "Comment 1.2.1" ),
+                ( 2, 2, "Comment 1.2.2" ),
+                ( 3, 2, "Comment 1.2.3" ),
+                ( 4, 3, "Comment 2.1.1" ),
             };
 
             var buffer = new ListBuffer<Blog>(store);
@@ -77,8 +112,15 @@ namespace Jerrycurl.Data.Test
             );
 
             buffer.Insert(data2,
-                ("Item.Item1", "Item.Posts.Item.BlogId"),
-                ("Item.Item2", "Item.Posts.Item.Headline")
+                ("Item.Item1", "Item.Posts.Item.Id"),
+                ("Item.Item2", "Item.Posts.Item.BlogId"),
+                ("Item.Item3", "Item.Posts.Item.Headline")
+            );
+
+            buffer.Insert(data3,
+                ("Item.Item1", "Item.Posts.Item.Comments.Item.Id"),
+                ("Item.Item2", "Item.Posts.Item.Comments.Item.BlogPostId"),
+                ("Item.Item3", "Item.Posts.Item.Comments.Item.Comment")
             );
 
             var result = buffer.Commit();
@@ -90,13 +132,77 @@ namespace Jerrycurl.Data.Test
 
             result[0].Posts.Count.ShouldBe(2);
             result[0].Posts[0].BlogId.ShouldBe(result[0].Id);
-            result[0].Posts[0].Headline.ShouldBe("Blog post 1.1");
+            result[0].Posts[0].Headline.ShouldBe("Post 1.1");
             result[0].Posts[1].BlogId.ShouldBe(result[0].Id);
-            result[0].Posts[1].Headline.ShouldBe("Blog post 1.2");
+            result[0].Posts[1].Headline.ShouldBe("Post 1.2");
+
+            result[0].Posts[0].Comments.Count.ShouldBe(0);
+
+            result[0].Posts[1].Comments.Count.ShouldBe(3);
+            result[0].Posts[1].Comments[0].BlogPostId.ShouldBe(result[0].Posts[1].Id);
+            result[0].Posts[1].Comments[0].Comment.ShouldBe("Comment 1.2.1");
+            result[0].Posts[1].Comments[1].BlogPostId.ShouldBe(result[0].Posts[1].Id);
+            result[0].Posts[1].Comments[1].Comment.ShouldBe("Comment 1.2.2");
+            result[0].Posts[1].Comments[2].BlogPostId.ShouldBe(result[0].Posts[1].Id);
+            result[0].Posts[1].Comments[2].Comment.ShouldBe("Comment 1.2.3");
 
             result[1].Posts.Count.ShouldBe(1);
             result[1].Posts[0].BlogId.ShouldBe(result[1].Id);
-            result[1].Posts[0].Headline.ShouldBe("Blog post 2.1");
+            result[1].Posts[0].Headline.ShouldBe("Post 2.1");
+
+            result[1].Posts[0].Comments.Count.ShouldBe(1);
+            result[1].Posts[0].Comments[0].BlogPostId.ShouldBe(result[1].Posts[0].Id);
+            result[1].Posts[0].Comments[0].Comment.ShouldBe("Comment 2.1.1");
+        }
+
+        public void Test_Insert_NonPrimaryKeys()
+        {
+            var store = DatabaseHelper.Default.Schemas;
+            var data = new (int?, string)[]
+            {
+                ( null, "Blog 1" ),
+                ( 10,   "Blog 2" )
+            };
+
+            var buffer = new ListBuffer<Blog>(store);
+
+            buffer.Insert(data,
+                ("Item.Item1", "Item.Id2"),
+                ("Item.Item2", "Item.Title")
+            );
+
+            var result = buffer.Commit();
+
+            result.Count.ShouldBe(2);
+            result[0].Id2.ShouldBe(0);
+            result[0].Title.ShouldBe("Blog 1");
+            result[1].Id2.ShouldBe(10);
+            result[1].Title.ShouldBe("Blog 2");
+        }
+
+        public async Task Test_Insert_NonPrimaryKeys_Async()
+        {
+            var store = DatabaseHelper.Default.Schemas;
+            var data = new (int?, string)[]
+            {
+                ( null, "Blog 1" ),
+                ( 10,   "Blog 2" )
+            };
+
+            var buffer = new ListBuffer<Blog>(store);
+
+            await buffer.InsertAsync(data,
+                ("Item.Item1", "Item.Id2"),
+                ("Item.Item2", "Item.Title")
+            );
+
+            var result = buffer.Commit();
+
+            result.Count.ShouldBe(2);
+            result[0].Id2.ShouldBe(0);
+            result[0].Title.ShouldBe("Blog 1");
+            result[1].Id2.ShouldBe(10);
+            result[1].Title.ShouldBe("Blog 2");
         }
 
         public void Test_Insert_PrimaryKeys()

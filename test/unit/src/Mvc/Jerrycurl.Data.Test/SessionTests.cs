@@ -118,7 +118,7 @@ namespace Jerrycurl.Data.Test
         }
 
 
-        public async Task Test_ConnectionManagement_WithQueryHandler()
+        public async Task Test_ConnectionManagement_WithQueryEngine()
         {
             var connection1 = new SqliteConnection(DatabaseHelper.TestDbConnectionString);
             var connection2 = new SqliteConnection(DatabaseHelper.TestDbConnectionString);
@@ -137,11 +137,11 @@ namespace Jerrycurl.Data.Test
                     Schemas = DatabaseHelper.Default.Schemas,
                 };
 
-                QueryEngine handler1 = new QueryEngine(options1);
-                QueryEngine handler2 = new QueryEngine(options2);
+                QueryEngine engine1 = new QueryEngine(options1);
+                QueryEngine engine2 = new QueryEngine(options2);
 
-                handler1.List<int>(new Query() { QueryText = "SELECT 0 AS [Item];" });
-                await handler2.ListAsync<int>(new Query() { QueryText = "SELECT 0 AS [Item];" });
+                engine1.List<int>(new Query() { QueryText = "SELECT 0 AS [Item];" });
+                await engine2.ListAsync<int>(new Query() { QueryText = "SELECT 0 AS [Item];" });
 
                 connection1.State.ShouldBe(ConnectionState.Closed);
                 connection2.State.ShouldBe(ConnectionState.Closed);

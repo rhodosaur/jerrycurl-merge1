@@ -146,9 +146,6 @@ namespace Jerrycurl.Relations.Metadata
             if (metadata.Item != null)
                 metadata.Flags |= RelationMetadataFlags.List;
 
-            if (metadata.Recursor != null)
-                metadata.Flags |= RelationMetadataFlags.Recursive | RelationMetadataFlags.List;
-
             if (memberInfo is PropertyInfo pi)
             {
                 if (pi.CanRead)
@@ -164,6 +161,8 @@ namespace Jerrycurl.Relations.Metadata
 
             if (metadata.Item != null)
                 context.AddMetadata<IRelationMetadata>(metadata.Item);
+
+            this.AddRecursors(context, metadata);
 
             return metadata;
         }
@@ -182,6 +181,22 @@ namespace Jerrycurl.Relations.Metadata
             }
 
             return null;
+        }
+
+        private void AddRecursors(IMetadataBuilderContext context, RelationMetadata metadata)
+        {
+            metadata.Recursor = this.CreateRecursor(context, metadata);
+
+            if (metadata.Recursor != null)
+                metadata.Flags |= RelationMetadataFlags.Recursive | RelationMetadataFlags.List;
+
+            if (metadata.Item != null)
+            {
+                metadata.Item.Recursor = this.CreateRecursor(context, metadata.Item);
+
+                if (metadata.Recursor != null)
+                    metadata.Flags |= RelationMetadataFlags.Recursive;
+            }
         }
 
         private Lazy<IRelationMetadata> CreateRecursor(IMetadataBuilderContext context, RelationMetadata metadata)
@@ -247,9 +262,6 @@ namespace Jerrycurl.Relations.Metadata
 
             if (metadata.Item != null)
                 metadata.Flags |= RelationMetadataFlags.List;
-
-            if (metadata.Recursor != null)
-                metadata.Flags |= RelationMetadataFlags.Recursive;
 
             return metadata;
         }

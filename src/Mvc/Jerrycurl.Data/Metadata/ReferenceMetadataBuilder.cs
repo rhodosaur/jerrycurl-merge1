@@ -119,15 +119,14 @@ namespace Jerrycurl.Data.Metadata
 
             IEnumerable<ReferenceKey> candidateKeys = keyMap.GroupBy(t => t.kn).Select(g => new ReferenceKey()
             {
-                Type = ReferenceKeyType.CandidateKey,
+                Flags = g.All(t => t.a.IsPrimary) ? ReferenceKeyFlags.Primary : ReferenceKeyFlags.Candidate,
                 Name = g.First().kn,
                 Properties = g.OrderBy(t => t.a.Index).Select(t => t.m).ToList(),
-                IsPrimaryKey = g.All(t => t.a.IsPrimary),
             });
 
             IEnumerable<ReferenceKey> foreignKeys = refMap.GroupBy(t => (t.rn, t.kn)).Select(g => new ReferenceKey()
             {
-                Type = ReferenceKeyType.ForeignKey,
+                Flags = ReferenceKeyFlags.Foreign,
                 Name = g.First().rn,
                 Other = g.First().kn,
                 Properties = g.OrderBy(t => t.a.Index).Select(t => t.m).ToList(),
@@ -140,11 +139,29 @@ namespace Jerrycurl.Data.Metadata
 
         private bool IsKeyMatch(IReferenceKey rightKey, IReferenceKey leftKey)
         {
-            if (leftKey.Type == rightKey.Type || leftKey.Properties.Count != rightKey.Properties.Count)
+            if (leftKey.Properties.Count != rightKey.Properties.Count)
                 return false;
 
-            IReferenceKey candidateKey = rightKey.Type == ReferenceKeyType.CandidateKey ? rightKey : leftKey;
-            IReferenceKey foreignKey = rightKey.Type == ReferenceKeyType.ForeignKey ? rightKey : leftKey;
+            bool leftIsCandidate = leftKey.HasFlag(ReferenceKeyFlags.Candidate);
+            bool rightIsCandidate = rightKey.HasFlag(ReferenceKeyFlags.Candidate);
+
+            bool leftIsForeign = leftKey.HasFlag(ReferenceKeyFlags.Foreign);
+            bool rightIsForeign = rightKey.HasFlag(ReferenceKeyFlags.Foreign);
+
+            IReferenceKey candidateKey, foreignKey;
+
+            if (leftIsCandidate && rightIsForeign)
+            {
+                candidateKey = leftKey;
+                foreignKey = rightKey;
+            }
+            else if (leftIsForeign && rightIsCandidate)
+            {
+                candidateKey = rightKey;
+                foreignKey = leftKey;
+            }
+            else
+                return false;
 
             return foreignKey.Other.Equals(candidateKey.Name, StringComparison.Ordinal);
         }
@@ -217,15 +234,18 @@ namespace Jerrycurl.Data.Metadata
                             Key = parentKey,
                         };
 
-                        if (childKey.Type == ReferenceKeyType.CandidateKey)
+                        if (childKey.HasFlag(ReferenceKeyFlags.Candidate))
                         {
-                            rightRef.Flags |= ReferenceFlags.Primary;
+                            rightRef.Flags |= childKey.HasFlag(ReferenceKeyFlags.Primary) ? ReferenceFlags.Primary : ReferenceFlags.Candidate;
                             leftRef.Flags |= ReferenceFlags.Foreign;
+
+                            if (childKey.HasFlag(ReferenceKeyFlags.Primary))
+                                rightRef.Flags |= ReferenceFlags.Primary;
                         }
                         else
                         {
                             rightRef.Flags |= ReferenceFlags.Foreign;
-                            leftRef.Flags |= ReferenceFlags.Primary;
+                            leftRef.Flags |= parentKey.HasFlag(ReferenceKeyFlags.Primary) ? ReferenceFlags.Primary : ReferenceFlags.Candidate;
                         }
 
                         if (childMetadata.Relation.HasFlag(RelationMetadataFlags.Item))
@@ -244,24 +264,6 @@ namespace Jerrycurl.Data.Metadata
                 }
             }
 
-
-            //foreach (Reference reference in references.ToList())
-            //{
-            //    Reference other = references.Except(new[] { reference }).FirstOrDefault(r => r.Other.Key.Equals(reference.Key));
-
-            //    if (other != null && this.IsPreferredParentForSelfJoin(reference, other))
-            //    {
-            //        if (reference.Other.Metadata.Relation.HasFlag(RelationMetadataFlags.Recursive))
-            //        {
-            //            reference.Flags |= ReferenceFlags.Self;
-            //            reference.Other.Flags |= ReferenceFlags.Self;
-            //            reference.Other.Key = other.Key;
-            //        }
-
-            //        references.Remove(other);
-            //    }
-            //}
-
             foreach (Reference reference in references.ToList())
             {
                 Reference reverse = references.FirstOrDefault(r => r.Key.Equals(reference.Other.Key) && r.Other.Key.Equals(reference.Key));
@@ -270,23 +272,7 @@ namespace Jerrycurl.Data.Metadata
                 {
                     reference.Flags |= ReferenceFlags.Self;
                     reference.Other.Flags |= ReferenceFlags.Self;
-                    //reference.Other.Key = reverse.Key;
-
-                    //if (this.IsPreferredSelfJoin(reference, reverse))
-                    //    references.Remove(reverse);
                 }
-
-                //if (reverse != null && this.IsPreferredParentForSelfJoin(reference, reverse))
-                //{
-                //    if (reference.Other.Metadata.Relation.HasFlag(RelationMetadataFlags.Recursive))
-                //    {
-                //        reference.Flags |= ReferenceFlags.Self;
-                //        reference.Other.Flags |= ReferenceFlags.Self;
-                //        reference.Other.Key = reverse.Key;
-                //    }
-
-                //    references.Remove(reverse);
-                //}
             }
 
             return references;
@@ -296,7 +282,7 @@ namespace Jerrycurl.Data.Metadata
         {
             if (reference.Other.HasFlag(ReferenceFlags.Many) && other.HasFlag(ReferenceFlags.Foreign))
                 return true;
-            else if (reference.Other.HasFlag(ReferenceFlags.One) && other.HasFlag(ReferenceFlags.Primary))
+            else if (reference.Other.HasFlag(ReferenceFlags.One) && other.HasFlag(ReferenceFlags.Candidate))
                 return true;
 
             return false;

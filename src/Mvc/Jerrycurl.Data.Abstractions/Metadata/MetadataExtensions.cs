@@ -19,5 +19,8 @@ namespace Jerrycurl.Data.Metadata
 
         public static bool HasFlag(this IReference metadata, ReferenceFlags flag) => (metadata.Flags & flag) == flag;
         public static bool HasAnyFlag(this IReference metadata, ReferenceFlags flag) => (metadata.Flags & flag) != ReferenceFlags.None;
+
+        public static bool HasFlag(this IReferenceKey key, ReferenceKeyFlags flag) => (key.Flags & flag) == flag;
+        public static bool HasAnyFlag(this IReferenceKey key, ReferenceKeyFlags flag) => (key.Flags & flag) != ReferenceKeyFlags.None;
     }
 }

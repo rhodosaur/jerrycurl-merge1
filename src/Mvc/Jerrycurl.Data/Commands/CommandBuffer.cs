@@ -82,7 +82,7 @@ namespace Jerrycurl.Data.Commands
             {
                 IDbDataParameter adoParam = parameterFactory();
 
-                adoParam.ParameterName = buffer.Parameter.Parameter.Name;
+                adoParam.ParameterName = buffer.Parameter.Name;
                 buffer.Parameter.Parameter?.Build(adoParam);
 
                 if (buffer.Parameter.HasSource && buffer.Parameter.HasTarget)
@@ -91,10 +91,10 @@ namespace Jerrycurl.Data.Commands
                 {
                     adoParam.Value = DBNull.Value;
 
-                    SetParameterDirection(adoParam, ParameterDirection.InputOutput);
+                    SetParameterDirection(adoParam, ParameterDirection.Output);
                 }
 
-                if (this.TryReadValue(buffer.Parameter.Parameter.Source, out object newValue))
+                if (this.TryReadValue(buffer.Parameter.Parameter?.Source, out object newValue))
                     adoParam.Value = newValue;
 
                 buffer.Parameter.AdoParameter = adoParam;
@@ -159,6 +159,7 @@ namespace Jerrycurl.Data.Commands
 
             buffer.Parameter ??= new ParameterSource();
             buffer.Parameter.Parameter = parameter;
+            buffer.Parameter.Name = parameter.Name;
 
             this.paramHeader.TryAdd(parameter.Name, buffer);
         }
@@ -220,6 +221,7 @@ namespace Jerrycurl.Data.Commands
 
             buffer.Parameter = paramBuffer.Parameter ?? new ParameterSource();
             buffer.Parameter.HasTarget = true;
+            buffer.Parameter.Name = binding.ParameterName;
             buffer.Target = binding.Target;
         }
     }

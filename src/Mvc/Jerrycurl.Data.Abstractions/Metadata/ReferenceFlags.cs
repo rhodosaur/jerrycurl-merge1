@@ -8,10 +8,11 @@ namespace Jerrycurl.Data.Metadata
         None = 0,
         Parent = 1,
         Child = 2,
-        Primary = 4,
+        Candidate = 4,
         Foreign = 8,
-        One = 16,
-        Many = 32,
-        Self = 64,
+        Primary = Candidate | 16,
+        One = 32,
+        Many = 64,
+        Self = 128,
     }
 }

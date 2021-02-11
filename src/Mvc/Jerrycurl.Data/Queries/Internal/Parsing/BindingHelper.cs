@@ -35,7 +35,8 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         public static void AddPrimaryKey(NewBinder binder)
         {
-            IReferenceKey primaryKey = binder.Metadata.Identity.Lookup<IReferenceMetadata>()?.Keys.FirstOrDefault(k => k.IsPrimaryKey);
+            IReferenceMetadata metadata = binder.Metadata.Identity.Lookup<IReferenceMetadata>();
+            IReferenceKey primaryKey = metadata?.Keys.FirstOrDefault(k => k.HasFlag(ReferenceKeyFlags.Primary));
 
             binder.PrimaryKey = FindPrimaryKey(binder, primaryKey);
         }
@@ -64,7 +65,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 values.Add(value);
 
                 if (value != null)
-                    value.CanBeDbNull = !referenceKey.IsPrimaryKey;
+                    value.CanBeDbNull = !referenceKey.HasFlag(ReferenceKeyFlags.Primary);
             }
 
             if (values.All(v => v != null))
