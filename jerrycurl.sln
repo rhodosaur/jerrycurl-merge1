@@ -88,8 +88,6 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Jerrycurl.Common", "src\Sha
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{4A15A38B-A118-4D68-A1B7-544BF5FDED8C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jerrycurl.Tools.PowerShell.Cli", "src\Tools\Jerrycurl.Tools.PowerShell.Cli\Jerrycurl.Tools.PowerShell.Cli.csproj", "{0EF21A1F-32B0-4708-98C2-2A7E836804D3}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jerrycurl.Vendors.Postgres", "src\Vendors\Jerrycurl.Vendors.Postgres\Jerrycurl.Vendors.Postgres.csproj", "{755A6DE2-6250-4638-ACF6-3C36C0B1E3DC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jerrycurl.Tools.Vendors.Postgres", "src\Tools\Jerrycurl.Tools.Vendors.Postgres\Jerrycurl.Tools.Vendors.Postgres.csproj", "{60AB73A0-4414-4771-8260-402CEA684420}"
@@ -110,7 +108,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspec", "nuspec", "{6E68DF
 		nuspec\Jerrycurl.nuspec = nuspec\Jerrycurl.nuspec
 		nuspec\Jerrycurl.Relations.nuspec = nuspec\Jerrycurl.Relations.nuspec
 		nuspec\Jerrycurl.Tools.Common.nuspec = nuspec\Jerrycurl.Tools.Common.nuspec
-		nuspec\Jerrycurl.Tools.PowerShell.Cli.nuspec = nuspec\Jerrycurl.Tools.PowerShell.Cli.nuspec
 		nuspec\Jerrycurl.Tools.Vendors.MySql.nuspec = nuspec\Jerrycurl.Tools.Vendors.MySql.nuspec
 		nuspec\Jerrycurl.Tools.Vendors.Oracle.nuspec = nuspec\Jerrycurl.Tools.Vendors.Oracle.nuspec
 		nuspec\Jerrycurl.Tools.Vendors.Postgres.nuspec = nuspec\Jerrycurl.Tools.Vendors.Postgres.nuspec
@@ -274,10 +271,6 @@ Global
 		{173E7075-0E82-4BA0-A944-9B774BFE03A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{173E7075-0E82-4BA0-A944-9B774BFE03A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{173E7075-0E82-4BA0-A944-9B774BFE03A9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0EF21A1F-32B0-4708-98C2-2A7E836804D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0EF21A1F-32B0-4708-98C2-2A7E836804D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0EF21A1F-32B0-4708-98C2-2A7E836804D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0EF21A1F-32B0-4708-98C2-2A7E836804D3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{755A6DE2-6250-4638-ACF6-3C36C0B1E3DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{755A6DE2-6250-4638-ACF6-3C36C0B1E3DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{755A6DE2-6250-4638-ACF6-3C36C0B1E3DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -353,7 +346,6 @@ Global
 		{9D4793B5-EB74-4BAF-9BD3-738D3C9694A7} = {64E7AA0B-8D96-4CA0-972F-E40BD32A7CFC}
 		{DED3DF47-4E41-4FB6-93AF-BDC13098CC93} = {4A15A38B-A118-4D68-A1B7-544BF5FDED8C}
 		{4A15A38B-A118-4D68-A1B7-544BF5FDED8C} = {C19306F0-9C96-4B89-8FC6-D9B4FADD7E93}
-		{0EF21A1F-32B0-4708-98C2-2A7E836804D3} = {24A35FDF-4168-4F4D-9CEB-CE73E428B132}
 		{755A6DE2-6250-4638-ACF6-3C36C0B1E3DC} = {B0F0E2DA-AAC2-4707-B9DF-B77EC32E651D}
 		{60AB73A0-4414-4771-8260-402CEA684420} = {2EBC641A-BFC9-4CB7-933D-BCE379FA1AF2}
 		{819E43EE-C3D3-4668-91CB-4D9608B8AFC8} = {C19306F0-9C96-4B89-8FC6-D9B4FADD7E93}
