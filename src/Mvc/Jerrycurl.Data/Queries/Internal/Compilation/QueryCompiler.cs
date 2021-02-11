@@ -23,8 +23,6 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 {
     internal class QueryCompiler
     {
-        public const bool UseTryCatchExpressions = true;
-
         private delegate void ListInternalWriter(IDataReader dataReader, ElasticArray lists, ElasticArray aggregates, ElasticArray helpers, ISchema schema);
         private delegate void ListInternalInitializer(ElasticArray lists);
         private delegate object AggregateInternalReader(ElasticArray lists, ElasticArray aggregates, ISchema schema);
@@ -387,7 +385,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             }
         }
 
-        private Expression GetReaderExpression(DataReader reader, Expression isDbNull, Expression value, bool canBeDbNull, bool useTryCatch = true)
+        private Expression GetReaderExpression(DataReader reader, Expression isDbNull, Expression value, bool canBeDbNull, bool useTryCatch = false)
         {
             isDbNull ??= this.GetIsDbNullExpression(reader);
 
