@@ -16,14 +16,14 @@ namespace Jerrycurl.Relations.Test.Metadata
         {
             if (metadata.Member == typeof(CustomModel).GetProperty(nameof(CustomModel.List1)))
             {
-                return new RelationListContract()
+                return new RelationContract()
                 {
                     ItemType = typeof(string),
                 };
             }
             else if (metadata.Member == typeof(CustomModel).GetProperty(nameof(CustomModel.List2)))
             {
-                return new RelationListContract()
+                return new RelationContract()
                 {
                     ItemType = typeof(int),
                     ReadIndex = typeof(List<int>).GetMethod("AddRange"),
@@ -33,7 +33,7 @@ namespace Jerrycurl.Relations.Test.Metadata
             {
                 PropertyInfo indexer = this.GetIndexer(metadata.Type, typeof(int));
 
-                return new RelationListContract()
+                return new RelationContract()
                 {
                     ItemType = typeof(int),
                     ReadIndex = indexer.GetMethod,
@@ -44,7 +44,7 @@ namespace Jerrycurl.Relations.Test.Metadata
             {
                 PropertyInfo indexer = this.GetIndexer(metadata.Type, typeof(int));
 
-                return new RelationListContract()
+                return new RelationContract()
                 {
                     ItemType = itemType,
                     //Indexer = indexer,

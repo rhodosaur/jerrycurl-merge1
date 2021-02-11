@@ -12,7 +12,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
 using Jerrycurl.Collections;
-using Jerrycurl.Relations.V11.Internal.Enumerators;
+using Jerrycurl.Relations.V11.Internal.Queues;
 using Jerrycurl.Relations.V11.Internal.IO;
 using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Relations.Internal;
@@ -29,7 +29,7 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
             Delegate[] binders = this.GetBindersArgument(tree);
             IRelationMetadata[] metadata = this.GetMetadataArgument(tree);
 
-            BufferInternalWriter initializer = this.Compile(tree.Source, tree.Queues);
+            BufferInternalWriter initializer = this.Compile(tree.Source, tree.Queues, tree.Fields.Count);
             List<BufferInternalWriter> writers = tree.Queues.Select(this.Compile).ToList();
 
             return new BufferWriter()
@@ -42,9 +42,9 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
         private Action<RelationBuffer> Recompile(BufferInternalWriter writer, DotNotation2 notation, Delegate[] binders, IRelationMetadata[] metadata)
             => buf => writer(buf.Fields, buf.Queues, buf.Source, buf.Model, notation, binders, metadata);
 
-        private BufferInternalWriter Compile(SourceReader reader, IEnumerable<QueueReader> queueReaders)
+        private BufferInternalWriter Compile(SourceReader reader, IList<QueueReader> queueReaders, int metadataOffset)
         {
-            Expression body = this.GetInitializerExpression(reader, queueReaders);
+            Expression body = this.GetInitializerExpression(reader, queueReaders, metadataOffset);
 
             return this.Compile(body);
         }
@@ -65,12 +65,12 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
 
         #region " Initializer "
 
-        public Expression GetInitializerExpression(SourceReader reader, IEnumerable<QueueReader> queueReaders)
+        public Expression GetInitializerExpression(SourceReader reader, IList<QueueReader> queueReaders, int metadataOffset)
         {
             List<Expression> expressions = new List<Expression>();
 
             foreach (QueueReader queue in queueReaders)
-                expressions.Add(this.GetAssignNewQueueExpression(queue.Index));
+                expressions.Add(this.GetAssignNewQueueExpression(queue.Index, metadataOffset));
 
             expressions.Add(this.GetReadWriteExpression(reader));
 
@@ -102,28 +102,28 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
             Expression value = this.GetReadExpression(reader, parentValue);
             Expression assignVariable = Expression.Assign(variable, value);
 
-            List<Expression> valueBody = new List<Expression>();
+            List<Expression> body = new List<Expression>();
+            List<Expression> notBody = new List<Expression>();
             List<Expression> nullBody = new List<Expression>();
 
-            valueBody.AddRange(this.GetWriteExpressions(reader, parentValue, variable, isNull: false));
-            valueBody.AddRange(this.GetReadWriteExpressions(reader, value));
-
-            nullBody.AddRange(this.GetWriteExpressions(reader, parentValue, variable, isNull: true));
+            body.Add(assignVariable);
+            body.AddRange(this.GetWriteExpressions(reader, parentValue, variable));
+            notBody.AddRange(this.GetReadWriteExpressions(reader, variable));
             nullBody.AddRange(this.GetWriteMissingExpressions(reader));
 
             if (!value.Type.IsValueType || Nullable.GetUnderlyingType(value.Type) != null)
             {
-                Expression isNull = Expression.ReferenceEqual(assignVariable, Expression.Constant(null));
-                Expression valueBlock = this.GetBlockOrExpression(valueBody);
+                Expression isNull = Expression.ReferenceEqual(variable, Expression.Constant(null));
+                Expression notBlock = this.GetBlockOrExpression(notBody);
                 Expression nullBlock = this.GetBlockOrExpression(nullBody);
-                Expression ifThen = Expression.IfThenElse(isNull, nullBlock, valueBlock);
+                Expression ifThen = Expression.IfThenElse(isNull, nullBlock, notBlock);
 
-                return Expression.Block(new[] { variable }, ifThen);
+                body.Add(ifThen);
             }
+            else
+                body.AddRange(notBody);
 
-            valueBody.Insert(0, assignVariable);
-
-            return this.GetBlockOrExpression(valueBody, new[] { variable });
+            return this.GetBlockOrExpression(body, new[] { variable });
         }
 
         private IEnumerable<Expression> GetReadWriteExpressions(NodeReader reader, Expression value)
@@ -137,20 +137,23 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
         private Type GetQueueGenericType(QueueIndex queue) => typeof(RelationQueue<,>).MakeGenericType(queue.List.Type, queue.Item.Type);
         private Type GetQueueItemGenericType(QueueIndex queue) => typeof(RelationQueueItem<>).MakeGenericType(queue.List.Type);
 
-        private Expression GetAssignNewQueueExpression(QueueIndex index)
+        private Expression GetAssignNewQueueExpression(QueueIndex index, int metadataOffset)
         {
             Expression arrayIndex = Expression.ArrayAccess(Arguments.Queues, Expression.Constant(index.Buffer));
-            Expression newQueue = this.GetNewQueueExpression(index);
+            Expression newQueue = this.GetNewQueueExpression(index, metadataOffset);
 
             return Expression.Assign(arrayIndex, newQueue);
         }
 
-        private Expression GetNewQueueExpression(QueueIndex index)
+        private Expression GetNewQueueExpression(QueueIndex index, int metadataOffset)
         {
             Type type = this.GetQueueGenericType(index);
             ConstructorInfo ctor = type.GetConstructors()[0];
 
-            return Expression.New(ctor, Expression.Constant(index.Type));
+            Expression metadata = Expression.ArrayAccess(Arguments.Metadata, Expression.Constant(metadataOffset + index.Buffer));
+            Expression queueType = Expression.Constant(index.Type);
+
+            return Expression.New(ctor, metadata, queueType);
         }
 
         private Expression GetQueueAddExpression(QueueWriter writer, Expression value)
@@ -185,28 +188,28 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
         #endregion
 
         #region " Writers "
-        private Expression GetWriteExpression(NodeWriter writer, Expression parentValue, Expression value, bool isNull) => writer switch
+        private Expression GetWriteExpression(NodeWriter writer, Expression parentValue, Expression value) => writer switch
         {
-            FieldWriter writer2 => this.GetWriteExpression(writer2, parentValue, value, isNull),
+            FieldWriter writer2 => this.GetWriteExpression(writer2, parentValue, value),
             QueueWriter writer2 => this.GetWriteExpression(writer2, value),
             _ => throw new InvalidOperationException(),
         };
 
-        private Expression GetWriteExpression(FieldWriter writer, Expression parentValue, Expression value, bool isNull)
+        private Expression GetWriteExpression(FieldWriter writer, Expression parentValue, Expression value)
         {
             Expression bufferIndex = Expression.ArrayAccess(Arguments.Fields, Expression.Constant(writer.BufferIndex));
-            Expression newField = this.GetNewFieldExpression(writer, parentValue, value, isNull);
+            Expression newField = this.GetNewFieldExpression(writer, parentValue, value);
 
             return Expression.Assign(bufferIndex, newField);
         }
 
         private Expression GetWriteExpression(QueueWriter writer, Expression value) => this.GetQueueAddExpression(writer, value);
 
-        private IEnumerable<Expression> GetWriteExpressions(NodeReader reader, Expression parentValue, Expression value, bool isNull)
+        private IEnumerable<Expression> GetWriteExpressions(NodeReader reader, Expression parentValue, Expression value)
         {
             foreach (NodeWriter writer in reader.Writers)
             {
-                Expression expression = this.GetWriteExpression(writer, parentValue, value, isNull);
+                Expression expression = this.GetWriteExpression(writer, parentValue, value);
 
                 if (expression != null)
                     yield return expression;
@@ -226,7 +229,7 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
 
 
         private Expression GetWriteMissingExpression(QueueWriter writer)
-            => this.GetWriteExpression(writer, Expression.Constant(null));
+            => this.GetWriteExpression(writer, Expression.Constant(null, writer.Next.List.Type));
 
         private Expression GetWriteMissingExpression(NodeWriter writer) => writer switch
         {
@@ -239,7 +242,7 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
         {
             foreach (PropertyReader propReader in reader.Properties)
             {
-                foreach (NodeWriter writer in reader.Writers)
+                foreach (NodeWriter writer in propReader.Writers)
                     yield return this.GetWriteMissingExpression(writer);
             }
 
@@ -250,8 +253,6 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
         #endregion
 
         #region " Readers "
-
-        private bool IsVariableRequired(NodeReader reader) => reader.Properties.Count + reader.Writers.Count > 1;
 
         private Expression GetReadExpression(NodeReader reader, Expression parentValue) => reader switch
         {
@@ -268,26 +269,18 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
             => this.GetQueuePropertyExpression(reader.Index, "Current");
 
         private Expression GetReadExpression(SourceReader reader)
-            => this.GetSourceValueExpression(reader);
-
-        private IEnumerable<Expression> GetReadExpressions(NodeReader reader, Expression value)
         {
-            foreach (PropertyReader propReader in reader.Properties)
-                yield return this.GetReadExpression(propReader, value);
+            Expression data = Expression.Property(Arguments.Source, nameof(IField2.Data));
+            Expression value = Expression.Property(data, nameof(IFieldData.Value));
+
+            return Expression.Convert(value, reader.Metadata.Type);
         }
+
         #endregion
 
         #region " Inputs "
         private Expression GetSourceNameExpression()
-            => Expression.Property(Expression.Property(Arguments.Source, "Identity"), "Name");
-
-        private Expression GetSourceValueExpression(SourceReader reader)
-        {
-            Expression data = Expression.Property(Arguments.Source, "data");
-            Expression value = Expression.Property(data, "Value");
-
-            return Expression.Convert(value, reader.Metadata.Type);
-        }
+            => Expression.Property(Expression.Property(Arguments.Source, nameof(IField2.Identity)), nameof(FieldIdentity.Name));
 
         private Expression GetMetadataExpression(FieldWriter writer)
             => Expression.ArrayAccess(Arguments.Metadata, Expression.Constant(writer.BufferIndex));
@@ -316,7 +309,7 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
             }
         }
 
-        private Expression GetNewFieldExpression(FieldWriter writer, Expression parentValue, Expression value, bool isNull)
+        private Expression GetNewFieldExpression(FieldWriter writer, Expression parentValue, Expression value)
         {
             if (parentValue == null)
                 return Arguments.Source;
@@ -327,16 +320,15 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
             ConstructorInfo newFieldInfo = fieldType.GetConstructors()[0];
             ConstructorInfo newDataInfo = dataType.GetConstructors()[0];
 
-            Expression relation = Expression.Constant(null);
+            Expression relation = writer.Queue != null ? this.GetQueuePropertyExpression(writer.Queue, "List") : Expression.Constant(null);
             Expression index = writer.Queue != null ? this.GetQueuePropertyExpression(writer.Queue, "Index") : Expression.Constant(0);
             Expression binder = this.GetBinderExpression(writer);
             
             Expression name = this.GetFieldNameExpression(writer);
             Expression metadata = this.GetMetadataExpression(writer);
             Expression data = Expression.New(newDataInfo, relation, index, parentValue, value, binder);
-            Expression type = Expression.Constant(isNull ? FieldType2.Null : FieldType2.Value);
 
-            return Expression.New(newFieldInfo, name, metadata, data, Arguments.Model, type);
+            return Expression.New(newFieldInfo, name, metadata, data, Arguments.Model);
         }
 
         private Expression GetNewMissingExpression(FieldWriter writer)
@@ -367,10 +359,13 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
 
         private IRelationMetadata[] GetMetadataArgument(BufferTree tree)
         {
-            IRelationMetadata[] metadata = new IRelationMetadata[tree.Fields.Count];
+            IRelationMetadata[] metadata = new IRelationMetadata[tree.Fields.Count + tree.Queues.Count];
 
             foreach (FieldWriter writer in tree.Fields)
                 metadata[writer.BufferIndex] = writer.Metadata;
+
+            foreach (QueueReader queue in tree.Queues)
+                metadata[tree.Fields.Count + queue.Index.Buffer] = queue.Metadata;
 
             return metadata;
         }

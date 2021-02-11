@@ -1,5 +1,6 @@
 ﻿using Jerrycurl.Reflection;
 using Jerrycurl.Relations.Metadata;
+using Jerrycurl.Relations.V11;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,6 +33,14 @@ namespace Jerrycurl.Relations
         {
 
         }
+
+        #region " Exception helpers 1.1 "
+
+        public static RelationException FromRelation(IRelation2 relation, string errorMessage, Exception innerException)
+        {
+            return new RelationException();
+        }
+        #endregion
 
         #region " Exception helpers "
 

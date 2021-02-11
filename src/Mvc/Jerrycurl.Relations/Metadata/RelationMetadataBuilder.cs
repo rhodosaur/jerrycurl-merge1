@@ -66,11 +66,11 @@ namespace Jerrycurl.Relations.Metadata
             context.AddMetadata<IRelationMetadata>(model);
         }
 
-        private IRelationListContract GetListContract(RelationMetadata metadata)
+        private IRelationContract GetContract(RelationMetadata metadata)
         {
             IEnumerable<IRelationContractResolver> allResolvers = new[] { this.DefaultResolver }.Concat(this);
 
-            IRelationListContract contract = allResolvers.Reverse().NotNull(cr => cr.GetListContract(metadata)).FirstOrDefault();
+            IRelationContract contract = allResolvers.Reverse().NotNull(cr => cr.GetContract(metadata)).FirstOrDefault();
 
             if (contract != null)
                 this.ValidateContract(metadata, contract);
@@ -78,7 +78,7 @@ namespace Jerrycurl.Relations.Metadata
             return contract;
         }
 
-        private void ValidateContract(RelationMetadata metadata, IRelationListContract contract)
+        private void ValidateContract(RelationMetadata metadata, IRelationContract contract)
         {
             if (contract.ItemType == null)
                 this.ThrowContractException(metadata, "Item type cannot be null.");
@@ -110,7 +110,7 @@ namespace Jerrycurl.Relations.Metadata
         {
             IEnumerable<IRelationContractResolver> allResolvers = new[] { this.DefaultResolver }.Concat(this);
 
-            return allResolvers.NotNull().SelectMany(cr => cr.GetAnnotationContract(metadata) ?? Array.Empty<Attribute>()).NotNull();
+            return allResolvers.NotNull().SelectMany(cr => cr.GetAnnotations(metadata) ?? Array.Empty<Attribute>()).NotNull();
         }
 
         private IEnumerable<RelationMetadata> CreateProperties(IMetadataBuilderContext context, RelationMetadata parent)
@@ -124,7 +124,6 @@ namespace Jerrycurl.Relations.Metadata
                 if (property != null)
                     yield return property;
             }
-                
         }
 
         private RelationMetadata CreateProperty(IMetadataBuilderContext context, RelationMetadata parent, MemberInfo memberInfo)
@@ -142,14 +141,15 @@ namespace Jerrycurl.Relations.Metadata
             };
 
             metadata.Item = this.CreateItem(context, metadata);
+            metadata.Recursor = this.CreateRecursor(context, metadata);
             metadata.Properties = this.CreateLazy(() => this.CreateProperties(context, metadata));
             metadata.Annotations = this.CreateAnnotations(metadata).ToList();
 
             if (metadata.Item != null)
                 metadata.Flags |= RelationMetadataFlags.List;
 
-            if (metadata.Item != null && metadata.Item.HasFlag(RelationMetadataFlags.Recursive))
-                metadata.Flags |= RelationMetadataFlags.Recursive;
+            if (metadata.Recursor != null)
+                metadata.Flags |= RelationMetadataFlags.Recursive | RelationMetadataFlags.List;
 
             if (memberInfo is PropertyInfo pi)
             {
@@ -164,17 +164,44 @@ namespace Jerrycurl.Relations.Metadata
 
             context.AddMetadata<IRelationMetadata>(metadata);
 
+            if (metadata.Item != null)
+                context.AddMetadata<IRelationMetadata>(metadata.Item);
+
             return metadata;
+        }
+
+        private Lazy<IRelationMetadata> CreateRecursor(IMetadataBuilderContext context, RelationMetadata metadata)
+        {
+            if (metadata.Parent.MemberOf.Type.Equals(metadata.Type))
+            {
+                IRelationMetadata recursiveParent = metadata.Parent.MemberOf;
+
+                string recursivePath = context.Notation.Path(recursiveParent.Identity.Name, metadata.Parent.Identity.Name);
+                string otherPath = context.Notation.Combine(metadata.Identity.Name, recursivePath);
+
+                MetadataIdentity otherId = metadata.Identity.Push(recursivePath);
+
+                return new Lazy<IRelationMetadata>(() => this.GetMetadata(context, otherId));
+            }
+            else if (metadata.MemberOf.Recursor != null)
+            {
+                IRelationContract contract = this.GetContract(metadata);
+
+                if (contract != null && metadata.MemberOf.Type.Equals(contract.ItemType))
+                    return new Lazy<IRelationMetadata>(() => metadata.MemberOf);
+            }
+
+            return null;
         }
 
         private RelationMetadata CreateItem(IMetadataBuilderContext context, RelationMetadata parent)
         {
-            IRelationListContract contract = this.GetListContract(parent);
-            IRelationMetadata recursiveParent = this.FindRecursiveParent(parent, contract?.ItemType);
+            if (parent.MemberOf.HasFlag(RelationMetadataFlags.Recursive))
+                return null;
+
+            IRelationContract contract = this.GetContract(parent);
 
             if (contract == null)
-                return null;
-            else if (recursiveParent != null && recursiveParent.HasFlag(RelationMetadataFlags.Recursive))
                 return null;
 
             MetadataIdentity itemIdentity = parent.Identity.Push(contract.ItemName ?? "Item");
@@ -191,9 +218,9 @@ namespace Jerrycurl.Relations.Metadata
 
             metadata.MemberOf = metadata;
             metadata.Item = this.CreateItem(context, metadata);
+            metadata.Recursor = this.CreateRecursor(context, metadata);
             metadata.Properties = this.CreateLazy(() => this.CreateProperties(context, metadata));
             metadata.Annotations = this.CreateAnnotations(metadata).ToList();
-            metadata.Recursor = recursiveParent;
 
             if (contract.ReadIndex != null)
                 metadata.Flags |= RelationMetadataFlags.Readable;
@@ -204,28 +231,10 @@ namespace Jerrycurl.Relations.Metadata
             if (metadata.Item != null)
                 metadata.Flags |= RelationMetadataFlags.List;
 
-            if (recursiveParent != null)
+            if (metadata.Recursor != null)
                 metadata.Flags |= RelationMetadataFlags.Recursive;
 
-            context.AddMetadata<IRelationMetadata>(metadata);
-
             return metadata;
-        }
-
-        private IRelationMetadata FindRecursiveParent(IRelationMetadata metadata, Type type)
-        {
-            if (type == null)
-                return null;
-
-            while (metadata != null)
-            {
-                if (metadata.MemberOf.Type.Equals(type))
-                    return metadata.MemberOf;
-
-                metadata = metadata.MemberOf.Parent;
-            }
-
-            return null;
         }
 
         private bool IsFieldOrNonIndexedProperty(MemberInfo memberInfo)

@@ -36,7 +36,7 @@ namespace Jerrycurl.Relations.V11
         public void Rollback() => throw new InvalidOperationException();
 
         public bool Equals(IField2 other) => Equality.Combine(this, other, m => m.Model, m => m.Identity);
-        public override bool Equals(object obj) => (obj is IField2 field && this.Equals(field));
+        public override bool Equals(object obj) => (obj is IField2 other && this.Equals(other));
         public override int GetHashCode() => HashCode.Combine(this.Model, this.Identity);
 
         public override string ToString() => "<missing>";

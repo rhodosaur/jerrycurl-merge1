@@ -1,6 +1,6 @@
 ﻿using Shouldly;
 
-namespace Jerrycurl.Relations.Tests
+namespace Jerrycurl.Relations.Test
 {
     public class ManyTests
     {

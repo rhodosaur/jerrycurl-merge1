@@ -33,7 +33,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         private NewBinder GetEmptyBinder()
         {
-            IBindingMetadata metadata = this.Schema.GetMetadata<IBindingMetadata>().Item;
+            IBindingMetadata metadata = this.Schema.Get<IBindingMetadata>().Item;
 
             return new NewBinder(metadata);
         }

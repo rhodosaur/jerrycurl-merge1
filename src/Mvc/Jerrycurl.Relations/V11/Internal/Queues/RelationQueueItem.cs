@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Jerrycurl.Relations.V11.Internal.Enumerators
+namespace Jerrycurl.Relations.V11.Internal.Queues
 {
     internal class RelationQueueItem<TList> : NameBuffer
     {

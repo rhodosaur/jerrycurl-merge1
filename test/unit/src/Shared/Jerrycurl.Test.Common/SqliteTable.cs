@@ -25,7 +25,7 @@ namespace Jerrycurl.Test
             if (item == null)
                 throw new ArgumentNullException(nameof(item));
             else if (item.Length != this.heading.Length)
-                throw new InvalidOperationException($"Invalid cardinality for SQLite table. Each row must contain {this.heading.Length} columns.");
+                throw new InvalidOperationException($"Invalid degree for SQLite table. Each row must contain {this.heading.Length} columns.");
 
             base.InsertItem(index, item);
         }

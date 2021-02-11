@@ -35,8 +35,6 @@ namespace Jerrycurl.Relations
             }
         }
 
-        public bool Equals(ITuple other) => Equality.CombineAll(this, other);
-
         public IEnumerator<IField> GetEnumerator()
         {
             for (int i = 0; i < this.Degree; i++)
@@ -45,8 +43,8 @@ namespace Jerrycurl.Relations
 
         IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 
-        public override bool Equals(object obj) => (obj is ITuple tup && this.Equals(tup));
-
+        public bool Equals(ITuple other) => Equality.CombineAll(this, other);
+        public override bool Equals(object obj) => (obj is ITuple other && this.Equals(other));
         public override int GetHashCode() => HashCode.CombineAll(this.fields);
 
         public override string ToString()

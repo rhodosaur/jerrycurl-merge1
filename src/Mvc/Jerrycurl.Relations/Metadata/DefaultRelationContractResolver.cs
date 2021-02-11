@@ -8,11 +8,11 @@ namespace Jerrycurl.Relations.Metadata.Contracts
 {
     public class DefaultRelationContractResolver : IRelationContractResolver
     {
-        public IRelationListContract GetListContract(IRelationMetadata metadata)
+        public IRelationContract GetContract(IRelationMetadata metadata)
         {
             if (this.IsEnumerable(metadata))
             {
-                return new RelationListContract()
+                return new RelationContract()
                 {
                     ItemType = this.GetGenericItemType(metadata),
                     ReadIndex = this.GetListIndexReader(metadata),
@@ -21,7 +21,7 @@ namespace Jerrycurl.Relations.Metadata.Contracts
             }
             else if (this.IsOneDimensionalArray(metadata))
             {
-                return new RelationListContract()
+                return new RelationContract()
                 {
                     ItemType = this.GetArrayItemType(metadata),
                     ReadIndex = this.GetArrayIndexReader(metadata),
@@ -30,7 +30,7 @@ namespace Jerrycurl.Relations.Metadata.Contracts
             }
             else if (this.IsManyType(metadata))
             {
-                return new RelationListContract()
+                return new RelationContract()
                 {
                     ItemType = this.GetGenericItemType(metadata),
                 };
@@ -39,7 +39,7 @@ namespace Jerrycurl.Relations.Metadata.Contracts
             return null;
         }
 
-        public IEnumerable<Attribute> GetAnnotationContract(IRelationMetadata metadata)
+        public IEnumerable<Attribute> GetAnnotations(IRelationMetadata metadata)
         {
             return metadata.Type.GetCustomAttributes(true).OfType<Attribute>().Concat(metadata.Member?.GetCustomAttributes() ?? Array.Empty<Attribute>());
         }

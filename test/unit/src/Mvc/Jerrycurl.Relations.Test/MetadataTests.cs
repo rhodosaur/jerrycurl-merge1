@@ -1,13 +1,13 @@
 ﻿using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Relations.Test.Metadata;
 using Jerrycurl.Relations.Test.Models;
-using Jerrycurl.Relations.Tests.Models;
+using Jerrycurl.Relations.Test.Models;
 using Jerrycurl.Test;
 using Shouldly;
 using System;
 using System.Linq;
 
-namespace Jerrycurl.Relations.Tests
+namespace Jerrycurl.Relations.Test
 {
     public class MetadataTests
     {

@@ -64,6 +64,9 @@ namespace Jerrycurl.Relations.V11.Internal.Parsing
                         parentNode.Properties.Add(thisNode);
 
                     tree.Nodes.Add(thisNode);
+
+                    if (thisNode.Metadata.HasFlag(RelationMetadataFlags.Recursive | RelationMetadataFlags.Item))
+                        AddNode(tree, thisNode.Metadata.Recursor);
                 }
             }
 

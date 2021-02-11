@@ -4,9 +4,10 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Xml.Linq;
-using Jerrycurl.Relations.V11.Internal.Enumerators;
+using Jerrycurl.Relations.V11.Internal.Queues;
 using Jerrycurl.Relations.V11.Internal.Parsing;
 using Jerrycurl.Relations.Metadata;
+using System.Xml.XPath;
 
 namespace Jerrycurl.Relations.V11.Internal.IO
 {
@@ -59,8 +60,15 @@ namespace Jerrycurl.Relations.V11.Internal.IO
 
         private QueueIndex CreateIndex(Node node, BufferTree tree)
         {
-            if (node.Item == null)
+            if (node.Item == null && !node.Metadata.HasFlag(RelationMetadataFlags.Recursive))
                 return null;
+
+            if (node.Metadata.HasFlag(RelationMetadataFlags.Recursive))
+            {
+                QueueReader anchorReader = tree.Queues.FirstOrDefault(qr => qr.Index.Item.Equals(node.Metadata.Recursor));
+
+                return anchorReader.Index;
+            }
 
             Type queueType = typeof(RelationQueue<,>).MakeGenericType(node.Metadata.Type, node.Item.Metadata.Type);
 
@@ -99,24 +107,25 @@ namespace Jerrycurl.Relations.V11.Internal.IO
                 tree.Fields.Add(fieldWriter);
             }
 
-            if (node.Item != null)
+            if (node.Item != null || node.Metadata.HasFlag(RelationMetadataFlags.List | RelationMetadataFlags.Recursive))
             {
                 QueueIndex nextQueue = this.CreateIndex(node, tree);
                 QueueIndex prevQueue = tree.Queues.LastOrDefault()?.Index;
 
                 QueueWriter writer = new QueueWriter(node)
                 {
-                    NamePart = this.GetNamePart(node.Item, queue, tree),
+                    NamePart = this.GetNamePart(node.Item ?? node, queue, tree),
                     Queue = queue,
                     Next = nextQueue,
                 };
 
-                if (prevQueue != null && !prevQueue.List.Identity.Equals(nextQueue.List.MemberOf?.Parent.Identity))
+                if (prevQueue != null && !prevQueue.List.Identity.Equals(nextQueue.List.MemberOf.Parent?.Identity))
                     nextQueue.Type = RelationQueueType.Cartesian;
 
                 reader.Writers.Add(writer);
 
-                this.CreateQueue(node.Item, tree, nextQueue);
+                if (node.Item != null)
+                    this.CreateQueue(node.Item, tree, nextQueue);
             }
         }
 

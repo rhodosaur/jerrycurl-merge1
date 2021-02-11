@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using Jerrycurl.Relations.V11.Internal.Compilation;
-using Jerrycurl.Relations.V11.Internal.Enumerators;
+using Jerrycurl.Relations.V11.Internal.Queues;
 using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Relations.V11

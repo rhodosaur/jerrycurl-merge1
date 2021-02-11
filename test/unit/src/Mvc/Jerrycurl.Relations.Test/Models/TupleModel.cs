@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Jerrycurl.Relations.Tests.Models
+namespace Jerrycurl.Relations.Test.Models
 {
     public class TupleModel
     {

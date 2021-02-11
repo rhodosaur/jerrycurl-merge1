@@ -25,7 +25,7 @@ namespace Jerrycurl.Relations.V11
 
             this.Identity = new FieldIdentity(new MetadataIdentity(schema, schema.Notation.Model()), schema.Notation.Model());
             this.Snapshot = value;
-            this.Metadata = schema.GetMetadata<IRelationMetadata>() ?? throw new InvalidOperationException("Metadata not found.");
+            this.Metadata = schema.Require<IRelationMetadata>();
             this.Data = new ModelData(value);
         }
 

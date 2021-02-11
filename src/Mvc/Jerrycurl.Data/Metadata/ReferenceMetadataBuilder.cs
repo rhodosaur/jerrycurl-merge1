@@ -26,10 +26,7 @@ namespace Jerrycurl.Data.Metadata
 
         public void Initialize(IMetadataBuilderContext context)
         {
-            IRelationMetadata relation = context.Schema.GetMetadata<IRelationMetadata>(context.Identity.Name);
-
-            if (relation == null)
-                throw MetadataNotFoundException.FromMetadata<IRelationMetadata>(context.Identity);
+            IRelationMetadata relation = context.Schema.Require<IRelationMetadata>(context.Identity.Name);
 
             context.AddMetadata<IReferenceMetadata>(this.CreateBaseMetadata(context, relation, null));
         }

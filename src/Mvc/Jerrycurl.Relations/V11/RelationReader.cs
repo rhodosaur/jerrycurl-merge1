@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using Jerrycurl.Relations.V11.Internal.Caching;
 using Jerrycurl.Relations.V11.Internal.Compilation;
-using Jerrycurl.Relations.V11.Internal.Enumerators;
+using Jerrycurl.Relations.V11.Internal.Queues;
 using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Relations.V11
@@ -114,7 +114,7 @@ namespace Jerrycurl.Relations.V11
 
                     return true;
                 }
-                else if (this.ReadOrThrow(queues[this.currentIndex], null))
+                else if (this.ReadOrThrow(queues[this.currentIndex]))
                 {
                     writers[this.currentIndex](this.Buffer);
 
@@ -129,7 +129,7 @@ namespace Jerrycurl.Relations.V11
 
         public bool Read() => this.readFactory();
 
-        private bool ReadOrThrow(IRelationQueue queue, MetadataIdentity identity)
+        private bool ReadOrThrow(IRelationQueue queue)
         {
             try
             {
@@ -137,8 +137,7 @@ namespace Jerrycurl.Relations.V11
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException();
-                //throw RelationException.FromRelation(this.Relation, $"Cannot move enumerator for '{identity}': {ex.Message}", ex);
+                throw RelationException.FromRelation(this.Relation, $"Cannot move cursor for '{queue.Metadata.Identity}': {ex.Message}", ex);
             }
         }
 

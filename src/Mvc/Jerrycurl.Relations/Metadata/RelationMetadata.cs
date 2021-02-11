@@ -10,10 +10,10 @@ namespace Jerrycurl.Relations.Metadata
         public MetadataIdentity Identity { get; }
 
         public IRelationMetadata Parent { get; set; }
-        public IRelationMetadata MemberOf { get; set; }
+        public RelationMetadata MemberOf { get; set; }
         public RelationMetadata Item { get; set; }
         public Lazy<IReadOnlyList<RelationMetadata>> Properties { get; set; }
-        public IRelationMetadata Recursor { get; set; }
+        public Lazy<IRelationMetadata> Recursor { get; set; }
         public RelationMetadataFlags Flags { get; set; }
         public int Depth { get; set; }
 
@@ -25,6 +25,9 @@ namespace Jerrycurl.Relations.Metadata
 
         IReadOnlyList<IRelationMetadata> IRelationMetadata.Properties => this.Properties.Value;
         IRelationMetadata IRelationMetadata.Item => this.Item;
+        IRelationMetadata IRelationMetadata.Recursor => this.Recursor?.Value;
+        IRelationMetadata IRelationMetadata.MemberOf => this.MemberOf;
+
 
         public RelationMetadata(MetadataIdentity identity)
         {

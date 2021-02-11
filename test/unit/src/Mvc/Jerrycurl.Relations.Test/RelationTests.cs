@@ -1,11 +1,10 @@
 ﻿using Jerrycurl.Relations.Test.Models;
-using Jerrycurl.Relations.Tests.Models;
 using Jerrycurl.Test;
 using Shouldly;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Jerrycurl.Relations.Tests
+namespace Jerrycurl.Relations.Test
 {
     public class RelationTests
     {

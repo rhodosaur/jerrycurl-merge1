@@ -4,7 +4,6 @@
     {
         Model = 0,
         Value = 1,
-        Null = 2,
-        Missing = 3,
+        Missing = 2,
     }
 }

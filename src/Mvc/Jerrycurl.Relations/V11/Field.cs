@@ -13,13 +13,13 @@ namespace Jerrycurl.Relations.V11
     {
         public FieldIdentity Identity { get; }
         public IField2 Model { get; }
-        public FieldType2 Type { get; }
+        public FieldType2 Type { get; } = FieldType2.Value;
         public IRelationMetadata Metadata { get; }
         public FieldData<TValue, TParent> Data { get; }
         public bool HasChanged { get; private set; }
         public object Snapshot { get; private set; }
 
-        public Field2(string name, IRelationMetadata metadata, FieldData<TValue, TParent> data, IField2 model, FieldType2 type)
+        public Field2(string name, IRelationMetadata metadata, FieldData<TValue, TParent> data, IField2 model)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
@@ -29,7 +29,6 @@ namespace Jerrycurl.Relations.V11
 
             this.Identity = new FieldIdentity(metadata.Identity, name);
             this.Model = model ?? throw new ArgumentNullException(nameof(model));
-            this.Type = type;
             this.Metadata = metadata;
             this.Data = data;
             this.Snapshot = data.Value;

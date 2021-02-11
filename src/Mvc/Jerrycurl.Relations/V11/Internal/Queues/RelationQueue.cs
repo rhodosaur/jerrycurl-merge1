@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using Jerrycurl.Relations.Metadata;
 
-namespace Jerrycurl.Relations.V11.Internal.Enumerators
+namespace Jerrycurl.Relations.V11.Internal.Queues
 {
     internal class RelationQueue<TList, TItem> : IRelationQueue
         where TList : IEnumerable<TItem>
@@ -17,22 +17,31 @@ namespace Jerrycurl.Relations.V11.Internal.Enumerators
         public RelationQueueItem<TList> CurrentItem => this.innerQueue.Peek();
         public int Index => this.CurrentItem.Index;
         public RelationQueueType Type { get; }
+        public IRelationMetadata Metadata { get; }
 
         private Queue<RelationQueueItem<TList>> innerQueue = new Queue<RelationQueueItem<TList>>();
         private readonly List<RelationQueueItem<TList>> innerCache = new List<RelationQueueItem<TList>>();
         private bool usingCache = false;
 
-        public RelationQueue(RelationQueueType queueType)
+        public RelationQueue(IRelationMetadata metadata, RelationQueueType queueType)
         {
+            this.Metadata = metadata;
             this.Type = queueType;
         }
 
         public void Enqueue(RelationQueueItem<TList> item)
         {
+            if (this.Type == RelationQueueType.Cartesian)
+            {
+                this.innerCache.Clear();
+                this.innerQueue.Clear();
+                this.usingCache = false;
+            }
+
             if (!this.usingCache)
                 this.innerQueue.Enqueue(item);
 
-            if (this.innerEnumerator == null)
+            if (this.innerEnumerator == null || this.Type == RelationQueueType.Cartesian)
                 this.Start();
         }
 

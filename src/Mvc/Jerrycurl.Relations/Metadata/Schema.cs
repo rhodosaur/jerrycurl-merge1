@@ -37,9 +37,9 @@ namespace Jerrycurl.Relations.Metadata
                 throw new InvalidOperationException("Metadata already added.");
         }
 
-        public TMetadata GetMetadata<TMetadata>()
+        public TMetadata Get<TMetadata>()
             where TMetadata : IMetadata
-            => this.GetMetadata<TMetadata>(this.Notation.Model());
+            => this.Get<TMetadata>(this.Notation.Model());
 
         internal TMetadata GetMetadataFromCache<TMetadata>(string name)
             where TMetadata : IMetadata
@@ -55,7 +55,7 @@ namespace Jerrycurl.Relations.Metadata
         private ReaderWriterLockSlim GetLock<TMetadata>() => this.locks.GetOrAdd(typeof(TMetadata), _ => new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion));
         private void RemoveLock<TMetadata>() => this.locks.TryRemove(typeof(TMetadata), out _);
 
-        public TMetadata GetMetadata<TMetadata>(string name)
+        public TMetadata Get<TMetadata>(string name)
             where TMetadata : IMetadata
         {
             MetadataKey key = new MetadataKey(typeof(TMetadata), name, this.Notation.Comparer);
@@ -109,5 +109,14 @@ namespace Jerrycurl.Relations.Metadata
         public override bool Equals(object obj) => (obj is ISchema other && this.Equals(other));
         public override int GetHashCode() => this.Model.GetHashCode();
         public override string ToString() => this.Model.GetSanitizedName();
+
+        public TMetadata Require<TMetadata>(string name)
+            where TMetadata : IMetadata
+        {
+            return this.Get<TMetadata>(name) ?? throw new MetadataException($"Metadata of type {typeof(TMetadata).Name} was not found for attribute '{name}'.");
+        }
+
+        public TMetadata Require<TMetadata>() where TMetadata : IMetadata
+            => this.Require<TMetadata>(this.Notation.Model());
     }
 }

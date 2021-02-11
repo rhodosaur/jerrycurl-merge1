@@ -5,7 +5,7 @@ namespace Jerrycurl.Relations.Metadata
 {
     public interface IRelationContractResolver
     {
-        IRelationListContract GetListContract(IRelationMetadata metadata);
-        IEnumerable<Attribute> GetAnnotationContract(IRelationMetadata metadata);
+        IRelationContract GetContract(IRelationMetadata metadata);
+        IEnumerable<Attribute> GetAnnotations(IRelationMetadata metadata);
     }
 }

@@ -22,7 +22,7 @@ namespace Jerrycurl.Relations.Test.Metadata
             {
                 PropertyInfo indexer = metadata.Type.GetProperties().FirstOrDefault(pi => pi.Name == "Item" && pi.GetIndexParameters().FirstOrDefault()?.ParameterType == typeof(int));
 
-                return new RelationListContract()
+                return new RelationContract()
                 {
                     ItemType = itemType,
                     ReadIndex = indexer.GetMethod,

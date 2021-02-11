@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Jerrycurl.Relations.Metadata
 {
-    public class RelationListContract : IRelationListContract
+    public class RelationContract : IRelationContract
     {
         public Type ItemType { get; set; }
         public string ItemName { get; set; } = "Item";

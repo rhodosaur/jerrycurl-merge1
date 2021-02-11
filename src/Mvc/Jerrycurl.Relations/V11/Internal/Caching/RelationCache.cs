@@ -8,7 +8,7 @@ using System.Text;
 using Jerrycurl.Diagnostics;
 using Jerrycurl.Relations.Internal.Nodes;
 using Jerrycurl.Relations.V11.Internal.Compilation;
-using Jerrycurl.Relations.V11.Internal.Enumerators;
+using Jerrycurl.Relations.V11.Internal.Queues;
 using Jerrycurl.Relations.V11.Internal.IO;
 using Jerrycurl.Relations.V11.Internal.Parsing;
 using Jerrycurl.Relations.Metadata;
