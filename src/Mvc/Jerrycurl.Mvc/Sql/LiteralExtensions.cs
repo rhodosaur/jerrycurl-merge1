@@ -53,19 +53,19 @@ namespace Jerrycurl.Mvc.Sql
         /// <returns>A new projection containing the appended buffer.</returns>
         public static IProjection Lits<TModel, TProperty>(this IProjection<TModel> projection, Expression<Func<TModel, TProperty>> expression) => projection.For(expression).Lits();
 
-        ///// <summary>
-        ///// Appends a comma-separated list of safe literals, e.g. <c>1, 2, 3</c>, to a new attribute buffer. Parameters are used for unsafe literals.
-        ///// </summary>
-        ///// <param name="projection">The current projection.</param>
-        ///// <returns>A new attribute containing the appended buffer.</returns>
+        /// <summary>
+        /// Appends a comma-separated list of safe literals, e.g. <c>1, 2, 3</c>, to a new attribute buffer. Parameters are used for unsafe literals.
+        /// </summary>
+        /// <param name="projection">The current projection.</param>
+        /// <returns>A new attribute containing the appended buffer.</returns>
         public static IProjectionAttribute LitList(this IProjection projection) => projection.ValList(a => a.Lit());
 
-        ///// <summary>
-        ///// Appends a comma-separated list of safe literals, e.g. <c>1, 2, 3</c>, to a new attribute buffer. Parameters are used for unsafe literals.
-        ///// </summary>
-        ///// <param name="projection">The current projection.</param>
-        ///// <param name="expression">Expression selecting a specific attribute.</param>
-        ///// <returns>A new attribute containing the appended buffer.</returns>
+        /// <summary>
+        /// Appends a comma-separated list of safe literals, e.g. <c>1, 2, 3</c>, to a new attribute buffer. Parameters are used for unsafe literals.
+        /// </summary>
+        /// <param name="projection">The current projection.</param>
+        /// <param name="expression">Expression selecting a specific attribute.</param>
+        /// <returns>A new attribute containing the appended buffer.</returns>
         public static IProjectionAttribute LitList<TModel, TItem>(this IProjection<TModel> projection, Expression<Func<TModel, IEnumerable<TItem>>> expression)
             => projection.Open(expression).LitList();
     }
