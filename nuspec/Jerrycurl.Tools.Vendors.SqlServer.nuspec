@@ -20,14 +20,10 @@
                 <dependency id="Jerrycurl.Tools.Common" version="$PackageVersion$" />
                 <dependency id="$SqlServerPackageId$" version="$SqlServerPackageVersion$" />
             </group>
-			<group targetFramework="netcoreapp2.1">
+			<group targetFramework="netstandard2.0">
 				<dependency id="Jerrycurl.Tools.Common" version="$PackageVersion$" />
 				<dependency id="$SqlServerPackageId$" version="$SqlServerPackageVersion$" />
 			</group>
-            <group targetFramework="netcoreapp3.1">
-                <dependency id="Jerrycurl.Tools.Common" version="$PackageVersion$" />
-                <dependency id="$SqlServerPackageId$" version="$SqlServerPackageVersion$" />
-            </group>
         </dependencies>
     </metadata>
     <files>
