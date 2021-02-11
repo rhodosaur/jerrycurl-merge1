@@ -14,7 +14,7 @@
         <tags>$PackageTags$</tags>
         <repository type="git" url="$RepositoryUrl$" commit="$GitCommitId$" />
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>SQLite tooling support for Jerrycurl CLI. Do not reference this package directly.</description>
+        <description>SQLite support for Jerrycurl CLI. Do not reference this package directly.</description>
         <dependencies>
             <group targetFramework="net472">
                 <dependency id="Jerrycurl.Tools.Common" version="$PackageVersion$" />
