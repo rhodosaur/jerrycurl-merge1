@@ -10,12 +10,13 @@ using System.Linq;
 using System;
 using Jerrycurl.Relations.Metadata;
 using System.Drawing;
-using Jerrycurl.Data.Test.Model.Custom;
-using Jerrycurl.Data.Test.Model.Blogging;
 using Jerrycurl.Data.Test.Metadata;
-using Jerrycurl.Data.Test.Model;
 using Jerrycurl.Test.Extensions;
 using Jerrycurl.Collections;
+using Jerrycurl.Data.Test.Models.Views;
+using Jerrycurl.Data.Test.Models.Custom;
+using Jerrycurl.Test.Models.Database;
+using Jerrycurl.Data.Test.Models;
 
 namespace Jerrycurl.Data.Test
 {
@@ -36,11 +37,11 @@ namespace Jerrycurl.Data.Test
                 (3, 13),
             };
 
-            buffer.Insert(data1, ("Item", "Item.BlogPost.Item.Id"));
+            buffer.Insert(data1, ("Item", "Item.Post.Item.Id"));
             buffer.Insert(data2, ("Item", "Item.Tag.Item.Id"));
             buffer.Insert(data3,
                 ("Item.Item1", "Item.BlogPostId"),
-                ("Item.Item2", "Item.TagId")
+                ("Item.Item2", "Item.BlogTagId")
             );
 
             var result = buffer.Commit<IList<BlogTagView>>();
@@ -50,20 +51,20 @@ namespace Jerrycurl.Data.Test
 
             result[0].ShouldNotBeNull();
             result[0].BlogPostId.ShouldBe(1);
-            result[0].TagId.ShouldBe(11);
-            result[0].BlogPost.ShouldNotBeNull();
-            result[0].BlogPost.HasValue.ShouldBeTrue();
-            result[0].BlogPost.Value.Id.ShouldBe(1);
+            result[0].BlogTagId.ShouldBe(11);
+            result[0].Post.ShouldNotBeNull();
+            result[0].Post.HasValue.ShouldBeTrue();
+            result[0].Post.Value.Id.ShouldBe(1);
             result[0].Tag.ShouldNotBeNull();
             result[0].Tag.HasValue.ShouldBeTrue();
             result[0].Tag.Value.Id.ShouldBe(11);
 
             result[1].ShouldNotBeNull();
             result[1].BlogPostId.ShouldBe(2);
-            result[1].TagId.ShouldBe(11);
-            result[1].BlogPost.ShouldNotBeNull();
-            result[1].BlogPost.HasValue.ShouldBeTrue();
-            result[1].BlogPost.Value.Id.ShouldBe(2);
+            result[1].BlogTagId.ShouldBe(11);
+            result[1].Post.ShouldNotBeNull();
+            result[1].Post.HasValue.ShouldBeTrue();
+            result[1].Post.Value.Id.ShouldBe(2);
             result[1].Tag.ShouldNotBeNull();
             result[1].Tag.HasValue.ShouldBeTrue();
             result[1].Tag.Value.Id.ShouldBe(11);
@@ -71,10 +72,10 @@ namespace Jerrycurl.Data.Test
 
             result[2].ShouldNotBeNull();
             result[2].BlogPostId.ShouldBe(3);
-            result[2].TagId.ShouldBe(13);
-            result[2].BlogPost.ShouldNotBeNull();
-            result[2].BlogPost.HasValue.ShouldBeTrue();
-            result[2].BlogPost.Value.Id.ShouldBe(3);
+            result[2].BlogTagId.ShouldBe(13);
+            result[2].Post.ShouldNotBeNull();
+            result[2].Post.HasValue.ShouldBeTrue();
+            result[2].Post.Value.Id.ShouldBe(3);
             result[2].Tag.ShouldNotBeNull();
             result[2].Tag.HasValue.ShouldBeTrue();
             result[2].Tag.Value.Id.ShouldBe(13);
@@ -99,41 +100,41 @@ namespace Jerrycurl.Data.Test
         public void Test_Insert_NullableKeys()
         {
             var store = DatabaseHelper.Default.Store;
-            var schema = store.GetSchema(typeof(IList<Blog>));
+            var schema = store.GetSchema(typeof(IList<KeysModel>));
             var buffer1 = new QueryBuffer(schema, QueryType.List);
             var buffer2 = new QueryBuffer(schema, QueryType.List);
 
             // primary
-            buffer1.Insert(1, ("", "Item.Id4"));
-            buffer1.Insert((int?)null, ("", "Item.Id4"));
+            buffer1.Insert(1, ("", "Item.Id1"));
+            buffer1.Insert((int?)null, ("", "Item.Id1"));
 
-            buffer1.Insert(1, ("", "Item.Posts.Item.BlogId4"));
-            buffer1.Insert((int?)null, ("", "Item.Posts.Item.BlogId4"));
+            buffer1.Insert(1, ("", "Item.Many1.Item.KeyId"));
+            buffer1.Insert((int?)null, ("", "Item.Many1.Item.KeyId"));
 
             // non-primary
-            buffer2.Insert(2, ("", "Item.Id5"));
-            buffer2.Insert((int?)null, ("", "Item.Id5"));
+            buffer2.Insert(2, ("", "Item.Id2"));
+            buffer2.Insert((int?)null, ("", "Item.Id2"));
 
-            buffer2.Insert(2, ("", "Item.Posts.Item.BlogId5"));
-            buffer2.Insert((int?)null, ("", "Item.Posts.Item.BlogId5"));
+            buffer2.Insert(2, ("", "Item.Many2.Item.KeyId"));
+            buffer2.Insert((int?)null, ("", "Item.Many2.Item.KeyId"));
 
-            var result1 = buffer1.Commit<IList<Blog>>();
-            var result2 = buffer2.Commit<IList<Blog>>();
+            var result1 = buffer1.Commit<IList<KeysModel>>();
+            var result2 = buffer2.Commit<IList<KeysModel>>();
 
             result1.Count.ShouldBe(1);
-            result1[0].Id4.ShouldBe(1);
-            result1[0].Posts.ShouldNotBeNull();
-            result1[0].Posts.Count.ShouldBe(1);
-            result1[0].Posts[0].BlogId4.ShouldBe(1);
+            result1[0].Id1.ShouldBe(1);
+            result1[0].Many1.ShouldNotBeNull();
+            result1[0].Many1.Count.ShouldBe(1);
+            result1[0].Many1[0].KeyId.ShouldBe(1);
 
             result2.Count.ShouldBe(2);
-            result2[0].Id5.ShouldBe(2);
-            result2[0].Posts.ShouldNotBeNull();
-            result2[0].Posts.Count.ShouldBe(1);
-            result2[0].Posts[0].BlogId5.ShouldBe(2);
-            result2[1].Id5.ShouldBeNull();
-            result2[1].Posts.ShouldNotBeNull();
-            result2[1].Posts.Count.ShouldBe(0);
+            result2[0].Id2.ShouldBe(2);
+            result2[0].Many2.ShouldNotBeNull();
+            result2[0].Many2.Count.ShouldBe(1);
+            result2[0].Many2[0].KeyId.ShouldBe(2);
+            result2[1].Id2.ShouldBeNull();
+            result2[1].Many2.ShouldNotBeNull();
+            result2[1].Many2.Count.ShouldBe(0);
         }
 
         public void Test_Read_NullableSet()
@@ -298,51 +299,51 @@ namespace Jerrycurl.Data.Test
             var schema2 = store.GetSchema(typeof(BlogDatabaseModel));
             var data = new BlogDatabaseModel()
             {
-                Categories = new List<Jerrycurl.Test.Model.Database.BlogCategory>()
+                Categories = new List<BlogCategory>()
                 {
-                    new Jerrycurl.Test.Model.Database.BlogCategory()
+                    new BlogCategory()
                     {
                         Id = 1,
                         Name = "Plants",
                     },
-                    new Jerrycurl.Test.Model.Database.BlogCategory()
+                    new BlogCategory()
                     {
                         Id = 2,
                         Name = "Birds",
                     }
                 },
-                Blogs = new List<Jerrycurl.Test.Model.Database.Blog>()
+                Blogs = new List<Blog>()
                 {
-                    new Jerrycurl.Test.Model.Database.Blog()
+                    new Blog()
                     {
                         Id = 1,
                         Title = "Blog #1",
                         CategoryId = 2,
                     },
-                    new Jerrycurl.Test.Model.Database.Blog()
+                    new Blog()
                     {
                         Id = 2,
                         Title = "Blog #2",
                         CategoryId = 2,
                     },
-                    new Jerrycurl.Test.Model.Database.Blog()
+                    new Blog()
                     {
                         Id = 3,
                         Title = "Blog #3",
                         CategoryId = 1,
                     }
                 },
-                Authors = new List<Jerrycurl.Test.Model.Database.BlogAuthor>()
+                Authors = new List<BlogAuthor>()
                 {
-                    new Jerrycurl.Test.Model.Database.BlogAuthor()
+                    new BlogAuthor()
                     {
                         BlogId = 2,
                         Name = "Blogger #2",
                     },
                 },
-                Posts = new List<Jerrycurl.Test.Model.Database.BlogPost>()
+                Posts = new List<BlogPost>()
                 {
-                    new Jerrycurl.Test.Model.Database.BlogPost()
+                    new BlogPost()
                     {
                         Id = 1,
                         BlogId = 1,
@@ -350,7 +351,7 @@ namespace Jerrycurl.Data.Test
                         Headline = "Blog post #1.1",
                         Content = "So...",
                     },
-                    new Jerrycurl.Test.Model.Database.BlogPost()
+                    new BlogPost()
                     {
                         Id = 2,
                         BlogId = 1,
@@ -358,7 +359,7 @@ namespace Jerrycurl.Data.Test
                         Headline = "Blog post #1.2",
                         Content = "...and then"
                     },
-                    new Jerrycurl.Test.Model.Database.BlogPost()
+                    new BlogPost()
                     {
                         Id = 3,
                         BlogId = 3,
@@ -416,17 +417,17 @@ namespace Jerrycurl.Data.Test
             var result1 = buffer1.Commit<List<BlogDatabaseView>>();
             var result2 = buffer2.Commit<BlogDatabaseModel>();
 
-            result1.Cast<Jerrycurl.Test.Model.Database.Blog>().OrderBy(b => b.Id).ToList().ShouldBeSameAsJson(data.Blogs);
+            result1.Cast<Blog>().OrderBy(b => b.Id).ToList().ShouldBeSameAsJson(data.Blogs);
             result1.Select(b => b.Author.ValueOrDefault).NotNull().Distinct().OrderBy(p => p.BlogId).ToList().ShouldBeSameAsJson(data.Authors);
             result1.Select(b => b.Category.ValueOrDefault).NotNull().Distinct().OrderBy(p => p.Id).ToList().ShouldBeSameAsJson(data.Categories);
-            result1.SelectMany(b => b.Posts).Cast<Jerrycurl.Test.Model.Database.BlogPost>().OrderBy(p => p.Id).ToList().ShouldBeSameAsJson(data.Posts);
+            result1.SelectMany(b => b.Posts).Cast<BlogPost>().OrderBy(p => p.Id).ToList().ShouldBeSameAsJson(data.Posts);
             result2.ShouldBeSameAsJson(data);
         }
 
         public void Test_Insert_DualRecursiveTree()
         {
             var store = DatabaseHelper.Default.Store;
-            var schema = store.GetSchema(typeof(IList<BlogCategory>));
+            var schema = store.GetSchema(typeof(IList<BlogCategoryView>));
             var buffer = new QueryBuffer(schema, QueryType.List);
 
             // BlogCategory(Id, ParentId)
@@ -460,7 +461,7 @@ namespace Jerrycurl.Data.Test
                 ("Item.Item2", "Item.Children.Item.ParentId")
             );
 
-            var result = buffer.Commit<IList<BlogCategory>>();
+            var result = buffer.Commit<IList<BlogCategoryView>>();
 
             result.Count.ShouldBe(2);
             result[0].Id.ShouldBe(5);
@@ -522,15 +523,15 @@ namespace Jerrycurl.Data.Test
         public void Test_Aggregate_NonPrimaryKey()
         {
             var store = DatabaseHelper.Default.Store;
-            var schema = store.GetSchema(typeof(Blog));
+            var schema = store.GetSchema(typeof(SecondaryModel));
             var buffer = new QueryBuffer(schema, QueryType.Aggregate);
 
-            buffer.Insert<object>(null, ("", "Id2"));
+            buffer.Insert<object>(null, ("", "Id"));
 
-            var result = buffer.Commit<Blog>();
+            var result = buffer.Commit<SecondaryModel>();
 
             result.ShouldNotBeNull();
-            result.Id2.ShouldBe(0);
+            result.Id.ShouldBe(0);
         }
 
         public void Test_Insert_One()
@@ -558,56 +559,6 @@ namespace Jerrycurl.Data.Test
             result.Title.ShouldBe("Hello Universe!");
         }
 
-        public void Test_Insert_OneToMany_NonPrimary()
-        {
-            var store = DatabaseHelper.Default.Store;
-
-            var data1 = new (int?, string)[]
-            {
-                ( 1, "Blog 1" ),
-                ( null, "Blog 2" ),
-            };
-            var data2 = new (int, int, string)[]
-            {
-                ( 1, 1, "Post 1.1" ),
-                ( 2, 1, "Post 1.2" ),
-                ( 3, 2, "Post 2.1" ),
-            };
-
-            var buffer = new QueryBuffer(store.Describe<IList<Blog>>(), QueryType.List);
-
-            buffer.Insert(data1,
-                ("Item.Item1", "Item.Id2"),
-                ("Item.Item2", "Item.Title")
-            );
-
-            buffer.Insert(data2,
-                ("Item.Item1", "Item.Posts.Item.Id"),
-                ("Item.Item2", "Item.Posts.Item.BlogId2"),
-                ("Item.Item3", "Item.Posts.Item.Headline")
-            );
-
-            var result = buffer.Commit<IList<Blog>>();
-
-            result.ShouldNotBeNull();
-            result.Count.ShouldBe(2);
-
-            result[0].Id2.ShouldBe(1);
-            result[0].Title.ShouldBe("Blog 1");
-
-            result[0].Posts.ShouldNotBeNull();
-            result[0].Posts.Count.ShouldBe(2);
-            result[0].Posts[0].BlogId2.ShouldBe(result[0].Id2);
-            result[0].Posts[0].Headline.ShouldBe("Post 1.1");
-            result[0].Posts[1].BlogId2.ShouldBe(result[0].Id2);
-            result[0].Posts[1].Headline.ShouldBe("Post 1.2");
-
-            result[1].Id2.ShouldBe(0);
-            result[1].Title.ShouldBe("Blog 2");
-
-            result[1].Posts.ShouldNotBeNull();
-            result[1].Posts.Count.ShouldBe(0);
-        }
 
         public void Test_Insert_NonMatching()
         {
@@ -648,8 +599,8 @@ namespace Jerrycurl.Data.Test
         public void Test_Insert_EmptySet()
         {
             var store = DatabaseHelper.Default.Store;
-            var schema1 = store.GetSchema(typeof(Blog));
-            var schema2 = store.GetSchema(typeof(List<Blog>));
+            var schema1 = store.GetSchema(typeof(SecondaryModel));
+            var schema2 = store.GetSchema(typeof(List<SecondaryModel>));
             var buffer1 = new QueryBuffer(schema1, QueryType.List);
             var buffer2 = new QueryBuffer(schema2, QueryType.List);
             var buffer3 = new QueryBuffer(schema1, QueryType.Aggregate);
@@ -658,15 +609,15 @@ namespace Jerrycurl.Data.Test
             var data = (50, new List<int>());
             var empty = store.From(data).Select("Item1", "Item2.Item");
 
-            buffer1.Insert(empty, "Id2", "Foo");
-            buffer2.Insert(empty, "Item.Id2", "Foo");
-            buffer3.Insert(empty, "Id2", "Foo");
-            buffer4.Insert(empty, "Item.Id2", "Foo");
+            buffer1.Insert(empty, "Id", "Foo");
+            buffer2.Insert(empty, "Item.Id", "Foo");
+            buffer3.Insert(empty, "Id", "Foo");
+            buffer4.Insert(empty, "Item.Id", "Foo");
 
-            var result1 = buffer1.Commit<Blog>();
-            var result2 = buffer2.Commit<List<Blog>>();
-            var result3 = buffer3.Commit<Blog>();
-            var result4 = buffer4.Commit<List<Blog>>();
+            var result1 = buffer1.Commit<SecondaryModel>();
+            var result2 = buffer2.Commit<List<SecondaryModel>>();
+            var result3 = buffer3.Commit<SecondaryModel>();
+            var result4 = buffer4.Commit<List<SecondaryModel>>();
 
             result1.ShouldBeNull();
 
@@ -674,12 +625,12 @@ namespace Jerrycurl.Data.Test
             result2.Count.ShouldBe(0);
 
             result3.ShouldNotBeNull();
-            result3.Id2.ShouldBe(0);
+            result3.Id.ShouldBe(0);
 
             result4.ShouldNotBeNull();
             result4.Count.ShouldBe(1);
             result4[0].ShouldNotBeNull();
-            result4[0].Id2.ShouldBe(0);
+            result4[0].Id.ShouldBe(0);
         }
 
 
@@ -703,7 +654,7 @@ namespace Jerrycurl.Data.Test
         public void Test_Insert_Invalid_Constructor()
         {
             var store = DatabaseHelper.Default.Store;
-            var schema = store.GetSchema(typeof(NoConstruct));
+            var schema = store.GetSchema(typeof(NoConstructModel));
             var buffer = new QueryBuffer(schema, QueryType.List);
 
             Should.Throw<BindingException>(() =>
@@ -715,19 +666,19 @@ namespace Jerrycurl.Data.Test
         public void Test_Insert_Invalid_ParentKey()
         {
             var store = DatabaseHelper.Default.Store;
-            var schema = store.GetSchema(typeof(Blog));
+            var schema = store.GetSchema(typeof(InvalidModel));
             var buffer = new QueryBuffer(schema, QueryType.List);
 
             Should.NotThrow(() =>
             {
-                buffer.Insert(10, ("", "Id3"));
+                buffer.Insert(10, ("", "InvalidId"));
             });
 
-            var result = buffer.Commit<Blog>();
+            var result = buffer.Commit<InvalidModel>();
 
             result.ShouldNotBeNull();
-            result.Id3.ShouldBe(10);
-            result.Posts.ShouldBeNull();
+            result.InvalidId.ShouldBe(10);
+            result.Many.ShouldBeNull();
         }
 
         public void Test_Insert_OneToMany_Natural()
@@ -890,7 +841,7 @@ namespace Jerrycurl.Data.Test
         public void Test_Insert_Missing_ChildKey()
         {
             var store = DatabaseHelper.Default.Store;
-            var schema = store.GetSchema(typeof(Blog));
+            var schema = store.GetSchema(typeof(BlogView));
             var buffer = new QueryBuffer(schema, QueryType.List);
 
             Should.Throw<BindingException>(() =>
@@ -902,12 +853,12 @@ namespace Jerrycurl.Data.Test
         public void Test_Insert_Invalid_ChildKey()
         {
             var store = DatabaseHelper.Default.Store;
-            var schema = store.GetSchema(typeof(Blog));
+            var schema = store.GetSchema(typeof(InvalidModel));
             var buffer = new QueryBuffer(schema, QueryType.List);
 
             Should.Throw<BindingException>(() =>
             {
-                buffer.Insert(10, ("", "Posts.Item.BlogId3"));
+                buffer.Insert(10, ("", "Many.Item.RefId"));
             });
         }
 
@@ -982,6 +933,58 @@ namespace Jerrycurl.Data.Test
             result[0].Id.ShouldBe(60);
         }
 
+
+        public void Test_Insert_OneToMany_NonPrimary()
+        {
+            var store = DatabaseHelper.Default.Store;
+
+            var data1 = new (int?, string)[]
+            {
+                ( 1, "Blog 1" ),
+                ( null, "Blog 2" ),
+            };
+            var data2 = new (int, int, string)[]
+            {
+                ( 1, 1, "Post 1.1" ),
+                ( 2, 1, "Post 1.2" ),
+                ( 3, 2, "Post 2.1" ),
+            };
+
+            var buffer = new QueryBuffer(store.Describe<IList<SecondaryModel>>(), QueryType.List);
+
+            buffer.Insert(data1,
+                ("Item.Item1", "Item.Id"),
+                ("Item.Item2", "Item.Title")
+            );
+
+            buffer.Insert(data2,
+                ("Item.Item1", "Item.Many.Item.Id"),
+                ("Item.Item2", "Item.Many.Item.RefId"),
+                ("Item.Item3", "Item.Many.Item.Headline")
+            );
+
+            var result = buffer.Commit<IList<SecondaryModel>>();
+
+            result.ShouldNotBeNull();
+            result.Count.ShouldBe(2);
+
+            result[0].Id.ShouldBe(1);
+            result[0].Title.ShouldBe("Blog 1");
+
+            result[0].Many.ShouldNotBeNull();
+            result[0].Many.Count.ShouldBe(2);
+            result[0].Many[0].RefId.ShouldBe(result[0].Id);
+            result[0].Many[0].Headline.ShouldBe("Post 1.1");
+            result[0].Many[1].RefId.ShouldBe(result[0].Id);
+            result[0].Many[1].Headline.ShouldBe("Post 1.2");
+
+            result[1].Id.ShouldBe(0);
+            result[1].Title.ShouldBe("Blog 2");
+
+            result[1].Many.ShouldNotBeNull();
+            result[1].Many.Count.ShouldBe(0);
+        }
+
         public async Task Test_Insert_OneToMany_NonPrimary_Async()
         {
             var store = DatabaseHelper.Default.Store;
@@ -998,39 +1001,39 @@ namespace Jerrycurl.Data.Test
                 ( 3, 2, "Post 2.1" ),
             };
 
-            var buffer = new QueryBuffer(store.Describe<IList<Blog>>(), QueryType.List);
+            var buffer = new QueryBuffer(store.Describe<IList<SecondaryModel>>(), QueryType.List);
 
             await buffer.InsertAsync(data1,
-                ("Item.Item1", "Item.Id2"),
+                ("Item.Item1", "Item.Id"),
                 ("Item.Item2", "Item.Title")
             );
 
             await buffer.InsertAsync(data2,
-                ("Item.Item1", "Item.Posts.Item.Id"),
-                ("Item.Item2", "Item.Posts.Item.BlogId2"),
-                ("Item.Item3", "Item.Posts.Item.Headline")
+                ("Item.Item1", "Item.Many.Item.Id"),
+                ("Item.Item2", "Item.Many.Item.RefId"),
+                ("Item.Item3", "Item.Many.Item.Headline")
             );
 
-            var result = buffer.Commit<IList<Blog>>();
+            var result = buffer.Commit<IList<SecondaryModel>>();
 
             result.ShouldNotBeNull();
             result.Count.ShouldBe(2);
 
-            result[0].Id2.ShouldBe(1);
+            result[0].Id.ShouldBe(1);
             result[0].Title.ShouldBe("Blog 1");
 
-            result[0].Posts.ShouldNotBeNull();
-            result[0].Posts.Count.ShouldBe(2);
-            result[0].Posts[0].BlogId2.ShouldBe(result[0].Id2);
-            result[0].Posts[0].Headline.ShouldBe("Post 1.1");
-            result[0].Posts[1].BlogId2.ShouldBe(result[0].Id2);
-            result[0].Posts[1].Headline.ShouldBe("Post 1.2");
+            result[0].Many.ShouldNotBeNull();
+            result[0].Many.Count.ShouldBe(2);
+            result[0].Many[0].RefId.ShouldBe(result[0].Id);
+            result[0].Many[0].Headline.ShouldBe("Post 1.1");
+            result[0].Many[1].RefId.ShouldBe(result[0].Id);
+            result[0].Many[1].Headline.ShouldBe("Post 1.2");
 
-            result[1].Id2.ShouldBe(0);
+            result[1].Id.ShouldBe(0);
             result[1].Title.ShouldBe("Blog 2");
 
-            result[1].Posts.ShouldNotBeNull();
-            result[1].Posts.Count.ShouldBe(0);
+            result[1].Many.ShouldNotBeNull();
+            result[1].Many.Count.ShouldBe(0);
         }
 
         public async Task Test_Insert_OneToMany_Async()
@@ -1055,7 +1058,7 @@ namespace Jerrycurl.Data.Test
                 ( 4, 3, "Comment 2.1.1" ),
             };
 
-            var buffer = new QueryBuffer(store.Describe<IList<Blog>>(), QueryType.List);
+            var buffer = new QueryBuffer(store.Describe<IList<BlogView>>(), QueryType.List);
 
             await buffer.InsertAsync(data1,
                 ("Item.Item1", "Item.Id"),
@@ -1074,7 +1077,7 @@ namespace Jerrycurl.Data.Test
                 ("Item.Item3", "Item.Posts.Item.Comments.Item.Comment")
             );
 
-            var result = buffer.Commit<IList<Blog>>();
+            var result = buffer.Commit<IList<BlogView>>();
 
             result.Count.ShouldBe(2);
 
@@ -1128,7 +1131,7 @@ namespace Jerrycurl.Data.Test
                 ( 4, 3, "Comment 2.1.1" ),
             };
 
-            var buffer = new QueryBuffer(store.Describe<IList<Blog>>(), QueryType.List);
+            var buffer = new QueryBuffer(store.Describe<IList<BlogView>>(), QueryType.List);
 
             buffer.Insert(data1,
                 ("Item.Item1", "Item.Id"),
@@ -1147,7 +1150,7 @@ namespace Jerrycurl.Data.Test
                 ("Item.Item3", "Item.Posts.Item.Comments.Item.Comment")
             );
 
-            var result = buffer.Commit<IList<Blog>>();
+            var result = buffer.Commit<IList<BlogView>>();
 
             result.Count.ShouldBe(2);
 
@@ -1188,19 +1191,19 @@ namespace Jerrycurl.Data.Test
                 ( 10,   "Blog 2" )
             };
 
-            var buffer = new QueryBuffer(store.Describe<IList<Blog>>(), QueryType.List);
+            var buffer = new QueryBuffer(store.Describe<IList<SecondaryModel>>(), QueryType.List);
 
             buffer.Insert(data,
-                ("Item.Item1", "Item.Id2"),
+                ("Item.Item1", "Item.Id"),
                 ("Item.Item2", "Item.Title")
             );
 
-            var result = buffer.Commit<IList<Blog>>();
+            var result = buffer.Commit<IList<SecondaryModel>>();
 
             result.Count.ShouldBe(2);
-            result[0].Id2.ShouldBe(0);
+            result[0].Id.ShouldBe(0);
             result[0].Title.ShouldBe("Blog 1");
-            result[1].Id2.ShouldBe(10);
+            result[1].Id.ShouldBe(10);
             result[1].Title.ShouldBe("Blog 2");
         }
 
@@ -1213,19 +1216,19 @@ namespace Jerrycurl.Data.Test
                 ( 10,   "Blog 2" )
             };
 
-            var buffer = new QueryBuffer(store.Describe<IList<Blog>>(), QueryType.List);
+            var buffer = new QueryBuffer(store.Describe<IList<SecondaryModel>>(), QueryType.List);
 
             await buffer.InsertAsync(data,
-                ("Item.Item1", "Item.Id2"),
+                ("Item.Item1", "Item.Id"),
                 ("Item.Item2", "Item.Title")
             );
 
-            var result = buffer.Commit<IList<Blog>>();
+            var result = buffer.Commit<IList<SecondaryModel>>();
 
             result.Count.ShouldBe(2);
-            result[0].Id2.ShouldBe(0);
+            result[0].Id.ShouldBe(0);
             result[0].Title.ShouldBe("Blog 1");
-            result[1].Id2.ShouldBe(10);
+            result[1].Id.ShouldBe(10);
             result[1].Title.ShouldBe("Blog 2");
         }
 
@@ -1323,7 +1326,7 @@ namespace Jerrycurl.Data.Test
         public void Test_Insert_Invalid_Setter()
         {
             var store = DatabaseHelper.Default.Store;
-            var schema = store.GetSchema(typeof(Blog));
+            var schema = store.GetSchema(typeof(InvalidModel));
             var buffer = new QueryBuffer(schema, QueryType.List);
 
             var exception = Should.Throw<NotSupportedException>(() =>

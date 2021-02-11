@@ -1,8 +1,9 @@
 ﻿using Jerrycurl.Data.Metadata.Annotations;
+using Jerrycurl.Test.Models.Database;
 
-namespace Jerrycurl.Data.Test.Model.Blogging
+namespace Jerrycurl.Data.Test.Models.Views
 {
-    internal class JsonBlog
+    internal class BlogJsonView
     {
         [Json]
         public Blog Blog { get; set; }

@@ -9,7 +9,6 @@ using Jerrycurl.Test;
 using Jerrycurl.Data.Sessions;
 using Jerrycurl.Relations.Language;
 using System.Data;
-using Jerrycurl.Data.Test.Model.Blogging;
 using Microsoft.Data.Sqlite;
 using Jerrycurl.Test.Profiling;
 using System;

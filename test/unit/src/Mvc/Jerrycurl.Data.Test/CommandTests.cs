@@ -9,7 +9,7 @@ using Jerrycurl.Test;
 using Jerrycurl.Data.Sessions;
 using Jerrycurl.Relations.Language;
 using System.Data;
-using Jerrycurl.Data.Test.Model.Blogging;
+using Jerrycurl.Test.Models.Database;
 
 namespace Jerrycurl.Data.Test
 {

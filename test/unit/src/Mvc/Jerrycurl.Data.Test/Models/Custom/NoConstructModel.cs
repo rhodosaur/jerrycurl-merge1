@@ -1,11 +1,11 @@
-﻿namespace Jerrycurl.Data.Test.Model.Custom
+﻿namespace Jerrycurl.Data.Test.Models.Custom
 {
-    public class NoConstruct
+    public class NoConstructModel
     {
         public int Int { get; set; }
         public string String { get; set; }
 
-        public NoConstruct(string s)
+        public NoConstructModel(string s)
         {
             this.String = s;
         }

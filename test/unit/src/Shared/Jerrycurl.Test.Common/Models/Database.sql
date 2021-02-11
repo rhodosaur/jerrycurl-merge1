@@ -46,6 +46,7 @@ CREATE TABLE "BlogPost"
 
 CREATE TABLE "BlogTag"
 (
+    "Id" int NOT NULL IDENTITY(1, 1),
     "Name" nvarchar(20),
     CONSTRAINT "PK_BlogTag" PRIMARY KEY ("Name")
 );
@@ -53,8 +54,8 @@ CREATE TABLE "BlogTag"
 CREATE TABLE "BlogTagMap"
 (
     "BlogPostId" int NOT NULL,
-    "TagName" nvarchar(20) NOT NULL,
-    CONSTRAINT "PK_BlogTagMap" PRIMARY KEY ("BlogPostId", "TagName"),
+    "BlogTagId" nvarchar(20) NOT NULL,
+    CONSTRAINT "PK_BlogTagMap" PRIMARY KEY ("BlogPostId", "BlogTagId"),
     CONSTRAINT "FK_BlogTagMap_BlogPost" FOREIGN KEY ("BlogPostId") REFERENCES "BlogPost"("Id"),
-    CONSTRAINT "FK_BlogTagMap_BlogTag" FOREIGN KEY ("TagName") REFERENCES "BlogTag"("Name")
+    CONSTRAINT "FK_BlogTagMap_BlogTag" FOREIGN KEY ("BlogTagId") REFERENCES "BlogTag"("Id")
 );

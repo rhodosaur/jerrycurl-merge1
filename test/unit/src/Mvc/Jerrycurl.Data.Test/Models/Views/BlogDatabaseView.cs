@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using Jerrycurl.Relations;
-using Jerrycurl.Test.Model.Database;
+using Jerrycurl.Test.Models.Database;
 
-namespace Jerrycurl.Data.Test.Model
+namespace Jerrycurl.Data.Test.Models.Views
 {
     public class BlogDatabaseView : Blog
     {

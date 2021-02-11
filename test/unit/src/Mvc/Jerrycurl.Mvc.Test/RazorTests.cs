@@ -5,7 +5,7 @@ using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Jerrycurl.Test.Model;
+using Jerrycurl.Test.Models;
 using Jerrycurl.Mvc.Sql;
 using Jerrycurl.Test.Project.Accessors;
 

@@ -10,7 +10,8 @@ using Jerrycurl.Relations.Language;
 using Microsoft.Data.Sqlite;
 using Jerrycurl.Extensions.Json.Metadata;
 using Jerrycurl.Data.Commands;
-using Jerrycurl.Data.Test.Model.Blogging;
+using Jerrycurl.Test.Models.Database;
+using Jerrycurl.Data.Test.Models.Views;
 
 namespace Jerrycurl.Data.Test
 {
@@ -23,8 +24,8 @@ namespace Jerrycurl.Data.Test
             store.Use(new JsonBindingContractResolver(new JsonSerializerOptions()));
 
             var json = "{ \"Id\": 12, \"Title\": \"Hello World!\" }";
-            var data1 = new JsonBlog();
-            var data2 = new JsonBlog();
+            var data1 = new BlogJsonView();
+            var data2 = new BlogJsonView();
             var target1 = store.From(data1).Lookup("Blog");
             var target2 = store.From(data2).Lookup("Blog");
             var buffer = new CommandBuffer(store);
@@ -59,14 +60,14 @@ namespace Jerrycurl.Data.Test
             store.Use(new JsonBindingContractResolver(options));
 
             var data = "{ \"Id\": 12, \"Title\": \"Hello World!\" }";
-            var schema = store.GetSchema(typeof(JsonBlog));
+            var schema = store.GetSchema(typeof(BlogJsonView));
             var buffer = new QueryBuffer(schema, QueryType.List);
 
             buffer.Insert(data,
                 ("", "Blog")
             );
 
-            var result = buffer.Commit<JsonBlog>();
+            var result = buffer.Commit<BlogJsonView>();
 
             result.ShouldNotBeNull();
             result.Blog.ShouldNotBeNull();
@@ -79,7 +80,7 @@ namespace Jerrycurl.Data.Test
             var store = DatabaseHelper.Default.Store;
             var data = "{ \"Id\": 12 }";
 
-            var schema = store.GetSchema(typeof(JsonBlog));
+            var schema = store.GetSchema(typeof(BlogJsonView));
             var buffer = new QueryBuffer(schema, QueryType.List);
 
             Should.Throw<BindingException>(() =>
@@ -101,7 +102,7 @@ namespace Jerrycurl.Data.Test
 
             store.Use(new JsonBindingContractResolver(options));
 
-            var data = new JsonBlog() { Blog = new Blog() { Id = 12 } };
+            var data = new BlogJsonView() { Blog = new Blog() { Id = 12 } };
             var model = store.From(data).Lookup("Blog");
             var parameter = new Parameter("P0", model);
             var sqlParameter = new SqliteParameter();

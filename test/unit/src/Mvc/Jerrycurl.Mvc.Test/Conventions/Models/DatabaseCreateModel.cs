@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Jerrycurl.Test.Model.Database;
+using Jerrycurl.Test.Models.Database;
 
 namespace Jerrycurl.Mvc.Test.Conventions.Models
 {

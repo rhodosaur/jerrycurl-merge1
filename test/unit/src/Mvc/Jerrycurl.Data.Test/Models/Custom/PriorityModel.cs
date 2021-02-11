@@ -3,7 +3,7 @@ using Jerrycurl.Data.Metadata.Annotations;
 using Jerrycurl.Data.Test.Models;
 using Jerrycurl.Relations;
 
-namespace Jerrycurl.Data.Test.Model.Custom
+namespace Jerrycurl.Data.Test.Models.Custom
 {
     public class PriorityModel
     {

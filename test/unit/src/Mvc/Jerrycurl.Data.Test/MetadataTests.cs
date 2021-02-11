@@ -3,8 +3,9 @@ using Jerrycurl.Test;
 using Jerrycurl.Relations.Language;
 using Jerrycurl.Data.Metadata;
 using System.Linq;
-using Jerrycurl.Data.Test.Model.Blogging;
 using System;
+using Jerrycurl.Data.Test.Models.Custom;
+using Jerrycurl.Test.Models.Database;
 
 namespace Jerrycurl.Data.Test
 {
@@ -13,47 +14,53 @@ namespace Jerrycurl.Data.Test
         public void Test_ReferenceMetadata_Keys()
         {
             var store = DatabaseHelper.Default.Store;
-            var schema = store.GetSchema<Blog>();
+            var schema1 = store.GetSchema<Blog>();
+            var schema2 = store.GetSchema<SecondaryModel>();
 
-            var blogKeys = schema.Require<IReferenceMetadata>().Keys;
-            var postKeys = schema.Require<IReferenceMetadata>("Posts.Item").Keys;
+            var parentKeys1 = schema1.Require<IReferenceMetadata>().Keys;
+            var childKeys1 = schema1.Require<IReferenceMetadata>("Posts.Item").Keys;
+            var parentKeys2 = schema2.Require<IReferenceMetadata>().Keys;
+            var childKeys2 = schema2.Require<IReferenceMetadata>("Many.Item").Keys;
 
-            var blogPk = blogKeys.First(k => k.Name == "PK_Blog");
-            var blogNpk = blogKeys.First(k => k.Name == "PK_Blog_2");
+            var parentPk1 = parentKeys1.First(k => k.Name == "PK_Blog");
+            var parentCk2 = parentKeys2.First(k => k.Name == "PK_Secondary");
 
-            var postFk1 = postKeys.First(k => k.Other == "PK_Blog");
-            var postFk2 = postKeys.First(k => k.Other == "PK_Blog_2");
+            var childFk1 = childKeys1.First(k => k.Other == "PK_Blog");
+            var childFk2 = childKeys2.First(k => k.Other == "PK_Secondary");
 
-            blogPk.Flags.ShouldBe(ReferenceKeyFlags.Primary);
-            blogNpk.Flags.ShouldBe(ReferenceKeyFlags.Candidate);
+            parentPk1.Flags.ShouldBe(ReferenceKeyFlags.Primary);
+            parentCk2.Flags.ShouldBe(ReferenceKeyFlags.Candidate);
 
-            postFk1.Flags.ShouldBe(ReferenceKeyFlags.Foreign);
-            postFk2.Flags.ShouldBe(ReferenceKeyFlags.Foreign);
+            childFk1.Flags.ShouldBe(ReferenceKeyFlags.Foreign);
+            childFk2.Flags.ShouldBe(ReferenceKeyFlags.Foreign);
         }
 
         public void Test_ReferenceMetadata_References()
         {
             var store = DatabaseHelper.Default.Store;
-            var schema = store.GetSchema<Blog>();
+            var schema1 = store.GetSchema<Blog>();
+            var schema2 = store.GetSchema<SecondaryModel>();
 
-            var blogRefs = schema.Require<IReferenceMetadata>().References;
-            var postRefs = schema.Require<IReferenceMetadata>("Posts.Item").References;
+            var parentRefs1 = schema1.Require<IReferenceMetadata>().References;
+            var childRefs1 = schema1.Require<IReferenceMetadata>("Posts.Item").References;
+            var parentRefs2 = schema2.Require<IReferenceMetadata>().References;
+            var childRefs2 = schema2.Require<IReferenceMetadata>("Many.Item").References;
 
-            var blogPr = blogRefs.First(r => r.Key.Name == "PK_Blog");
-            var blogNpr = blogRefs.First(r => r.Key.Name == "PK_Blog_2");
+            var parentPr1 = parentRefs1.First(r => r.Key.Name == "PK_Blog");
+            var parentCr2 = parentRefs2.First(r => r.Key.Name == "PK_Secondary");
 
-            var postsPr = postRefs.First(r => r.Key.Other == "PK_Blog");
-            var postsNpr = postRefs.First(r => r.Key.Other == "PK_Blog_2");
+            var childFr1 = childRefs1.First(r => r.Key.Other == "PK_Blog");
+            var childFr2 = childRefs2.First(r => r.Key.Other == "PK_Secondary");
 
-            blogPr.HasFlag(ReferenceFlags.Primary).ShouldBeTrue();
-            blogNpr.HasFlag(ReferenceFlags.Candidate).ShouldBeTrue();
-            blogNpr.HasFlag(ReferenceFlags.Primary).ShouldBeFalse();
+            parentPr1.HasFlag(ReferenceFlags.Primary).ShouldBeTrue();
+            parentCr2.HasFlag(ReferenceFlags.Candidate).ShouldBeTrue();
+            parentCr2.HasFlag(ReferenceFlags.Primary).ShouldBeFalse();
 
-            postsPr.HasFlag(ReferenceFlags.Foreign).ShouldBeTrue();
-            postsNpr.HasFlag(ReferenceFlags.Foreign).ShouldBeTrue();
+            childFr1.HasFlag(ReferenceFlags.Foreign).ShouldBeTrue();
+            childFr2.HasFlag(ReferenceFlags.Foreign).ShouldBeTrue();
 
-            blogPr.Other.ShouldBe(postsPr);
-            blogNpr.Other.ShouldBe(postsNpr);
+            parentPr1.Other.ShouldBe(childFr1);
+            parentCr2.Other.ShouldBe(childFr2);
         }
     }
 }
