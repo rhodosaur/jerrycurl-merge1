@@ -1,7 +1,7 @@
 ﻿using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Relations.Test.Models;
-using Jerrycurl.Relations.V11;
-using Jerrycurl.Relations.V11.Language;
+using Jerrycurl.Relations.Language;
+using Jerrycurl.Relations;
 using Jerrycurl.Test;
 using Shouldly;
 using System.Collections.Generic;

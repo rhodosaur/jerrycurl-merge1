@@ -11,14 +11,14 @@ namespace Jerrycurl.Relations.Test
         public void Test_Fields_HaveCorrectTypes()
         {
             RootModel model = new RootModel() { Complex = new RootModel.SubModel() };
-            Relation rel = DatabaseHelper.Default.Relation(model, "", "Complex", "Complex.Complex", "Complex.Complex.Value");
+            IRelation2 rel = DatabaseHelper.Default.Relation(model, "", "Complex", "Complex.Complex", "Complex.Complex.Value");
 
-            ITuple tuple = rel.Row();
+            ITuple2 tuple = rel.Row();
 
-            tuple[0].Type.ShouldBe(FieldType.Model);
-            tuple[1].Type.ShouldBe(FieldType.Value);
-            tuple[2].Type.ShouldBe(FieldType.Value);
-            tuple[3].Type.ShouldBe(FieldType.Missing);
+            tuple[0].Type.ShouldBe(FieldType2.Model);
+            tuple[1].Type.ShouldBe(FieldType2.Value);
+            tuple[2].Type.ShouldBe(FieldType2.Value);
+            tuple[3].Type.ShouldBe(FieldType2.Missing);
         }
 
 
@@ -41,13 +41,13 @@ namespace Jerrycurl.Relations.Test
                 }
             };
 
-            Relation rel1_1 = DatabaseHelper.Default.Relation(model1, "ComplexList.Item.Value");
-            Relation rel1_2 = DatabaseHelper.Default.Relation(model1, "ComplexList.Item.Value");
-            Relation rel2_1 = DatabaseHelper.Default.Relation(model2, "ComplexList.Item.Value");
+            IRelation2 rel1_1 = DatabaseHelper.Default.Relation(model1, "ComplexList.Item.Value");
+            IRelation2 rel1_2 = DatabaseHelper.Default.Relation(model1, "ComplexList.Item.Value");
+            IRelation2 rel2_1 = DatabaseHelper.Default.Relation(model2, "ComplexList.Item.Value");
 
-            IField[] fields1_1 = rel1_1.Column().ToArray();
-            IField[] fields1_2 = rel1_2.Column().ToArray();
-            IField[] fields2_1 = rel2_1.Column().ToArray();
+            IField2[] fields1_1 = rel1_1.Column().ToArray();
+            IField2[] fields1_2 = rel1_2.Column().ToArray();
+            IField2[] fields2_1 = rel2_1.Column().ToArray();
 
             fields1_1.ShouldBe(fields1_2);
             fields1_1.ShouldNotBe(fields2_1);

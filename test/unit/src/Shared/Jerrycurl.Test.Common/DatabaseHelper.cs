@@ -3,15 +3,15 @@ using Jerrycurl.Data.Filters;
 using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Queries;
 using Jerrycurl.Relations;
+using Jerrycurl.Relations.Language;
 using Jerrycurl.Relations.Metadata;
-using Jerrycurl.Relations.V11;
-using Jerrycurl.Relations.V11.Language;
 using Jerrycurl.Test.Profiling;
 using Jerrycurl.Vendors.Sqlite.Metadata;
 using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace Jerrycurl.Test
@@ -93,23 +93,11 @@ namespace Jerrycurl.Test
         public IAsyncEnumerable<TItem> EnumerateAsync<TItem>(params Query[] queries) => this.Queries.EnumerateAsync<TItem>(queries);
         public IAsyncEnumerable<TItem> EnumerateAsync<TItem>(string sql) => this.Queries.EnumerateAsync<TItem>(new Query() { QueryText = sql });
 
-        public Relation Relation<T>(T model = default, params string[] heading)
-        {
-            ISchema schema = this.Schemas.GetSchema(typeof(T));
 
-            return new Relation(model, schema, heading.Select(n => new MetadataIdentity(schema, n)));
-        }
+        public IRelation2 Relation<T>(T model = default, params string[] header)
+            => this.Model(model).Select(header);
 
-        public IRelation2 Relation2<T>(T model = default, params string[] header)
-            => this.Schemas.From(model).Select(header);
-
-        public IField Field<T>(T value = default)
-        {
-            ISchema schema = this.Schemas.GetSchema(typeof(T));
-
-            Relation relation = new Relation(value, schema);
-
-            return relation;
-        }
+        public IField2 Model<T>(T model = default)
+            => this.Schemas.From(model);
     }
 }
