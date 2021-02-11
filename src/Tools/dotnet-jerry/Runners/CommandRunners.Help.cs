@@ -14,25 +14,22 @@ namespace Jerrycurl.Tools.DotNet.Cli.Runners
 
                 DotNetJerryHost.WriteLine("Usage: jerry [command] [options] [@file]");
                 DotNetJerryHost.WriteLine();
-                DotNetJerryHost.WriteLine("Execute a command with the specified options. Specify directly and from file input");
-                DotNetJerryHost.WriteLine("using @file[.cli] syntax.");
+                DotNetJerryHost.WriteLine("Execute a command with the specified options. Use @file[.cli] to expand arguments");
+                DotNetJerryHost.WriteLine("from an input file.");
                 DotNetJerryHost.WriteLine();
                 DotNetJerryHost.WriteLine("Commands:");
                 DotNetJerryHost.WriteLine("  scaffold                    Generate a C# object model from an existing database.");
                 DotNetJerryHost.WriteLine("  transpile                   Transpile a project of .cssql files into .cs files.");
                 DotNetJerryHost.WriteLine("  info                        Show information about a database connector.");
-                DotNetJerryHost.WriteLine("  args                        Show all arguments Useful for debugging @file inputs.");
+                DotNetJerryHost.WriteLine("  args                        Show all arguments. Useful for debugging @file inputs.");
                 DotNetJerryHost.WriteLine("  help [command]              Show help information about the commands above.");
                 DotNetJerryHost.WriteLine();
                 DotNetJerryHost.WriteLine("Examples:");
-                DotNetJerryHost.WriteLine("  Generate a C# model with arguments specified in a local 'db.cli' file:");
-                DotNetJerryHost.WriteLine("  > jerry scaffold @db");
+                DotNetJerryHost.WriteLine("  Generate a C# model with arguments in a local 'mydb.cli' file:");
+                DotNetJerryHost.WriteLine("  > jerry scaffold @mydb");
                 DotNetJerryHost.WriteLine();
-                DotNetJerryHost.WriteLine("  Transpile .cssql files from local directories 'Queries' and 'Commands':");
+                DotNetJerryHost.WriteLine("  Transpile .cssql files from directories 'Queries' and 'Commands':");
                 DotNetJerryHost.WriteLine("  > jerry transpile -d Queries -d Commands");
-                DotNetJerryHost.WriteLine();
-                DotNetJerryHost.WriteLine("  Show help for the 'scaffold' command:");
-                DotNetJerryHost.WriteLine("  > jerry help scaffold");
                 DotNetJerryHost.WriteLine();
             }
             else
@@ -72,14 +69,15 @@ namespace Jerrycurl.Tools.DotNet.Cli.Runners
             DotNetJerryHost.WriteLine("                                  'oracle', 'postgres' or 'mysql'.");
             DotNetJerryHost.WriteLine("  -c,  --connection <cs>      Connection string used to connect.");
             DotNetJerryHost.WriteLine("  -ns, --namespace <ns>       Namespace to place generated classes in.");
-            DotNetJerryHost.WriteLine("  -o,  --output <file>        File or directory to generate .cs files into.");
+            DotNetJerryHost.WriteLine("  -o,  --output <file>        File or directory to generate .cs files into. Defaults");
+            DotNetJerryHost.WriteLine("                                  to Database.cs.");
             DotNetJerryHost.WriteLine();
             DotNetJerryHost.WriteLine("Examples:");
-            DotNetJerryHost.WriteLine("  Generate model into 'Database.cs' with specified vendor, connection and namespace:");
-            DotNetJerryHost.WriteLine("  > jerry scaffold -v sqlserver -c \"DATABASE=moviedb\" -ns MovieDb.Database");
+            DotNetJerryHost.WriteLine("  Generate model for a local SQL Server database into 'Database.cs':");
+            DotNetJerryHost.WriteLine("  > jerry scaffold -v sqlserver -c \"DATABASE=blogdb\" -ns BlogDb.Data");
             DotNetJerryHost.WriteLine();
             DotNetJerryHost.WriteLine("  Generate model into the 'Database' directory using one file per table:");
-            DotNetJerryHost.WriteLine("  > jerry scaffold [...] -o .\\Database");
+            DotNetJerryHost.WriteLine("  > jerry scaffold [...] -o Database");
             DotNetJerryHost.WriteLine();
         }
 
@@ -99,14 +97,14 @@ namespace Jerrycurl.Tools.DotNet.Cli.Runners
             DotNetJerryHost.WriteLine("  -ns, --namespace       Root namespace for the project.");
             DotNetJerryHost.WriteLine("  -i,  --import          Add a namespace import.");
             DotNetJerryHost.WriteLine("  -o,  --output          Output directory for .cs files. Defaults to 'obj\\Jerrycurl'");
-            DotNetJerryHost.WriteLine("  --no-clean             Do not clean the output directory.");
+            DotNetJerryHost.WriteLine("  --no-clean             Do not clean the output directory before writing new files.");
             DotNetJerryHost.WriteLine();
             DotNetJerryHost.WriteLine("Examples:");
             DotNetJerryHost.WriteLine("  Transpile all .cssql files from the current directory with the specified root namespace:");
-            DotNetJerryHost.WriteLine("  > jerry transpile -d . -ns MovieDb.Data");
+            DotNetJerryHost.WriteLine("  > jerry transpile -d . -ns BlogDb.Data");
             DotNetJerryHost.WriteLine();
-            DotNetJerryHost.WriteLine("  Transpile .cssql files and import 'MovieDb.Database' namespace:");
-            DotNetJerryHost.WriteLine("  > jerry transpile -f Query1.cssql Query2.cssql -i MovieDb.Database");
+            DotNetJerryHost.WriteLine("  Transpile a few .cssql files and import 'BlogDb.Database' namespace:");
+            DotNetJerryHost.WriteLine("  > jerry transpile -f Query1.cssql Query2.cssql -i BlogDb.Database");
             DotNetJerryHost.WriteLine();
         }
 
@@ -119,8 +117,8 @@ namespace Jerrycurl.Tools.DotNet.Cli.Runners
             DotNetJerryHost.WriteLine("Show information about a specific database connector.");
             DotNetJerryHost.WriteLine();
             DotNetJerryHost.WriteLine("Options:");
-            DotNetJerryHost.WriteLine("  -v, --vendor <moniker>      Vendor used to connect. Can be 'sqlserver', 'sqlite',");
-            DotNetJerryHost.WriteLine("                                   'oracle', 'postgres' or 'mysql'.");
+            DotNetJerryHost.WriteLine("  -v,  --vendor <moniker>     Type of database to connect to: 'sqlserver', 'sqlite',");
+            DotNetJerryHost.WriteLine("                                  'oracle', 'postgres' or 'mysql'.");
             DotNetJerryHost.WriteLine();
             DotNetJerryHost.WriteLine("Examples:");
             DotNetJerryHost.WriteLine("  Show information about the Microsoft SQL Server connector:");
@@ -137,15 +135,15 @@ namespace Jerrycurl.Tools.DotNet.Cli.Runners
             DotNetJerryHost.WriteLine("Run SQL statements against a database.");
             DotNetJerryHost.WriteLine();
             DotNetJerryHost.WriteLine("Options:");
-            DotNetJerryHost.WriteLine("  -v, --vendor <moniker>      Vendor used to connect. Can be 'sqlserver', 'sqlite',");
-            DotNetJerryHost.WriteLine("                                   'oracle', 'postgres' or 'mysql'.");
+            DotNetJerryHost.WriteLine("  -v, --vendor <moniker>      Type of database to connect to: 'sqlserver', 'sqlite',");
+            DotNetJerryHost.WriteLine("                                  'oracle', 'postgres' or 'mysql'.");
             DotNetJerryHost.WriteLine("  -s, --sql <statements>      SQL string to execute on the server.");
             DotNetJerryHost.WriteLine("  -f, --file <file>           SQL file to execute. Expands lines from @-prefixed paths.");
             DotNetJerryHost.WriteLine("  --raw <file>                SQL file to execute. Does not expand lines.");
             DotNetJerryHost.WriteLine();
             DotNetJerryHost.WriteLine("Examples:");
-            DotNetJerryHost.WriteLine("  Delete all movies for a database specified in a local template file:");
-            DotNetJerryHost.WriteLine("  > jerry run @db --sql \"DELETE FROM [Movie]\"");
+            DotNetJerryHost.WriteLine("  Run a DELETE statement using config from a local 'mydb.cli' file:");
+            DotNetJerryHost.WriteLine("  > jerry run @db --sql \"DELETE FROM [BlogPost]\"");
             DotNetJerryHost.WriteLine();
         }
 
