@@ -74,7 +74,7 @@ namespace Jerrycurl.Relations.Metadata
                 return "";
             else if (this.Comparer.Equals(from, this.Model()))
                 return to;
-            else if (to.Length <= from.Length + 2 || !this.Comparer.Equals(from, to.Substring(0, from.Length)) || to[from.Length] != this.Dot)
+            else if (to.Length < from.Length + 2 || !this.Comparer.Equals(from, to.Substring(0, from.Length)) || to[from.Length] != this.Dot)
                 return null;
 
             return to.Remove(0, from.Length + 1);
