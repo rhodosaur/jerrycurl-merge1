@@ -102,8 +102,8 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             foreach (DataReader valueReader in primaryKey.Values)
             {
                 valueReader.CanBeDbNull = false;
-                valueReader.IsDbNull ??= Expression.Variable(typeof(bool), $"key_{index++}_isnull");
-                valueReader.Variable ??= Expression.Variable(valueReader.Metadata.Type, $"key_{index}");
+                //valueReader.IsDbNull ??= Expression.Variable(typeof(bool), $"key_{index++}_isnull");
+                //valueReader.Variable ??= Expression.Variable(valueReader.Metadata.Type, $"key_{index}");
             }
         }
 

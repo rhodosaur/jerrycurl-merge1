@@ -84,7 +84,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
             List<Expression> body = new List<Expression>();
 
-            foreach (BaseTarget target in result.Targets.Where(t => t.NewList != null || t is JoinTarget).DistinctBy(i => i.BufferIndex))
+            foreach (ListTarget target in result.Targets)
             {
                 Expression prepareBuffer = this.GetPrepareBufferExpression(target);
                 Expression prepareVariable = this.GetPrepareVariableExpression(target);
@@ -110,10 +110,10 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 variables.Add(writer.Variable);
             }
 
-            foreach (AggregateWriter writer in result.Aggregates)
+            foreach (AggregateWriter writer in result.Aggregates.Where(a => a.Attribute.ListIndex == null))
                 body.Add(this.GetWriterExpression(writer));
 
-            foreach (ListWriter writer in result.Lists)
+            foreach (TargetWriter writer in result.Writers)
                 body.Add(this.GetWriterExpression(writer));
 
             oneList.AddRange(body);
@@ -166,89 +166,65 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
         }
 
         #region " Prepare "
-        private Expression GetPrepareVariableExpression(BaseTarget target)
+        private Expression GetPrepareVariableExpression(ListTarget target)
         {
-            Expression bufferIndex = this.GetElasticIndexExpression(Arguments.Lists, target.BufferIndex);
+            Expression bufferIndex = this.GetElasticIndexExpression(Arguments.Lists, target.Index);
             Expression bufferValue = this.GetConvertOrExpression(bufferIndex, target.Variable.Type);
 
             return Expression.Assign(target.Variable, bufferValue);
         }
 
-        private Expression GetPrepareBufferExpression(BaseTarget target) => target switch
-        {
-            ListTarget t => this.GetPrepareBufferExpression(t),
-            JoinTarget t => this.GetPrepareBufferExpression(t),
-            _ => throw new InvalidOperationException(),
-        };
-
         private Expression GetPrepareBufferExpression(ListTarget target)
         {
-            if (target.NewList == null)
+            if (target.NewTarget == null)
                 throw new InvalidOperationException();
 
-            Expression bufferIndex = this.GetElasticIndexExpression(Arguments.Lists, target.BufferIndex);
-            Expression newList = this.GetReaderExpression(target.NewList);
+            Expression bufferIndex = this.GetElasticIndexExpression(Arguments.Lists, target.Index);
 
-            return this.GetGetOrSetDefaultExpression(bufferIndex, newList);
-        }
-        private Expression GetPrepareBufferExpression(JoinTarget target)
-        {
-            if (target.NewList == null)
-                throw new InvalidOperationException();
-
-            Expression bufferIndex = this.GetElasticIndexExpression(Arguments.Lists, target.BufferIndex);
-            Expression newDict = Expression.New(this.GetDictionaryType(target.Key.Variable.Type));
-
-            return this.GetGetOrSetDefaultExpression(bufferIndex, newDict);
+            return this.GetGetOrSetDefaultExpression(bufferIndex, target.NewTarget);
         }
         #endregion
 
         #region " Writers "
-
-        private Expression GetWriterExpression(ListWriter writer)
+        private Expression GetWriterExpression(TargetWriter writer)
         {
             Expression value = this.GetReaderExpression(writer.Source);
             Expression buffer = Arguments.Lists;
-            Expression bufferIndex = this.GetElasticIndexExpression(buffer, writer.Target.BufferIndex);
+            Expression bufferIndex = this.GetElasticIndexExpression(buffer, writer.List.Index);
             Expression bufferNotNull = this.GetIsNotNullExpression(buffer);
 
-            if (writer.Target is JoinTarget join2)
+            if (writer.Join != null)
             {
-                buffer = join2.JoinBuffer;
-                bufferIndex = this.GetElasticIndexExpression(buffer, join2.JoinIndex);
+                buffer = writer.Join.Buffer;
+                bufferIndex = this.GetElasticIndexExpression(buffer, writer.Join.Index);
                 bufferNotNull = this.GetIsNotNullExpression(buffer);
             }
 
             Expression body;
             List<KeyReader> primaryKeys = new List<KeyReader>() { writer.PrimaryKey };
-            List<JoinTarget> joins = new List<JoinTarget>();
 
-            if (writer.Target.NewList == null)
+            if (writer.List.NewList == null)
             {
                 Expression convertValue = this.GetConvertOrExpression(value, typeof(object));
 
                 body = Expression.Assign(bufferIndex, convertValue);
 
-                if (writer.Target is JoinTarget)
+                if (writer.Join != null)
                     body = Expression.IfThen(bufferNotNull, body);
             }
-            else if (writer.Target is ListTarget list)
-                body = Expression.Call(writer.Target.Variable, list.AddMethod, value);
-            else if (writer.Target is JoinTarget join)
+            else if (writer.Join == null)
+                body = Expression.Call(writer.List.Variable, writer.List.AddMethod, value);
+            else
             {
-                Expression newList = this.GetReaderExpression(join.NewList);
-                Expression listValue = this.GetGetOrSetDefaultExpression(bufferIndex, newList);
-                Expression addValue = Expression.Call(listValue, writer.Target.AddMethod, value);
+                Expression listValue = this.GetGetOrSetDefaultExpression(bufferIndex, writer.List.NewList);
+                Expression addValue = Expression.Call(listValue, writer.List.AddMethod, value);
 
                 body = Expression.IfThen(bufferNotNull, addValue);
 
-                primaryKeys.Add(join.Key);
-                joins.Add(join);
+                primaryKeys.Add(writer.Join.Key);
             }
-            else
-                throw new InvalidOperationException();
 
-            return this.GetKeyBlockExpression(primaryKeys, joins, body);
+            return this.GetKeyBlockExpression(primaryKeys, new[] { writer.Join }, body);
         }
         
         private Expression GetWriterExpression(HelperWriter writer)
@@ -261,10 +237,8 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
         private Expression GetWriterExpression(AggregateWriter writer, bool useTryCatch = true)
         {
-            Expression aggregateIndex = this.GetElasticIndexExpression(Arguments.Aggregates, writer.Attribute.AggregateIndex.Value);
-            Expression aggregateValue = this.GetReaderExpression(writer.Value);
-
-            Expression isDbNull = writer.Value.IsDbNull ?? this.GetIsDbNullExpression(writer.Value);
+            Expression bufferIndex = this.GetElasticIndexExpression(Arguments.Aggregates, writer.Attribute.AggregateIndex.Value);
+            Expression isDbNull = this.GetIsDbNullExpression(writer.Value);
             Expression value = writer.Value.Variable;
 
             if (value == null)
@@ -276,7 +250,9 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                     value = this.GetTryCatchExpression(writer.Value, value);
             }
 
-            return Expression.Condition(isDbNull, Expression.Constant(null), this.GetConvertOrExpression(value, typeof(object)));
+            Expression nullBlock = Expression.Condition(isDbNull, Expression.Constant(null), this.GetConvertOrExpression(value, typeof(object)));
+
+            return Expression.Assign(bufferIndex, nullBlock);
         }
 
         #endregion
@@ -305,11 +281,11 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
         {
             Expression newKey = this.GetNewCompositeKeyExpression(join.Key);
             Expression assignKey = Expression.Assign(join.Key.Variable, newKey);
-            Expression tryGet = this.GetDictionaryTryGetExpression(join.Variable, assignKey, join.JoinBuffer);
+            Expression tryGet = this.GetDictionaryTryGetExpression(join.List.Variable, assignKey, join.Buffer);
             Expression newBuffer = Expression.New(typeof(ElasticArray));
-            Expression bufferIndex = this.GetElasticIndexExpression(join.JoinBuffer, join.JoinIndex);
-            Expression assignBuffer = Expression.Assign(join.JoinBuffer, newBuffer);
-            Expression addArray = this.GetDictionaryAddExpression(join.Variable, join.Key.Variable, assignBuffer);
+            Expression bufferIndex = this.GetElasticIndexExpression(join.Buffer, join.Index);
+            Expression assignBuffer = Expression.Assign(join.Buffer, newBuffer);
+            Expression addArray = this.GetDictionaryAddExpression(join.List.Variable, join.Key.Variable, assignBuffer);
             Expression getOrAdd = Expression.IfThenElse(tryGet, Expression.Default(typeof(void)), addArray);
 
             IEnumerable<ParameterExpression> isNullVars = join.Key.Values.Where(v => v.CanBeDbNull).Select(v => v.IsDbNull).ToList();
@@ -317,7 +293,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             if (isNullVars.Any())
             {
                 Expression isNull = this.GetAndConditionExpression(isNullVars);
-                Expression setNull = Expression.Assign(join.JoinBuffer, Expression.Constant(null, typeof(ElasticArray)));
+                Expression setNull = Expression.Assign(join.Buffer, Expression.Constant(null, typeof(ElasticArray)));
 
                 getOrAdd = Expression.IfThenElse(isNull, setNull, getOrAdd);
             }
@@ -330,7 +306,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             List<Expression> expressions = new List<Expression>();
             List<ParameterExpression> variables = new List<ParameterExpression>();
 
-            foreach (DataReader reader in joins.SelectMany(k => k.Key.Values).Distinct())
+            foreach (DataReader reader in joins.NotNull().SelectMany(k => k.Key.Values).Distinct())
             {
                 expressions.Add(this.GetKeyInitializeValueExpression(reader));
 
@@ -340,14 +316,13 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 variables.Add(reader.Variable);
             }
 
-            foreach (JoinTarget join in joins)
+            foreach (JoinTarget join in joins.NotNull())
             {
                 expressions.Add(this.GetKeyInitializeBufferExpression(join));
-                variables.Add(join.JoinBuffer);
+                variables.Add(join.Buffer);
                 variables.Add(join.Key.Variable);
             }
                 
-
             expressions.Add(body);
 
             Expression block = this.GetBlockOrExpression(expressions, variables);
@@ -358,7 +333,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
                 Expression isNull = this.GetOrConditionExpression(values, this.GetIsDbNullExpression);
 
-                return Expression.IfThenElse(isNull, Expression.Default(typeof(void)), block);
+                return Expression.Condition(isNull, Expression.Default(block.Type), block);
             }
 
             return block;
@@ -380,10 +355,10 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
         private Expression GetReaderExpression(JoinReader reader)
         {
-            Expression bufferIndex = this.GetElasticIndexExpression(reader.Target.JoinBuffer, reader.Target.JoinIndex);
-            Expression bufferNotNull = this.GetIsNotNullExpression(reader.Target.JoinBuffer);
+            Expression bufferIndex = this.GetElasticIndexExpression(reader.Target.Buffer, reader.Target.Index);
+            Expression bufferNotNull = this.GetIsNotNullExpression(reader.Target.Buffer);
 
-            if (reader.Target.NewList == null)
+            if (reader.Target.List.NewList == null)
             {
                 Expression convertedValue = this.GetConvertOrExpression(bufferIndex, reader.Metadata.Type);
                 Expression ifThen = Expression.Condition(bufferNotNull, convertedValue, Expression.Default(convertedValue.Type));
@@ -392,8 +367,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             }
             else
             {
-                Expression newList = this.GetReaderExpression(reader.Target.NewList);
-                Expression list = this.GetGetOrSetDefaultExpression(bufferIndex, newList);
+                Expression list = this.GetGetOrSetDefaultExpression(bufferIndex, reader.Target.List.NewList);
 
                 return Expression.Condition(bufferNotNull, list, Expression.Default(list.Type));
             }
@@ -431,7 +405,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 return Expression.Bind(r.Metadata.Member, value);
             }));
 
-            return this.GetKeyBlockExpression(new[] { reader.PrimaryKey }, reader.Joins, memberInit);
+            return this.GetKeyBlockExpression(new[] { reader.PrimaryKey }, reader.Joins2, memberInit);
         }
 
         private Expression GetReaderExpression(DynamicReader reader)

@@ -10,8 +10,8 @@ namespace Jerrycurl.Data.Queries.Internal.IO.Writers
     internal class TargetWriter
     {
         public KeyReader PrimaryKey { get; set; }
-        public ListTarget2 List { get; set; }
-        public JoinTarget2 Join { get; set; }
+        public ListTarget List { get; set; }
+        public JoinTarget Join { get; set; }
         public BaseReader Source { get; set; }
     }
 }

@@ -47,7 +47,9 @@ namespace Jerrycurl.Data.Queries.Internal.Caching
             HashCode hashCode = new HashCode();
 
             hashCode.Add(this.Target);
-            hashCode.AddRange(this.Key);
+
+            if (this.Key != null)
+                hashCode.AddRange(this.Key);
 
             return hashCode.ToHashCode();
         }

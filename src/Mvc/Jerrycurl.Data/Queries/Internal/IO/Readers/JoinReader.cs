@@ -9,7 +9,6 @@ namespace Jerrycurl.Data.Queries.Internal.IO.Readers
     internal class JoinReader : BaseReader
     {
         public JoinTarget Target { get; set; }
-        public JoinTarget2 Target2 { get; set; }
 
         public JoinReader(IReference reference)
         {
