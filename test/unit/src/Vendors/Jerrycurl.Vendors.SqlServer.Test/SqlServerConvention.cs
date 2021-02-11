@@ -18,11 +18,10 @@ namespace Jerrycurl.Vendors.SqlServer.Test
         public override void Configure(DomainOptions options)
         {
             options.UseSqlServer(GetConnectionString());
-            options.UseProfiling();
             options.UseNewtonsoftJson();
         }
 
         public static string GetConnectionString() => GetEnvironmentVariable("JERRY_SQLSERVER_CONN");
-        public static ProfilingConnection GetConnection() => new ProfilingConnection(new SqlConnection(GetConnectionString()));
+        public static SqlConnection GetConnection() => new SqlConnection(GetConnectionString());
     }
 }

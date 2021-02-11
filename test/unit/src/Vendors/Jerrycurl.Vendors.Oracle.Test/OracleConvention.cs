@@ -14,11 +14,10 @@ namespace Jerrycurl.Vendors.Oracle.Test
         public override void Configure(DomainOptions options)
         {
             options.UseOracle(GetConnectionString());
-            options.UseProfiling();
             options.UseNewtonsoftJson();
         }
 
         public static string GetConnectionString() => GetEnvironmentVariable("JERRY_ORACLE_CONN");
-        public static ProfilingConnection GetConnection() => new ProfilingConnection(new OracleConnection(GetConnectionString()));
+        public static OracleConnection GetConnection() => new OracleConnection(GetConnectionString());
     }
 }

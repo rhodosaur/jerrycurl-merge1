@@ -11,10 +11,9 @@ namespace Jerrycurl.Vendors.Sqlite.Test
         public override void Configure(DomainOptions options)
         {
             options.UseSqlite(GetConnectionString());
-            options.UseProfiling();
         }
 
         public static string GetConnectionString() => "DATA SOURCE=jerry_test.db";
-        public static ProfilingConnection GetConnection() => new ProfilingConnection(new SqliteConnection(GetConnectionString()));
+        public static SqliteConnection GetConnection() => new SqliteConnection(GetConnectionString());
     }
 }
