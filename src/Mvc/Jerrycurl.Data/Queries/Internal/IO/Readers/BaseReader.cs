@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Queries.Internal.Parsing;
@@ -6,6 +7,7 @@ using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Data.Queries.Internal.IO.Readers
 {
+    [DebuggerDisplay("{GetType().Name,nq}: {Identity,nq}")]
     internal abstract class BaseReader
     {
         public BaseReader()
@@ -17,6 +19,12 @@ namespace Jerrycurl.Data.Queries.Internal.IO.Readers
         {
             this.Metadata = node.Metadata;
             this.Identity = node.Metadata.Identity;
+        }
+
+        public BaseReader(IBindingMetadata metadata)
+        {
+            this.Metadata = metadata;
+            this.Identity = metadata.Identity;
         }
 
         public MetadataIdentity Identity { get; set; }

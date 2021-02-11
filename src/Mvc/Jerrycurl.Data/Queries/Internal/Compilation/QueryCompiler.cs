@@ -188,7 +188,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 newList = writer.Metadata.Composition.Construct;
             else
             {
-                Type dictionaryType = this.GetDictionaryType(writer.JoinKey.CompositeType);
+                Type dictionaryType = this.GetDictionaryType(writer.JoinKey.KeyType);
 
                 newList = Expression.New(dictionaryType);
             }
@@ -208,7 +208,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 writeItem = Expression.Call(writer.List, writer.Metadata.Composition.Add, value);
             else if (writer.JoinKey == null)
             {
-                Expression listIndex = this.GetElasticIndexExpression(Arguments.Lists, writer.BufferIndex);
+                Expression listIndex = this.GetElasticIndexExpression(Arguments.Lists, writer.ListIndex.Value);
                 Expression listValue = Expression.Convert(value, typeof(object));
 
                 writeItem = Expression.Assign(listIndex, listValue);
@@ -216,7 +216,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             else
             {
                 Expression arrayIsNotNull = Expression.ReferenceNotEqual(writer.JoinKey.Array, Expression.Constant(null));
-                Expression arrayIndex = this.GetElasticIndexExpression(writer.JoinKey.Array, writer.BufferIndex);
+                Expression arrayIndex = this.GetElasticIndexExpression(writer.JoinKey.Array, writer.ListIndex.Value);
 
                 if (writer.List != null)
                 {
@@ -365,7 +365,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
         private Expression GetBinderExpression(JoinReader reader)
         {
             Expression arrayIsNull = Expression.ReferenceNotEqual(reader.JoinKey.Array, Expression.Constant(null));
-            Expression arrayIndex = this.GetElasticIndexExpression(reader.JoinKey.Array, reader.JoinIndex);
+            Expression arrayIndex = this.GetElasticIndexExpression(reader.JoinKey.Array, reader.JoinKey.BufferIndex);
 
             if (reader.List == null)
             {

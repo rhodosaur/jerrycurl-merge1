@@ -8,7 +8,5 @@ namespace Jerrycurl.Data.Queries.Internal.IO.Readers
     {
         public KeyReader JoinKey { get; set; }
         public NewReader List { get; set; }
-        public int BufferIndex { get; set; }
-        public int JoinIndex { get; set; }
     }
 }

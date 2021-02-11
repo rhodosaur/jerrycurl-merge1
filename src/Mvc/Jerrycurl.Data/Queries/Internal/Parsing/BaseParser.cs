@@ -68,7 +68,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             return null;
         }
 
-        protected BaseReader CreateReader(BaseResult result, Node node)
+        protected virtual BaseReader CreateReader(BaseResult result, Node node)
         {
             if (node == null)
                 return null;
@@ -94,25 +94,35 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             }
         }
 
-        protected virtual void CreateKeys(NewReader reader)
+        private void InitializePrimaryKey(KeyReader primaryKey)
         {
-            this.AddPrimaryKey(reader);
+            int index = 0;
+
+            foreach (DataReader valueReader in primaryKey.Values)
+            {
+                valueReader.CanBeDbNull = false;
+                valueReader.IsDbNull ??= Expression.Variable(typeof(bool), $"key_{index++}_isnull");
+                valueReader.Variable ??= Expression.Variable(valueReader.Metadata.Type, $"key_{index}");
+            }
         }
 
         private void AddPrimaryKey(NewReader binder)
         {
             IReferenceMetadata metadata = binder.Metadata.Identity.Lookup<IReferenceMetadata>();
             IEnumerable<IReferenceKey> primaryKeys = metadata?.Keys.Where(k => k.HasFlag(ReferenceKeyFlags.Primary)).ToList();
-            IEnumerable<KeyReader> keys = primaryKeys?.Select(k => FindPrimaryKey(binder, k)).ToList();
+            IEnumerable<KeyReader> keys = primaryKeys?.Select(k => this.FindPrimaryKey(binder, k)).ToList();
 
             binder.PrimaryKey = keys?.NotNull().FirstOrDefault();
+
+            if (binder.PrimaryKey != null)
+                this.InitializePrimaryKey(binder.PrimaryKey);
         }
 
-        protected KeyReader FindChildKey(NewReader binder, IReference reference) => this.FindKey(binder, reference, reference.FindChildKey());
-        protected KeyReader FindParentKey(NewReader binder, IReference reference) => this.FindKey(binder, reference, reference.FindParentKey());
-        protected KeyReader FindPrimaryKey(NewReader binder, IReferenceKey primaryKey) => this.FindKey(binder, null, primaryKey);
+        protected KeyReader FindChildKey(NewReader binder, IReference reference) => this.FindKey(binder, reference.FindChildKey(), reference);
+        protected KeyReader FindParentKey(NewReader binder, IReference reference) => this.FindKey(binder, reference.FindParentKey(), reference);
+        protected KeyReader FindPrimaryKey(NewReader binder, IReferenceKey primaryKey) => this.FindKey(binder, primaryKey, null);
 
-        private KeyReader FindKey(NewReader binder, IReference reference, IReferenceKey referenceKey)
+        private KeyReader FindKey(NewReader binder, IReferenceKey referenceKey, IReference reference)
         {
             if (referenceKey == null)
                 return null;
@@ -124,30 +134,15 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 DataReader value = binder.Properties.FirstOfType<DataReader>(m => m.Metadata.Identity.Equals(identity));
 
                 values.Add(value);
-
-                if (value != null)
-                    value.CanBeDbNull = !referenceKey.HasFlag(ReferenceKeyFlags.Primary);
             }
 
             if (values.All(v => v != null))
             {
-                KeyReader key = new KeyReader()
+                return new KeyReader(binder.Metadata)
                 {
                     Values = values,
                     Reference = reference,
                 };
-
-                if (reference != null)
-                {
-                    foreach (var (value, keyType) in values.Zip(GetKeyType(reference)))
-                        value.KeyType = keyType;
-
-                    key.KeyType = this.GetCompositeKeyType(values.Select(v => v.KeyType));
-                    key.Variable = Expression.Variable(key.KeyType, "key");
-                }
-
-
-                return key;
             }
 
             return null;
@@ -167,62 +162,8 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 };
 
                 reader.Helper = writer.Variable;
-
                 result.Helpers.Add(writer);
             }
         }
-
-
-        private static IList<Type> GetKeyType(IReference reference)
-        {
-            if (reference == null)
-                return null;
-
-            List<Type> keyType = new List<Type>();
-
-            foreach (var (left, right) in reference.Key.Properties.Zip(reference.Other.Key.Properties))
-            {
-                Type leftType = Nullable.GetUnderlyingType(left.Type) ?? left.Type;
-                Type rightType = Nullable.GetUnderlyingType(right.Type) ?? right.Type;
-
-                if (leftType != rightType)
-                    ThrowInvalidKeyException(reference);
-
-                keyType.Add(leftType);
-            }
-
-            return keyType;
-        }
-
-        private static void ThrowInvalidKeyException(IReference reference)
-        {
-            string leftTuple = $"({string.Join(", ", reference.Key.Properties.Select(m => m.Type.GetSanitizedName()))})";
-            string rightTuple = $"({string.Join(", ", reference.Other.Key.Properties.Select(m => m.Type.GetSanitizedName()))})";
-
-            throw new InvalidOperationException($"Key types are incompatible. Cannot convert {leftTuple} to {rightTuple}.");
-        }
-
-        private Type GetCompositeKeyType(IEnumerable<Type> keyType)
-        {
-            Type[] typeArray = keyType.ToArray();
-
-            if (typeArray.Length == 0)
-                return null;
-            else if (typeArray.Length == 1)
-                return typeArray[0];
-            else if (typeArray.Length == 2)
-                return typeof(CompositeKey<,>).MakeGenericType(typeArray[0], typeArray[1]);
-            else if (typeArray.Length == 3)
-                return typeof(CompositeKey<,,>).MakeGenericType(typeArray[0], typeArray[1], typeArray[2]);
-            else if (typeArray.Length == 4)
-                return typeof(CompositeKey<,,,>).MakeGenericType(typeArray[0], typeArray[1], typeArray[2], typeArray[3]);
-            else
-            {
-                Type restType = this.GetCompositeKeyType(keyType.Skip(4));
-
-                return typeof(CompositeKey<,,,,>).MakeGenericType(typeArray[0], typeArray[1], typeArray[2], typeArray[3], restType);
-            }
-        }
-
     }
 }

@@ -34,7 +34,6 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
             this.CreateJoins(result, nodeTree);
             this.CreateAggregates(result, nodeTree);
-            this.CreateLists(result);
 
             return result;
         }
@@ -81,7 +80,10 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 };
 
                 this.AddPrimaryKey(writer);
-                this.AddChildKey(writer);
+                this.AddChildKey(result, writer);
+
+                if (writer.JoinKey == null)
+                    writer.ListIndex = this.Buffer.GetListIndex(node.Identity);
 
                 result.Joins.Add(writer);
             }
@@ -92,12 +94,14 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 => result.Schema.Notation.Depth(writer.Metadata.Identity.Name);
         }
 
-        private void CreateLists(ListResult result)
+        protected override BaseReader CreateReader(BaseResult result, Node node)
         {
-            foreach (JoinWriter writer in result.Joins)
-            {
-                
-            }
+            BaseReader reader = base.CreateReader(result, node);
+
+            if (reader is NewReader newReader)
+                this.AddParentKeys((ListResult)result, newReader);
+
+            return reader;
         }
 
         private void AddPrimaryKey(JoinWriter writer)
@@ -109,17 +113,6 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             }
         }
 
-        private void InitializeKeyVariables(KeyReader reader)
-        {
-            int index = 0;
-
-            foreach (DataReader value in reader.Values)
-            {
-                value.IsDbNull ??= Expression.Variable(typeof(bool), $"key_{index++}_isnull");
-                value.Variable ??= Expression.Variable(value.KeyType, $"key_{index}");
-            }
-        }
-
         private void AddParentKeys(ListResult result, NewReader reader)
         {
             IEnumerable<IReference> references = this.GetParentReferences(reader.Metadata);
@@ -127,12 +120,10 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
             foreach (KeyReader joinKey in joinKeys.NotNull().DistinctBy(k => k.Reference.Other.Metadata.Identity))
             {
-                if (joinKey.Reference.HasFlag(ReferenceFlags.Self))
-                    joinKey.Reference = this.GetRecursiveReference(reader.Metadata);
+                this.InitializeJoinKey(result, joinKey);
 
                 JoinReader join = new JoinReader()
                 {
-                    JoinIndex = this.Buffer.GetChildIndex(joinKey.Reference),
                     JoinKey = joinKey,
                     Metadata = joinKey.Reference.Other.Metadata.Identity.Require<IBindingMetadata>(),
                 };
@@ -147,42 +138,105 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
                 reader.JoinKeys.Add(joinKey);
                 reader.Properties.Add(join);
-
-                this.InitializeKeyVariables(joinKey);
             }
         }
 
-        private void AddChildKey(JoinWriter writer)
+        private void AddChildKey(ListResult result, JoinWriter writer)
         {
             IEnumerable<IReference> references = this.GetChildReferences(writer.Metadata);
 
-            if (writer.Value is NewReader value)
+            if (writer.Value is NewReader reader)
             {
-                IEnumerable<KeyReader> joinKeys = references.Select(r => this.FindChildKey(value, r));
+                IEnumerable<KeyReader> joinKeys = references.Select(r => this.FindChildKey(reader, r));
 
                 KeyReader joinKey = joinKeys.NotNull().FirstOrDefault();
 
                 if (joinKey != null)
                 {
-                    this.InitializeKeyVariables(joinKey);
+                    this.InitializeJoinKey(result, joinKey);
 
                     writer.JoinKey = joinKey;
-                    writer.BufferIndex = this.Buffer.GetChildIndex(joinKey.Reference);
-
-                    joinKey.Array ??= Expression.Variable(typeof(ElasticArray), $"array_{writer.BufferIndex}");
                 }
             }
 
             if (writer.JoinKey == null && references.Any())
             {
-                IReference invalidRef = references.First();
+                IReference reference = references.First();
 
-                throw BindingException.NoValidReference(invalidRef.Metadata.Identity, invalidRef.Other.Metadata.Identity);
+                throw BindingException.NoReferenceFound(reference.Metadata.Identity, reference.Other.Metadata.Identity);
             }
         }
 
+        private void InitializeJoinKey(ListResult result, KeyReader joinKey)
+        {
+            int index = 0;
+
+            foreach (DataReader valueReader in joinKey.Values)
+            {
+                valueReader.CanBeDbNull = false;
+                valueReader.IsDbNull ??= Expression.Variable(typeof(bool), $"key_{index++}_isnull");
+                valueReader.Variable ??= Expression.Variable(valueReader.KeyType, $"key_{index}");
+            }
+
+            ListWriter writer = result.Lists.FirstOrDefault(w => w.Identity.Equals(joinKey.Metadata.Identity));
+
+            if (joinKey.Reference.HasFlag(ReferenceFlags.Self))
+                joinKey.Reference = this.GetRecursiveReference(joinKey.Metadata);
+
+            joinKey.Array = Expression.Variable(typeof(ElasticArray));
+            joinKey.BufferIndex = this.Buffer.GetChildIndex(joinKey.Reference);
+
+            this.InitializeKeyTypes(joinKey);
+
+            if (writer == null)
+            {
+                writer = new ListWriter(joinKey.Metadata)
+                {
+                    BufferIndex = this.Buffer.GetParentIndex(joinKey.Reference),
+                    JoinKey = joinKey,
+                    Variable = joinKey.List,
+                };
+
+                result.Lists.Add(writer);
+            }
+        }
+
+        private void InitializeKeyTypes(KeyReader joinKey)
+        {
+            List<Type> keyTypes = new List<Type>();
+
+            foreach (var (left, right) in joinKey.Reference.Key.Properties.Zip(joinKey.Reference.Other.Key.Properties))
+            {
+                Type leftType = Nullable.GetUnderlyingType(left.Type) ?? left.Type;
+                Type rightType = Nullable.GetUnderlyingType(right.Type) ?? right.Type;
+
+                if (leftType != rightType)
+                    throw BindingException.IncompatibleReference(joinKey.Reference);
+
+                keyTypes.Add(leftType);
+            }
+
+            foreach (var (reader, keyType) in joinKey.Values.Zip(keyTypes))
+                reader.KeyType = keyType;
+
+            joinKey.KeyType = this.GetCompositeKeyType(keyTypes);
+            joinKey.List = this.GetListVariable(joinKey);
+        }
+
+        private ParameterExpression GetListVariable(KeyReader joinKey)
+        {
+            if (joinKey.Reference.List == null)
+                return Expression.Variable(joinKey.Metadata.Composition.Construct.Type);
+
+            Type dictionaryType = typeof(Dictionary<,>).MakeGenericType(joinKey.KeyType, typeof(ElasticArray));
+
+            return Expression.Variable(dictionaryType);
+        }
+
         private IReference GetRecursiveReference(IBindingMetadata metadata)
-            => this.GetChildReferences(metadata).FirstOrDefault().Other;
+        {
+            return this.GetChildReferences(metadata).FirstOrDefault().Other; // this aint good enough
+        }
 
         private IEnumerable<IReference> GetParentReferences(IBindingMetadata metadata)
             => this.GetValidReferences(metadata).Where(r => r.HasFlag(ReferenceFlags.Parent));
@@ -204,16 +258,16 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 if (!reference.HasFlag(ReferenceFlags.Many) && !reference.Other.HasFlag(ReferenceFlags.Many))
                     return false;
 
-                IReference parentRef = reference.Find(ReferenceFlags.Parent);
-                IReference childRef = reference.Find(ReferenceFlags.Child);
+                //IReference parentRef = reference.Find(ReferenceFlags.Parent);
+                //IReference childRef = reference.Find(ReferenceFlags.Child);
 
-                if (this.QueryType == QueryType.Aggregate)
-                {
-                    if (parentRef.Metadata.Relation.HasFlag(RelationMetadataFlags.Model))
-                        return false;
-                    else if (parentRef.Metadata.Relation.Parent.HasFlag(RelationMetadataFlags.Model))
-                        return false;
-                }
+                //if (this.QueryType == QueryType.Aggregate)
+                //{
+                //    if (parentRef.Metadata.Relation.HasFlag(RelationMetadataFlags.Model))
+                //        return false;
+                //    else if (parentRef.Metadata.Relation.Parent.HasFlag(RelationMetadataFlags.Model))
+                //        return false;
+                //}
 
                 return true;
             }
@@ -231,7 +285,27 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             }
         }
 
-        private Type GetDictionaryType(KeyReader key)
-            => typeof(Dictionary<,>).MakeGenericType(key.CompositeType, typeof(ElasticArray));
+        private Type GetCompositeKeyType(IEnumerable<Type> keyTypes)
+        {
+            Type[] typeArray = keyTypes.ToArray();
+
+            if (typeArray.Length == 0)
+                return null;
+            else if (typeArray.Length == 1)
+                return typeArray[0];
+            else if (typeArray.Length == 2)
+                return typeof(CompositeKey<,>).MakeGenericType(typeArray[0], typeArray[1]);
+            else if (typeArray.Length == 3)
+                return typeof(CompositeKey<,,>).MakeGenericType(typeArray[0], typeArray[1], typeArray[2]);
+            else if (typeArray.Length == 4)
+                return typeof(CompositeKey<,,,>).MakeGenericType(typeArray[0], typeArray[1], typeArray[2], typeArray[3]);
+            else
+            {
+                Type restType = this.GetCompositeKeyType(keyTypes.Skip(4));
+
+                return typeof(CompositeKey<,,,,>).MakeGenericType(typeArray[0], typeArray[1], typeArray[2], typeArray[3], restType);
+            }
+        }
+
     }
 }

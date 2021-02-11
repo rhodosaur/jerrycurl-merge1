@@ -1,6 +1,7 @@
 ﻿using Jerrycurl.Reflection;
 using Jerrycurl.Relations.Metadata;
 using System;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace Jerrycurl.Data.Metadata
@@ -48,7 +49,16 @@ namespace Jerrycurl.Data.Metadata
         internal static BindingException InvalidCast(IBindingMetadata metadata, Exception innerException)
             => Create(metadata.Identity, innerException: innerException);
 
-        internal static BindingException NoValidReference(MetadataIdentity from, MetadataIdentity to)
+        internal static BindingException NoReferenceFound(MetadataIdentity from, MetadataIdentity to)
             => new BindingException($"No valid reference found between {from} and {to}. Please specify matching [Key] and [Ref] annotations to map across one-to-many boundaries.");
+
+        internal static BindingException IncompatibleReference(IReference reference)
+        {
+            string leftTuple = $"({string.Join(", ", reference.Key.Properties.Select(m => m.Type.GetSanitizedName()))})";
+            string rightTuple = $"({string.Join(", ", reference.Other.Key.Properties.Select(m => m.Type.GetSanitizedName()))})";
+
+            return new BindingException($"Cannot join {reference.Metadata.Identity}: {leftTuple} is incompatible with {rightTuple}.");
+        }
+
     }
 }
