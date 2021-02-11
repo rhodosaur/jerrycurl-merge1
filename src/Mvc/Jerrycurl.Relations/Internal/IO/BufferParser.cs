@@ -56,25 +56,26 @@ namespace Jerrycurl.Relations.Internal.IO
 
         private QueueIndex CreateIndex(Node node, BufferTree tree)
         {
-            if (node.Item == null && !node.Metadata.HasFlag(RelationMetadataFlags.Recursive))
-                return null;
-
             if (node.Metadata.HasFlag(RelationMetadataFlags.Recursive))
             {
                 QueueReader anchorReader = tree.Queues.FirstOrDefault(qr => qr.Index.Item.Equals(node.Metadata.Recursor));
 
                 return anchorReader.Index;
             }
-
-            Type queueType = typeof(RelationQueue<,>).MakeGenericType(node.Metadata.Type, node.Item.Metadata.Type);
-
-            return new QueueIndex()
+            else if (node.Item != null)
             {
-                Buffer = tree.Queues.Count,
-                Variable = Expression.Parameter(queueType),
-                List = node.Metadata,
-                Item = node.Item.Metadata,
-            };
+                Type queueType = typeof(RelationQueue<,>).MakeGenericType(node.Metadata.Type, node.Item.Metadata.Type);
+
+                return new QueueIndex()
+                {
+                    Buffer = tree.Queues.Count,
+                    Variable = Expression.Parameter(queueType),
+                    List = node.Metadata,
+                    Item = node.Item.Metadata,
+                };
+            }
+
+            return null;
         }
 
         private void AddWritersAndProperties(Node node, NodeReader reader, BufferTree tree, QueueIndex queue)
