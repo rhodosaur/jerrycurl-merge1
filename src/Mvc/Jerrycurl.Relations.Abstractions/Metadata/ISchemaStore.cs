@@ -3,10 +3,9 @@ using System.Collections.Generic;
 
 namespace Jerrycurl.Relations.Metadata
 {
-    public interface ISchemaStore
+    public interface ISchemaStore : ICollection<IMetadataBuilder>
     {
         DotNotation Notation { get; }
         ISchema GetSchema(Type modelType);
-        IEnumerable<IMetadataBuilder> Builders { get; }
     }
 }

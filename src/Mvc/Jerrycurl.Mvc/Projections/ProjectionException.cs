@@ -1,5 +1,4 @@
-﻿using Jerrycurl.Mvc.Metadata;
-using Jerrycurl.Reflection;
+﻿using Jerrycurl.Reflection;
 using System;
 using System.Runtime.Serialization;
 
@@ -53,8 +52,8 @@ namespace Jerrycurl.Mvc.Projections
             return new ProjectionException(message, innerException);
         }
 
-        public static ProjectionException FromProjection(IProjection projection, string message = null, Exception innerException = null) => FromAttribute(projection.Metadata?.Identity.Schema.Model.Type, projection.Metadata?.Identity.Name, message, innerException);
-        public static ProjectionException FromProjection(IProjectionAttribute attribute, string message = null, Exception innerException = null) => FromAttribute(attribute.Metadata?.Identity.Schema.Model.Type, attribute.Metadata?.Identity.Name, message, innerException);
+        public static ProjectionException FromProjection(IProjection projection, string message = null, Exception innerException = null) => FromAttribute(projection.Metadata?.Identity.Schema.Model, projection.Metadata?.Identity.Name, message, innerException);
+        public static ProjectionException FromProjection(IProjectionAttribute attribute, string message = null, Exception innerException = null) => FromAttribute(attribute.Metadata?.Identity.Schema.Model, attribute.Metadata?.Identity.Name, message, innerException);
         public static ProjectionException FromAttribute(string attributeName, string message = null, Exception innerException = null) => FromAttribute(null, attributeName, message, innerException);
 
         public static ProjectionException ArgumentNull(string argumentName, IProjection projection = null) => FromProjection(projection, innerException: new ArgumentNullException(argumentName));
@@ -62,15 +61,6 @@ namespace Jerrycurl.Mvc.Projections
 
         public static ProjectionException ValueNotFound(IProjection projection) => FromProjection(projection, "Value not found.");
         public static ProjectionException ValueNotFound(IProjectionAttribute attribute) => FromProjection(attribute, "Value not found.");
-
-        internal static ProjectionException TableNotFound(IProjectionMetadata metadata)
-            => new ProjectionException($"No table information found for {metadata.Identity}.");
-
-        internal static ProjectionException ColumnNotFound(IProjectionMetadata metadata)
-            => new ProjectionException($"No column information found for {metadata.Identity}.");
-
-        internal static ProjectionException PropertyNotFound(IProjectionMetadata metadata)
-            => new ProjectionException($"No property information found for {metadata.Identity}.");
 
         #endregion
     }

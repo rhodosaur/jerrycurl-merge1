@@ -2,20 +2,15 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using Jerrycurl.Collections;
 
 namespace Jerrycurl.Relations.Metadata
 {
-    public class SchemaStore : ISchemaStore
+    public class SchemaStore : Collection<IMetadataBuilder>, ISchemaStore
     {
         private readonly ConcurrentDictionary<Type, ISchema> entries = new ConcurrentDictionary<Type, ISchema>();
-        private readonly List<IMetadataBuilder> builders = new List<IMetadataBuilder>();
 
         public DotNotation Notation { get; }
-        internal RelationMetadataBuilder RelationBuilder { get; } = new RelationMetadataBuilder();
-
-        public IEnumerable<IMetadataBuilder> Builders => new IMetadataBuilder[] { this.RelationBuilder }.Concat(this.builders);
 
         public SchemaStore()
             : this(new DotNotation())
@@ -37,7 +32,8 @@ namespace Jerrycurl.Relations.Metadata
         public SchemaStore(DotNotation notation, IEnumerable<IMetadataBuilder> builders)
             : this(notation)
         {
-            this.builders.AddRange(builders ?? Array.Empty<IMetadataBuilder>());
+            foreach (IMetadataBuilder builder in builders?.NotNull() ?? Array.Empty<IMetadataBuilder>())
+                this.Add(builder);
         }
 
         public ISchema GetSchema(Type modelType)
@@ -50,11 +46,17 @@ namespace Jerrycurl.Relations.Metadata
 
         private Schema CreateSchema(Type modelType)
         {
-            Schema schema = new Schema(this, modelType);
+            Schema newSchema = new Schema(this, modelType);
 
-            schema.Initialize();
+            foreach (IMetadataBuilder builder in this)
+            {
+                MetadataIdentity newIdentity = new MetadataIdentity(newSchema, this.Notation.Model());
+                MetadataBuilderContext context = new MetadataBuilderContext(newIdentity, newSchema);
 
-            return schema;
+                builder.Initialize(context);
+            }
+
+            return newSchema;
         }
     }
 }

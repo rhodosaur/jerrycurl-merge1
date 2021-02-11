@@ -8,9 +8,9 @@ namespace Jerrycurl.Data.Metadata
 {
     internal class ReferenceMetadata : IReferenceMetadata
     {
-        public MetadataIdentity Identity => this.Relation.Identity;
+        public MetadataIdentity Identity { get; }
         public IRelationMetadata Relation { get; }
-        public Type Type => this.Relation.Type;
+        public Type Type { get; }
 
         public ReferenceMetadataFlags Flags { get; set; }
         public Lazy<IReadOnlyList<ReferenceKey>> Keys { get; set; }
@@ -31,7 +31,12 @@ namespace Jerrycurl.Data.Metadata
 
         public ReferenceMetadata(IRelationMetadata relation)
         {
-            this.Relation = relation ?? throw new ArgumentNullException(nameof(relation));
+            if (relation == null)
+                throw new ArgumentNullException(nameof(relation));
+
+            this.Identity = relation.Identity;
+            this.Type = relation.Type;
+            this.Relation = relation;
         }
 
         public override string ToString() => $"IReferenceMetadata: {this.Identity}";

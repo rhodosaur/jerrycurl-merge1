@@ -11,21 +11,27 @@ namespace Jerrycurl.Mvc.Metadata
 {
     public class ProjectionMetadataBuilder : IMetadataBuilder<IProjectionMetadata>
     {
-        public IProjectionMetadata GetMetadata(IMetadataBuilderContext context) => this.GetMetadata(context, context.Relation);
+        public IProjectionMetadata GetMetadata(IMetadataBuilderContext context) => this.GetMetadata(context, context.Identity);
 
-        private IProjectionMetadata GetMetadata(IMetadataBuilderContext context, IRelationMetadata relation)
+        private IProjectionMetadata GetMetadata(IMetadataBuilderContext context, MetadataIdentity identity)
         {
-            IProjectionMetadata parent = context.GetMetadata<IProjectionMetadata>(relation.Parent.Identity.Name) ?? this.GetMetadata(context, relation.Parent);
+            MetadataIdentity parentIdentity = identity.Pop();
+            IProjectionMetadata parent = context.GetMetadata<IProjectionMetadata>(parentIdentity.Name) ?? this.GetMetadata(context, parentIdentity);
 
             if (parent == null)
                 return null;
-            else if (parent.Item != null && parent.Item.Identity.Equals(relation.Identity))
+            else if (parent.Item != null && parent.Item.Identity.Equals(identity))
                 return parent.Item;
 
-            return parent.Properties.FirstOrDefault(m => m.Identity.Equals(relation.Identity));
+            return parent.Properties.FirstOrDefault(m => m.Identity.Equals(identity));
         }
 
-        public void Initialize(IMetadataBuilderContext context) => this.CreateAndAddMetadata(context, context.Relation);
+        public void Initialize(IMetadataBuilderContext context)
+        {
+            IRelationMetadata relation = context.Identity.Require<IRelationMetadata>();
+
+            this.CreateAndAddMetadata(context, relation);
+        }
 
         private Lazy<IReadOnlyList<TItem>> CreateLazy<TItem>(Func<IEnumerable<TItem>> factory) => new Lazy<IReadOnlyList<TItem>>(() => factory().ToList());
 
@@ -68,20 +74,7 @@ namespace Jerrycurl.Mvc.Metadata
             metadata.Item = this.CreateItem(context, metadata);
             metadata.Flags = this.GetFlags(metadata);
 
-            this.CreateTableMetadata(metadata);
-
             return metadata;
-        }
-
-        private void CreateTableMetadata(ProjectionMetadata metadata)
-        {
-            ITableMetadata table = metadata.Identity.Lookup<ITableMetadata>();
-
-            if (table != null)
-            {
-                metadata.Table = table.HasFlag(TableMetadataFlags.Table) ? table : table.Owner;
-                metadata.Column = table.HasFlag(TableMetadataFlags.Column) ? table : null;
-            }
         }
 
         private ProjectionMetadataFlags GetFlags(ProjectionMetadata metadata)

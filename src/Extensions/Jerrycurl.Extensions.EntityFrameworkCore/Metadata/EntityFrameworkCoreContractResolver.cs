@@ -1,6 +1,4 @@
-﻿using Jerrycurl.Collections;
-using Jerrycurl.Data.Metadata;
-using Jerrycurl.Data.Metadata.Annotations;
+﻿using Jerrycurl.Data.Metadata.Annotations;
 using Jerrycurl.Relations.Metadata;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -11,10 +9,8 @@ using System.Linq;
 
 namespace Jerrycurl.Extensions.EntityFrameworkCore.Metadata
 {
-    public class EntityFrameworkCoreContractResolver : IRelationContractResolver, ITableContractResolver
+    public class EntityFrameworkCoreContractResolver : IRelationContractResolver
     {
-        public int Priority { get; } = 1000;
-
         private IEntityType[] entities;
 
         public EntityFrameworkCoreContractResolver(DbContext dbContext)
@@ -34,82 +30,73 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Metadata
 
         public IEnumerable<Attribute> GetAnnotations(IRelationMetadata metadata)
         {
-            IProperty property = this.FindProperty(metadata);
+            IEntityType entity = this.entities.FirstOrDefault(e => e.ClrType.IsAssignableFrom(metadata.Type));
+            IEntityType parentEntity = this.entities.FirstOrDefault(e => metadata.Parent != null && e.ClrType.IsAssignableFrom(metadata.Parent.Type));
+            IProperty property = parentEntity?.GetProperties().FirstOrDefault(p => p.Name == metadata.Member?.Name);
             IAnnotation[] propertyAnnotations = property?.GetAnnotations().ToArray() ?? new IAnnotation[0];
-
-            IKey primaryKey = this.GetPrimaryKey(property);
+#if NET20_BASE
+            IKey primaryKey = property?.GetContainingPrimaryKey();
+#elif NET21_BASE
+            IKey primaryKey = property?.FindContainingPrimaryKey();
+#endif
             IForeignKey[] foreignKeys = property?.GetContainingForeignKeys().ToArray() ?? new IForeignKey[0];
 
-            if (primaryKey != null)
-            {
-                string keyName = this.GetKeyName(primaryKey);
-                int index = this.GetKeyIndex(primaryKey, property);
 
-                yield return new KeyAttribute(keyName, index);
+            if (entity == null && property == null)
+                return null;
+
+#if NET20_BASE
+            string tableName = entity?.Relational()?.TableName ?? entity?.ClrType.Name;
+            string schemaName = entity?.Relational()?.Schema;
+            string columnName = property?.Relational()?.ColumnName;
+            string keyName = primaryKey?.Relational()?.Name;
+#elif NET21_BASE
+            string tableName = entity?.GetTableName() ?? entity?.GetDefaultTableName();
+            string schemaName = entity?.GetSchema() ?? entity?.GetDefaultSchema();
+            string columnName = property?.GetColumnName() ?? property?.GetDefaultColumnName();
+            string keyName = primaryKey?.GetName();
+#endif
+
+            List<Attribute> annotations = new List<Attribute>();
+
+            if (tableName != null && schemaName != null)
+                annotations.Add(new TableAttribute(schemaName, tableName));
+            else if (tableName != null)
+                annotations.Add(new TableAttribute(tableName));
+
+            if (columnName != null)
+                annotations.Add(new ColumnAttribute(columnName));
+
+            if (propertyAnnotations.Any(a => a.Name == "SqlServer:ValueGenerationStrategy" && a.Value?.ToString() == "IdentityColumn"))
+                annotations.Add(new IdAttribute());
+
+            if (keyName != null)
+            {
+                int index = primaryKey.Properties.ToList().IndexOf(property);
+
+                annotations.Add(new KeyAttribute(keyName, index));
             }
 
             foreach (IForeignKey foreignKey in foreignKeys)
             {
-                string primaryName = this.GetPrimaryKeyName(foreignKey);
-                string foreignName = this.GetKeyName(foreignKey);
-                int index = this.GetKeyIndex(foreignKey, property);
+#if NET20_BASE
+                string principalName = foreignKey.PrincipalKey.Relational()?.Name;
+                string foreignName = foreignKey.Relational()?.Name;
+                int index = foreignKey.Properties.ToList().IndexOf(property);
+#elif NET21_BASE
+                string principalName = foreignKey.PrincipalKey.GetName();
+                string foreignName = foreignKey.GetConstraintName();
+                int index = foreignKey.Properties.ToList().IndexOf(property);
+#endif
 
-                yield return new RefAttribute(primaryName, index, foreignName);
+                if (principalName != null)
+                    annotations.Add(new RefAttribute(principalName, index, foreignName));
             }
 
-            if (propertyAnnotations.Any(a => a.Name == "SqlServer:ValueGenerationStrategy" && a.Value?.ToString() == "IdentityColumn"))
-                yield return new IdAttribute();
-        }
-
-        public string[] GetTableName(ITableMetadata metadata)
-        {
-            IEntityType entity = this.entities.FirstOrDefault(e => e.ClrType.IsAssignableFrom(metadata.Relation.Type));
-
-            string schemaName = this.GetSchemaName(entity);
-            string tableName = this.GetTableName(entity);
-
-            if (tableName == null)
-                return null;
-
-            return new[] { schemaName, tableName }.NotNull().ToArray();
-        }
-
-        public string GetColumnName(ITableMetadata metadata)
-        {
-            IProperty property = this.FindProperty(metadata.Relation);
-
-            if (property != null && property.DeclaringType.ClrType == metadata.Relation.Member?.DeclaringType)
-                return this.GetColumnName(property);
+            if (annotations.Any())
+                return annotations;
 
             return null;
         }
-
-
-        private string GetPrimaryKeyName(IForeignKey key) => this.GetKeyName(key.PrincipalKey);
-        private int GetKeyIndex(IKey key, IProperty property) => key.Properties.ToList().IndexOf(property);
-        private int GetKeyIndex(IForeignKey key, IProperty property) => key.Properties.ToList().IndexOf(property);
-        private IProperty FindProperty(IRelationMetadata metadata)
-        {
-            IEntityType parentEntity = this.entities.FirstOrDefault(e => metadata.Parent != null && e.ClrType.IsAssignableFrom(metadata.Parent.Type));
-
-            return parentEntity?.GetProperties().FirstOrDefault(p => p.Name == metadata.Member?.Name);
-        }
-
-#if NET20_BASE
-        private IKey GetPrimaryKey(IProperty property) => property?.GetContainingPrimaryKey();
-        private string GetTableName(IEntityType entity) => entity?.Relational()?.TableName ?? entity?.ClrType.Name;
-        private string GetSchemaName(IEntityType entity) => entity?.Relational()?.Schema;
-        private string GetColumnName(IProperty property) => property?.Relational()?.ColumnName ?? property?.Name;
-        private string GetKeyName(IKey key) => key?.Relational()?.Name;
-        private string GetKeyName(IForeignKey key) => key?.Relational()?.Name;
-
-#elif NET21_BASE
-        private IKey GetPrimaryKey(IProperty property) => property?.FindContainingPrimaryKey();
-        private string GetTableName(IEntityType entity) => entity?.GetTableName() ?? entity?.GetDefaultTableName();
-        private string GetSchemaName(IEntityType entity) => entity?.GetSchema() ?? entity?.GetDefaultSchema();
-        private string GetColumnName(IProperty property) => property?.GetColumnName() ?? property?.GetDefaultColumnName();
-        private string GetKeyName(IKey key) => key?.GetName();
-        private string GetKeyName(IForeignKey key) => key.GetConstraintName();
-#endif
     }
 }

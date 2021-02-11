@@ -15,7 +15,7 @@ namespace Jerrycurl.Mvc
         {
             options.ConnectionFactory = () => new NpgsqlConnection(connectionString);
             options.Dialect = new PostgresDialect();
-            options.Use(new PostgresContractResolver());
+            options.Schemas.AddContract(new PostgresContractResolver());
         }
     }
 }

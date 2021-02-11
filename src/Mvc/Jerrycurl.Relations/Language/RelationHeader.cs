@@ -31,7 +31,6 @@ namespace Jerrycurl.Relations.Language
         public RelationHeader<TSource> Select()
             => this.Select(m => m);
 
-        [Obsolete("Needs more overloads")]
         public RelationHeader<TSource> Select<TTarget>(Expression<Func<TSource, TTarget>> expression)
         {
             MetadataIdentity newIdentity = this.Source.Metadata.Identity.Push(this.Schema.Notation.Lambda(expression));
@@ -39,7 +38,6 @@ namespace Jerrycurl.Relations.Language
 
             return new RelationHeader<TSource>(this.Source, this.Add(metadata));
         }
-
 
         public RelationHeader<TSource> SelectAll()
             => this.SelectAll(m => m);

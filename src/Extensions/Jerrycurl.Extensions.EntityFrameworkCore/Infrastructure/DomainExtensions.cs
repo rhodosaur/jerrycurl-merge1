@@ -1,6 +1,4 @@
-﻿using Jerrycurl.Data.Metadata;
-using Jerrycurl.Extensions.EntityFrameworkCore.Metadata;
-using Jerrycurl.Relations.Metadata;
+﻿using Jerrycurl.Extensions.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore;
 
 namespace Jerrycurl.Mvc
@@ -16,11 +14,6 @@ namespace Jerrycurl.Mvc
         }
 
         public static void UseEntityFrameworkCore(this DomainOptions options, DbContext dbContext)
-        {
-            EntityFrameworkCoreContractResolver resolver = new EntityFrameworkCoreContractResolver(dbContext);
-
-            options.Use((IRelationContractResolver)resolver);
-            options.Use((ITableContractResolver)resolver);
-        }
+            => options.Schemas.AddContract(new EntityFrameworkCoreContractResolver(dbContext));
     }
 }

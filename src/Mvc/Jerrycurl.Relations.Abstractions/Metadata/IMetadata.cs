@@ -2,6 +2,6 @@
 {
     public interface IMetadata
     {
-        IRelationMetadata Relation { get; }
+        MetadataIdentity Identity { get; }
     }
 }

@@ -10,11 +10,13 @@ namespace Jerrycurl.Mvc.Metadata
 {
     internal class JsonMetadataBuilder : Collection<IJsonContractResolver>, IMetadataBuilder<IJsonMetadata>
     {
-        public IJsonMetadata GetMetadata(IMetadataBuilderContext context) => this.GetMetadata(context, context.Relation);
+        public IJsonMetadata GetMetadata(IMetadataBuilderContext context) => this.GetMetadata(context, context.Identity);
 
-        private IJsonMetadata GetMetadata(IMetadataBuilderContext context, IRelationMetadata relation)
+        private IJsonMetadata GetMetadata(IMetadataBuilderContext context, MetadataIdentity identity)
         {
-            IJsonMetadata parent = context.GetMetadata<IJsonMetadata>(relation.Parent.Identity.Name) ?? this.GetMetadata(context, relation.Parent);
+            MetadataIdentity parentIdentity = identity.Pop();
+            IJsonMetadata parent = context.GetMetadata<IJsonMetadata>(parentIdentity.Name) ?? this.GetMetadata(context, parentIdentity);
+            IRelationMetadata relation = identity.Lookup<IRelationMetadata>();
 
             if (parent == null || relation == null)
                 return null;
@@ -41,7 +43,9 @@ namespace Jerrycurl.Mvc.Metadata
 
         public void Initialize(IMetadataBuilderContext context)
         {
-            JsonMetadata metadata = new JsonMetadata(context.Relation);
+            IRelationMetadata relation = context.Identity.Require<IRelationMetadata>();
+
+            JsonMetadata metadata = new JsonMetadata(relation);
 
             metadata.MemberOf = metadata;
             metadata.Path = "$";

@@ -7,10 +7,9 @@ namespace Jerrycurl.Mvc.Metadata
 {
     public interface IProjectionMetadata : IMetadata
     {
-        MetadataIdentity Identity { get; }
         Type Type { get; }
         ITableMetadata Table { get; }
-        ITableMetadata Column { get; }
+        IRelationMetadata Relation { get; }
         IReferenceMetadata Reference { get; }
         IReadOnlyList<IProjectionMetadata> Properties { get; }
         ProjectionMetadataFlags Flags { get; }

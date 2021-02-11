@@ -2,7 +2,9 @@
 {
     public interface IMetadataBuilderContext
     {
-        IRelationMetadata Relation { get; }
+        MetadataIdentity Identity { get; }
+        DotNotation Notation { get; }
+        ISchema Schema { get; }
 
         void AddMetadata<TMetadata>(TMetadata metadata) where TMetadata : IMetadata;
         TMetadata GetMetadata<TMetadata>(string name) where TMetadata : IMetadata;

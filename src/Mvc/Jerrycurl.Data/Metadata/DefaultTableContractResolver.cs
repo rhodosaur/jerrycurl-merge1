@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using Jerrycurl.Collections;
 using Jerrycurl.Data.Metadata.Annotations;
 using Jerrycurl.Relations.Metadata;
 
@@ -9,45 +8,32 @@ namespace Jerrycurl.Data.Metadata
 {
     public class DefaultTableContractResolver : ITableContractResolver
     {
-        public int Priority => 0;
-
         public string GetColumnName(ITableMetadata metadata)
         {
-            TableAttribute table = metadata.Relation.Parent?.Annotations?.FirstOfType<TableAttribute>();
-            ColumnAttribute column = metadata.Relation.Annotations?.FirstOfType<ColumnAttribute>();
+            TableAttribute declared = metadata.Relation.Member?.DeclaringType.GetCustomAttribute<TableAttribute>(false);
+            ColumnAttribute column = metadata.Relation.Annotations?.OfType<ColumnAttribute>().FirstOrDefault();
 
-            if (column != null && string.IsNullOrWhiteSpace(column.Name))
-                return this.GetDefaultColumnName(metadata);
-            else if (column != null)
-                return column.Name;
-            else if (table != null)
-            {
-                Type declaringType = this.GetDeclaringTypeOfAttribute(metadata.Relation.Parent.Type, table);
+            if (metadata.Relation.HasFlag(RelationMetadataFlags.Item))
+                column ??= metadata.Relation.Parent.Annotations?.OfType<ColumnAttribute>().FirstOrDefault();
 
-                if (declaringType == metadata.Relation.Parent.Type)
-                    return this.GetDefaultColumnName(metadata);
-            }
+            if (declared != null || column != null || metadata.Relation.HasFlag(RelationMetadataFlags.Item))
+                return column?.Name ?? metadata.Relation.Member?.Name ?? metadata.Identity.Notation.Member(metadata.Identity.Name);
 
             return null;
         }
 
-        private string GetDefaultColumnName(ITableMetadata metadata)
-            => metadata.Relation.Member?.Name ?? metadata.Identity.Notation.Member(metadata.Identity.Name);
-
         public string[] GetTableName(ITableMetadata metadata)
         {
-            TableAttribute table = metadata.Relation.Annotations?.FirstOfType<TableAttribute>();
+            TableAttribute table = metadata.Relation.Annotations?.OfType<TableAttribute>().FirstOrDefault();
 
             if (table != null)
             {
-                string[] tableName = table.Parts?.Where(p => !string.IsNullOrWhiteSpace(p)).ToArray();
+                string[] tableName = table.Parts?.ToArray();
 
-                if (tableName == null || tableName.Length == 0)
-                {
-                    Type declaringType = this.GetDeclaringTypeOfAttribute(metadata.Relation.Type, table);
+                Type declaredType = this.GetDeclaringTypeOfInheritedAttribute(metadata.Relation.Type, table);
 
-                    return new[] { declaringType?.Name ?? metadata.Relation.Type.Name };
-                }
+                if (metadata.TableName == null || metadata.TableName.Count == 0)
+                    tableName = new[] { declaredType?.Name ?? metadata.Relation.Type.Name };
 
                 return tableName;
             }
@@ -55,9 +41,9 @@ namespace Jerrycurl.Data.Metadata
             return null;
         }
 
-        private Type GetDeclaringTypeOfAttribute(Type type, Attribute attribute)
+        private Type GetDeclaringTypeOfInheritedAttribute(Type type, Attribute attribute)
         {
-            while (type != null && type.BaseType != null && type.BaseType.GetCustomAttributes(inherit: false).Any(a => a.Equals(attribute)))
+            while (type != null && type.BaseType != null && type.BaseType.GetCustomAttributes().Any(a => a.Equals(attribute)))
                 type = type.BaseType;
 
             return type;

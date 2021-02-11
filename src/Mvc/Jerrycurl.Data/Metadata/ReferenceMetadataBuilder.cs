@@ -10,30 +10,31 @@ namespace Jerrycurl.Data.Metadata
 {
     public class ReferenceMetadataBuilder : IMetadataBuilder<IReferenceMetadata>
     {
-        public IReferenceMetadata GetMetadata(IMetadataBuilderContext context) => this.GetMetadata(context, context.Relation);
+        public IReferenceMetadata GetMetadata(IMetadataBuilderContext context) => this.GetMetadata(context, context.Identity);
 
-        private IReferenceMetadata GetMetadata(IMetadataBuilderContext context, IRelationMetadata relation)
+        private IReferenceMetadata GetMetadata(IMetadataBuilderContext context, MetadataIdentity identity)
         {
-            IReferenceMetadata parent = context.GetMetadata<IReferenceMetadata>(relation.Parent.Identity.Name) ?? this.GetMetadata(context, relation.Parent);
+            MetadataIdentity parentIdentity = identity.Pop();
+            IReferenceMetadata parent = context.GetMetadata<IReferenceMetadata>(parentIdentity.Name) ?? this.GetMetadata(context, parentIdentity);
 
             if (parent == null)
                 return null;
-            else if (parent.Item != null && parent.Item.Identity.Equals(relation.Identity))
+            else if (parent.Item != null && parent.Item.Identity.Equals(identity))
                 return parent.Item;
 
-            return parent.Properties.FirstOrDefault(m => m.Identity.Equals(relation.Identity));
+            return parent.Properties.FirstOrDefault(m => m.Identity.Equals(identity));
         }
 
         public void Initialize(IMetadataBuilderContext context)
         {
-            IReferenceMetadata metadata = this.CreateBaseMetadata(context, context.Relation, null);
+            IRelationMetadata relation = context.Schema.Require<IRelationMetadata>(context.Identity.Name);
 
-            context.AddMetadata(metadata);
+            context.AddMetadata<IReferenceMetadata>(this.CreateBaseMetadata(context, relation, null));
         }
 
-        private ReferenceMetadata CreateBaseMetadata(IMetadataBuilderContext context, IRelationMetadata relation, ReferenceMetadata parent)
+        private ReferenceMetadata CreateBaseMetadata(IMetadataBuilderContext context, IRelationMetadata attribute, ReferenceMetadata parent)
         {
-            ReferenceMetadata metadata = new ReferenceMetadata(relation)
+            ReferenceMetadata metadata = new ReferenceMetadata(attribute)
             {
                 Parent = parent,
             };

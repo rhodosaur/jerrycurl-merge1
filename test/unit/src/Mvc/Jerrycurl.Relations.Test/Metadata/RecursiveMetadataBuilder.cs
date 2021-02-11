@@ -6,8 +6,10 @@ namespace Jerrycurl.Relations.Test.Metadata
     {
         public CustomMetadata GetMetadata(IMetadataBuilderContext context)
         {
-            if (context.Relation.Parent != null)
-                return context.Relation.Parent.Identity.Schema.Lookup<CustomMetadata>();
+            MetadataIdentity parentIdentity = context.Identity.Pop();
+
+            if (parentIdentity != null)
+                return context.Schema.Lookup<CustomMetadata>(parentIdentity.Name);
 
             return null;
         }
