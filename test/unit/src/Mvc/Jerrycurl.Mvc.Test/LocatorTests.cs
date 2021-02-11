@@ -11,15 +11,15 @@ namespace Jerrycurl.Mvc.Test
 
         public void Test_FindPage_CaseInsensitive()
         {
-            var query = this.FindPage("locatorquery2");
+            PageDescriptor query = this.FindPage("locatorquery2");
 
             query.PageType.ShouldBe(typeof(Conventions.Queries.Locator.LocatorQuery2_cssql));
         }
 
         public void Test_FindPage_FromAccessor()
         {
-            var query = this.FindPage("LocatorQuery2");
-            var command = this.FindPage("LocatorCommand1");
+            PageDescriptor query = this.FindPage("LocatorQuery2");
+            PageDescriptor command = this.FindPage("LocatorCommand1");
 
             query.PageType.ShouldBe(typeof(Conventions.Queries.Locator.LocatorQuery2_cssql));
             command.PageType.ShouldBe(typeof(Conventions.Commands.Locator.LocatorCommand1_cssql));
@@ -27,8 +27,8 @@ namespace Jerrycurl.Mvc.Test
 
         public void Test_FindPage_FromPage()
         {
-            var query = this.FindPage("LocatorQuery4", typeof(Conventions.Queries.Locator.LocatorQuery2_cssql));
-            var command = this.FindPage("LocatorCommand3", typeof(Conventions.Commands.Locator.LocatorCommand1_cssql));
+            PageDescriptor query = this.FindPage("LocatorQuery4", typeof(Conventions.Queries.Locator.LocatorQuery2_cssql));
+            PageDescriptor command = this.FindPage("LocatorCommand3", typeof(Conventions.Commands.Locator.LocatorCommand1_cssql));
 
             query.PageType.ShouldBe(typeof(Conventions.Queries.LocatorQuery4_cssql));
             command.PageType.ShouldBe(typeof(Conventions.Commands.LocatorCommand3_cssql));
@@ -36,8 +36,8 @@ namespace Jerrycurl.Mvc.Test
 
         public void Test_FindPage_InSharedRoot()
         {
-            var query = this.FindPage("LocatorQuery4");
-            var command = this.FindPage("LocatorCommand3");
+            PageDescriptor query = this.FindPage("LocatorQuery4");
+            PageDescriptor command = this.FindPage("LocatorCommand3");
 
             query.PageType.ShouldBe(typeof(Conventions.Queries.LocatorQuery4_cssql));
             command.PageType.ShouldBe(typeof(Conventions.Commands.LocatorCommand3_cssql));
@@ -45,15 +45,15 @@ namespace Jerrycurl.Mvc.Test
 
         public void Test_FindPage_InSubFolder()
         {
-            var query = this.FindPage("SubFolder1/SubFolder2/LocatorQuery1");
+            PageDescriptor query = this.FindPage("SubFolder1/SubFolder2/LocatorQuery1");
 
             query.PageType.ShouldBe(typeof(Conventions.Queries.Locator.SubFolder1.SubFolder2.LocatorQuery1_cssql));
         }
 
         public void Test_FindPage_InSharedFolder()
         {
-            var query = this.FindPage("LocatorQuery3");
-            var command = this.FindPage("LocatorCommand2");
+            PageDescriptor query = this.FindPage("LocatorQuery3");
+            PageDescriptor command = this.FindPage("LocatorCommand2");
 
             query.PageType.ShouldBe(typeof(Conventions.Queries.Shared.LocatorQuery3_cssql));
             command.PageType.ShouldBe(typeof(Conventions.Commands.Shared.LocatorCommand2_cssql));
@@ -66,7 +66,7 @@ namespace Jerrycurl.Mvc.Test
 
         public void Test_FindPage_RelativePath()
         {
-            var page = this.FindPage("../Queries/Locator/SubFolder1/./SubFolder2/../../LocatorQuery2");
+            PageDescriptor page = this.FindPage("../Queries/Locator/SubFolder1/./SubFolder2/../../LocatorQuery2");
 
             page.ShouldNotBeNull();
             page.PageType.ShouldBe(typeof(Conventions.Queries.Locator.LocatorQuery2_cssql));
@@ -74,14 +74,14 @@ namespace Jerrycurl.Mvc.Test
 
         public void Test_FindPage_AbsolutePath()
         {
-            var page = this.FindPage("/Jerrycurl/Mvc/Test/Conventions/Queries/Locator/LocatorQuery2.cssql");
+            PageDescriptor page = this.FindPage("/Jerrycurl/Mvc/Test/Conventions/Queries/Locator/LocatorQuery2.cssql");
 
             page.ShouldNotBeNull();
             page.PageType.ShouldBe(typeof(Conventions.Queries.Locator.LocatorQuery2_cssql));
         }
         public void Test_FindPage_DomainPath()
         {
-            var page = this.FindPage("~/Queries/Locator/LocatorQuery2.cssql");
+            PageDescriptor page = this.FindPage("~/Queries/Locator/LocatorQuery2.cssql");
 
             page.ShouldNotBeNull();
             page.PageType.ShouldBe(typeof(Conventions.Queries.Locator.LocatorQuery2_cssql));

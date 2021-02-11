@@ -89,7 +89,6 @@ namespace Jerrycurl.Data.Commands
         public IList<IDbDataParameter> Prepare(Func<IDbDataParameter> parameterFactory)
         {
             List<IDbDataParameter> parameters = new List<IDbDataParameter>();
-            HashSet<string> paramSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (FieldBuffer buffer in this.paramHeader.Values)
             {
@@ -112,11 +111,7 @@ namespace Jerrycurl.Data.Commands
                 if (this.TryReadValue(buffer.Parameter.Parameter?.Source, out object newValue))
                     adoParam.Value = newValue;
 
-                if (!paramSet.Contains(adoParam.ParameterName))
-                {
-                    parameters.Add(adoParam);
-                    paramSet.Add(adoParam.ParameterName);
-                }
+                parameters.Add(adoParam);
             }
 
             this.FlushParameters();

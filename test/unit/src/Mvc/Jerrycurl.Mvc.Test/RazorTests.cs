@@ -7,66 +7,10 @@ using System.Linq;
 
 namespace Jerrycurl.Mvc.Test
 {
+    [Obsolete("implement :(")]
     public class RazorTests
     {
-        public void Test_Razor_Vars()
-        {
-
-        }
-
-        public void Test_Razor_Vals()
-        {
-
-        }
-
-        public void Test_Razor_Props()
-        {
-
-        }
-
-        public void Test_Razor_Filters()
-        {
-
-        }
-
         public void Test_Razor_Pars()
-        {
-
-        }
-        public void Test_Razor_Eq()
-        {
-
-        }
-        public void Test_Razor_IsEq()
-        {
-
-        }
-        public void Test_Razor_Nulls()
-        {
-
-        }
-
-        public void Test_Razor_As()
-        {
-
-        }
-
-        public void Test_Razor_Open()
-        {
-
-        }
-
-        public void Test_Razor_Attr()
-        {
-
-        }
-
-        public void Test_Razor_For()
-        {
-
-        }
-
-        public void Test_Razor_JsonPath()
         {
 
         }
@@ -76,7 +20,16 @@ namespace Jerrycurl.Mvc.Test
 
         }
 
+        public void Test_Razor_Lit()
+        {
+
+        }
         public void Test_Razor_Cols()
+        {
+
+        }
+
+        public void Test_Razor_Col()
         {
 
         }
@@ -86,12 +39,27 @@ namespace Jerrycurl.Mvc.Test
 
         }
 
+        public void Test_Razor_ColName()
+        {
+
+        }
+
         public void Test_Razor_Tbls()
         {
 
         }
 
+        public void Test_Razor_Tbl()
+        {
+
+        }
+
         public void Test_Razor_TblNames()
+        {
+
+        }
+
+        public void Test_Razor_TblName()
         {
 
         }

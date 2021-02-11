@@ -16,9 +16,19 @@ namespace Jerrycurl.Mvc.Projections
         public static ITableMetadata GetTableMetadata(IProjection projection) => GetTableMetadata(projection.Metadata);
         public static ITableMetadata GetTableMetadata(IProjectionAttribute attribute) => GetTableMetadata(attribute.Metadata);
         public static ITableMetadata GetTableMetadata(IProjectionMetadata metadata)
-            => metadata.Table ?? metadata.Item?.Table ?? throw ProjectionException.TableNotFound(metadata);
+            => GetPreferredTableMetadata(metadata)?.Table ?? throw ProjectionException.TableNotFound(metadata);
         public static ITableMetadata GetColumnMetadata(IProjectionAttribute attribute)
             => attribute.Metadata.Column ?? attribute.Metadata.Item?.Column ?? throw ProjectionException.ColumnNotFound(attribute.Metadata);
+
+        public static IProjectionMetadata GetPreferredTableMetadata(IProjectionMetadata metadata)
+        {
+            if (metadata.Table != null)
+                return metadata;
+            else if (metadata.Item.Table != null)
+                return metadata.Item;
+
+            return null;
+        }
 
         public static IProjectionMetadata GetMetadataFromRelativeLambda(IProjection projection, LambdaExpression expression)
         {

@@ -8,16 +8,18 @@ namespace Jerrycurl.Mvc.Test
     {
         public void Test_Procedure_Template()
         {
-            var misc = new MiscAccessor();
-            var result = misc.TemplatedQuery();
+            MiscAccessor misc = new MiscAccessor();
+
+            IList<int> result = misc.TemplatedQuery();
 
             result.ShouldBe(new[] { 1, 2, 3 });
         }
 
         public void Test_Partial_Template()
         {
-            var misc = new MiscAccessor();
-            var result = misc.PartialedQuery();
+            MiscAccessor misc = new MiscAccessor();
+
+            IList<int> result = misc.PartialedQuery();
 
             result.ShouldBe(new[] { 1, 2, 3 });
         }

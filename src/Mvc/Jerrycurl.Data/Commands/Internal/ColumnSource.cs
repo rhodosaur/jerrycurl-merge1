@@ -7,6 +7,6 @@ namespace Jerrycurl.Data.Commands.Internal
     {
         public ColumnMetadata Metadata { get; set; }
         public object Value { get; set; } = DBNull.Value;
-        public bool HasChanged { get; set; }
+        public bool HasChanged => (this.Metadata != null);
     }
 }

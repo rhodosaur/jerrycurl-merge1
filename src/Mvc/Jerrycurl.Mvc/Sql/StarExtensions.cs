@@ -17,7 +17,7 @@ namespace Jerrycurl.Mvc.Sql
             if (!projection.Any())
                 throw ProjectionException.AttributesNotFound(projection.Metadata);
 
-            IProjectionMetadata metadata = ProjectionHelper.GetTableMetadata(projection).Identity.Lookup<IProjectionMetadata>();
+            IProjectionMetadata metadata = ProjectionHelper.GetPreferredTableMetadata(projection.Metadata);
 
             return projection.With(metadata).Cols().As().Props();
         }

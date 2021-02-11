@@ -11,21 +11,21 @@ namespace Jerrycurl.Mvc.Test
 
         public void Test_Page_CanLookup_NoDomain()
         {
-            var descriptor = this.locator.FindPage("NoDomainQuery", typeof(NoDomainAccessor));
-            var args = new ProcArgs(typeof(object), typeof(object));
+            PageDescriptor descriptor = this.locator.FindPage("NoDomainQuery", typeof(NoDomainAccessor));
+            ProcArgs args = new ProcArgs(typeof(object), typeof(object));
 
             descriptor.ShouldNotBeNull();
             descriptor.DomainType.ShouldBeNull();
 
-            var factory = Should.NotThrow(() => this.engine.Page(descriptor.PageType));
+            PageFactory factory = Should.NotThrow(() => this.engine.Page(descriptor.PageType));
 
             factory.ShouldNotBeNull();
         }
 
         public void Test_Procedure_CannotLookup_NoDomain()
         {
-            var descriptor = this.locator.FindPage("NoDomainQuery", typeof(NoDomainAccessor));
-            var args = new ProcArgs(typeof(object), typeof(object));
+            PageDescriptor descriptor = this.locator.FindPage("NoDomainQuery", typeof(NoDomainAccessor));
+            ProcArgs args = new ProcArgs(typeof(object), typeof(object));
 
             descriptor.ShouldNotBeNull();
             descriptor.DomainType.ShouldBeNull();
@@ -35,18 +35,19 @@ namespace Jerrycurl.Mvc.Test
 
         public void Test_Procedure_CanLookup()
         {
-            var descriptor = this.FindPage("LocatorQuery2");
-            var args = new ProcArgs(typeof(int), typeof(object));
-            var factory = this.engine.Proc(descriptor, args);
+            PageDescriptor descriptor = this.FindPage("LocatorQuery2");
+            ProcArgs args = new ProcArgs(typeof(int), typeof(object));
+
+            ProcFactory factory = this.engine.Proc(descriptor, args);
 
             factory.ShouldNotBeNull();
         }
 
         public void Test_Page_ResultVariance()
         {
-            var descriptor = this.FindPage("LocatorQuery2");
-            var args1 = new ProcArgs(typeof(object), typeof(int));
-            var args2 = new ProcArgs(typeof(object), typeof(string));
+            PageDescriptor descriptor = this.FindPage("LocatorQuery2");
+            ProcArgs args1 = new ProcArgs(typeof(object), typeof(int));
+            ProcArgs args2 = new ProcArgs(typeof(object), typeof(string));
 
             this.engine.Proc(descriptor, args1).ShouldNotBeNull();
             this.engine.Proc(descriptor, args2).ShouldNotBeNull();
