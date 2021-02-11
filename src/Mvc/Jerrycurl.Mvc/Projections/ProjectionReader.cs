@@ -28,7 +28,7 @@ namespace Jerrycurl.Mvc.Projections
 
         public static IEnumerable<IProjectionData> Lookup(IField source, IEnumerable<IProjectionMetadata> header)
         {
-            ProjectionReader reader = new ProjectionReader(source, header);
+            using ProjectionReader reader = new ProjectionReader(source, header);
 
             if (reader.Read())
             {
@@ -64,23 +64,32 @@ namespace Jerrycurl.Mvc.Projections
                 header.Add(attribute.Relation);
                 this.indexMap.Add(i);
 
-                if (attribute.Input != null && attribute.Input != attribute)
+                if (attribute.Input == attribute && attribute.Output == attribute)
+                {
+                    this.indexMap.Add(i);
+                    this.indexMap.Add(i++);
+                }
+                else if (attribute.Input == attribute.Output)
                 {
                     header.Add(attribute.Input.Relation);
+
                     this.indexMap.Add(++i);
+                    this.indexMap.Add(i++);
                 }
                 else
-                    this.indexMap.Add(i);
-
-                if (attribute.Output != null && attribute.Output != attribute.Input && attribute.Output != attribute)
                 {
-                    header.Add(attribute.Output.Relation);
-                    this.indexMap.Add(++i);
-                }
-                else
-                    this.indexMap.Add(i);
+                    if (attribute.Input != attribute)
+                    {
+                        header.Add(attribute.Input.Relation);
+                        this.indexMap.Add(++i);
+                    }
 
-                i++;
+                    if (attribute.Output != attribute)
+                    {
+                        header.Add(attribute.Output.Relation);
+                        this.indexMap.Add(++i);
+                    }
+                }
 
                 this.headerSize++;
             }

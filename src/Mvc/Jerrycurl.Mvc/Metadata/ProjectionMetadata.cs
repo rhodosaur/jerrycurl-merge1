@@ -16,11 +16,12 @@ namespace Jerrycurl.Mvc.Metadata
         public Lazy<IReadOnlyList<ProjectionMetadata>> Properties { get; set; }
         public IProjectionMetadata Item { get; set; }
         public IProjectionMetadata List { get; set; }
-        public IProjectionMetadata Input { get; set; }
+        public Lazy<IProjectionMetadata> Input { get; set; }
         public IProjectionMetadata Output => this;
         public ProjectionMetadataFlags Flags { get; set; }
 
         IReadOnlyList<IProjectionMetadata> IProjectionMetadata.Properties => this.Properties.Value;
+        IProjectionMetadata IProjectionMetadata.Input => this.Input.Value;
 
         public ProjectionMetadata(IRelationMetadata relation)
         {

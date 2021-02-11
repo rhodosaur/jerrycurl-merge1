@@ -26,25 +26,23 @@ namespace Jerrycurl.Mvc.Metadata
             return parent.Properties.FirstOrDefault(m => m.Identity.Equals(relation.Identity));
         }
 
-        public void Initialize(IMetadataBuilderContext context) => this.CreateAndAddMetadata(context, context.Relation, null);
+        public void Initialize(IMetadataBuilderContext context) => this.GetMetadata(context, context.Relation, null);
 
         private Lazy<IReadOnlyList<TItem>> CreateLazy<TItem>(Func<IEnumerable<TItem>> factory) => new Lazy<IReadOnlyList<TItem>>(() => factory().ToList());
 
         private IEnumerable<ProjectionMetadata> CreateProperties(IMetadataBuilderContext context, ProjectionMetadata parent)
         {
             foreach (IRelationMetadata property in parent.Relation.Properties)
-                yield return this.CreateAndAddMetadata(context, property, parent);
+                yield return this.GetMetadata(context, property, parent);
         }
 
         private ProjectionMetadata CreateItem(IMetadataBuilderContext context, ProjectionMetadata parent)
         {
             if (parent.Relation.Item != null)
             {
-                ProjectionMetadata metadata = this.CreateBaseMetadata(context, parent.Relation.Item);
+                ProjectionMetadata metadata = this.GetMetadata(context, parent.Relation.Item, parent);
 
                 metadata.List = parent;
-
-                context.AddMetadata<IProjectionMetadata>(metadata);
 
                 return metadata;
             }
@@ -52,26 +50,18 @@ namespace Jerrycurl.Mvc.Metadata
             return null;
         }
 
-        private ProjectionMetadata CreateAndAddMetadata(IMetadataBuilderContext context, IRelationMetadata relation, IProjectionMetadata parent)
-        {
-            ProjectionMetadata metadata = this.CreateBaseMetadata(context, relation);
-
-            context.AddMetadata<IProjectionMetadata>(metadata);
-
-            this.CreateInputMetadata(context, metadata, parent);
-
-            return metadata;
-        }
-
-        private ProjectionMetadata CreateBaseMetadata(IMetadataBuilderContext context, IRelationMetadata relation)
+        private ProjectionMetadata GetMetadata(IMetadataBuilderContext context, IRelationMetadata relation, IProjectionMetadata parent)
         {
             ProjectionMetadata metadata = new ProjectionMetadata(relation);
+
+            context.AddMetadata<IProjectionMetadata>(metadata);
 
             metadata.Properties = this.CreateLazy(() => this.CreateProperties(context, metadata));
             metadata.Item = this.CreateItem(context, metadata);
             metadata.Flags = this.GetFlags(metadata);
 
             this.CreateTableMetadata(metadata);
+            this.CreateInputMetadata(context, metadata, parent);
 
             return metadata;
         }
@@ -90,7 +80,7 @@ namespace Jerrycurl.Mvc.Metadata
                     {
                         IReferenceMetadata valueMetadata = reference.Other.Key.Properties[valueIndex];
 
-                        metadata.Input = this.GetMetadata(context, valueMetadata.Relation);
+                        metadata.Input = new Lazy<IProjectionMetadata>(() => this.GetMetadata(context, valueMetadata.Relation));
                         metadata.Flags |= ProjectionMetadataFlags.Cascade;
 
                         return;
@@ -98,7 +88,7 @@ namespace Jerrycurl.Mvc.Metadata
                 }
             }
 
-            metadata.Input = metadata;
+            metadata.Input = new Lazy<IProjectionMetadata>(() => metadata);
         }
 
         private void CreateTableMetadata(ProjectionMetadata metadata)
