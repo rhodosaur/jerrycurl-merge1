@@ -2,7 +2,7 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/aihogw33ef50go9r?svg=true)](https://ci.appveyor.com/project/rhodosaur/jerrycurl/branch/master)
 [![Test status](https://img.shields.io/appveyor/tests/rhodosaur/jerrycurl/dev)](https://ci.appveyor.com/project/rhodosaur/jerrycurl/branch/master/tests)
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/jerrycurl-mvc/community)
-# Jerrycurl - MVC and Razor-powered ORM for .NET
+# Jerrycurl - ORM, MVC and Razor SQL framework for .NET
 
 **Jerrycurl** is an object-relational framework that allows developers to build **data access layers** in a way similar to how web applications are built with **ASP.NET MVC**.
 
