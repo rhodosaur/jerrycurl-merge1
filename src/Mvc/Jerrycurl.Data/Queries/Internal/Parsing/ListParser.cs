@@ -70,6 +70,19 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             }
         }
 
+        private bool IsWriterList(IBindingMetadata metadata)
+        {
+            if (this.QueryType == QueryType.Aggregate)
+            {
+                if (metadata.HasFlag(BindingMetadataFlags.Model))
+                    return false;
+                else if (metadata.HasFlag(BindingMetadataFlags.Item) && metadata.Parent.HasFlag(BindingMetadataFlags.Model))
+                    return false;
+            }
+
+            return true;
+        }
+
         private bool IsAggregateList(IBindingMetadata metadata)
         {
             if (this.QueryType != QueryType.Aggregate)
@@ -96,7 +109,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         private void AddWriters(ListResult result, NodeTree nodeTree)
         {
-            foreach (Node node in nodeTree.Items.Where(n => !this.IsAggregateList(n.Metadata)))
+            foreach (Node node in nodeTree.Items.Where(n => this.IsWriterList(n.Metadata)))
             {
                 TargetWriter writer = new TargetWriter()
                 {

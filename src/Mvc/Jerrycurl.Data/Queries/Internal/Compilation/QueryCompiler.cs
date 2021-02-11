@@ -398,10 +398,25 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
                 if (useTryCatch)
                     value = this.GetTryCatchExpression(reader, value);
-            }
 
-            if (canBeDbNull)
-                value = Expression.Condition(isDbNull, Expression.Default(reader.Metadata.Type), value);
+                if (canBeDbNull)
+                {
+                    Expression defaultValue = Expression.Default(reader.Metadata.Type);
+                    Expression matchedValue = value;
+
+                    if (value.Type != defaultValue.Type)
+                        matchedValue = Expression.Convert(matchedValue, reader.Metadata.Type);
+
+                    value = Expression.Condition(isDbNull, Expression.Default(reader.Metadata.Type), matchedValue);
+                }
+            }
+            else if (value.Type != reader.Metadata.Type)
+            {
+                Expression defaultValue = Expression.Default(reader.Metadata.Type);
+                Expression matchedValue = Expression.Convert(value, reader.Metadata.Type);
+
+                value = Expression.Condition(isDbNull, Expression.Default(reader.Metadata.Type), matchedValue);
+            }
 
             return value;
         }

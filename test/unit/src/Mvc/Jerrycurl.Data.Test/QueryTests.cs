@@ -144,6 +144,53 @@ namespace Jerrycurl.Data.Test
             result[1].Blog1.Id.ShouldBe(2);
         }
 
+
+        public void Test_Aggregate_ListTypes()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(ListTypeModel));
+            var buffer = new QueryBuffer(schema, QueryType.Aggregate);
+
+            buffer.Insert(42, ("", "IList.Item"));
+            buffer.Insert(43, ("", "List.Item"));
+            buffer.Insert(44, ("", "IReadOnlyList.Item"));
+            buffer.Insert(45, ("", "IEnumerable.Item"));
+            buffer.Insert(46, ("", "One.Item"));
+            buffer.Insert(47, ("", "IReadOnlyCollection.Item"));
+
+            var result = buffer.Commit<ListTypeModel>();
+
+            result.ShouldNotBeNull();
+
+            result.IList.ShouldNotBeNull();
+            result.IList.ShouldBeOfType<List<int>>();
+            result.IList.Count.ShouldBe(1);
+            result.IList[0].ShouldBe(42);
+
+            result.List.ShouldNotBeNull();
+            result.List.ShouldBeOfType<List<int>>();
+            result.List.Count.ShouldBe(1);
+            result.List[0].ShouldBe(43);
+
+            result.IReadOnlyList.ShouldNotBeNull();
+            result.IReadOnlyList.ShouldBeOfType<List<int>>();
+            result.IReadOnlyList.Count.ShouldBe(1);
+            result.IReadOnlyList[0].ShouldBe(44);
+
+            result.IEnumerable.ShouldNotBeNull();
+            result.IEnumerable.ShouldBeOfType<List<int>>();
+            result.IEnumerable.Count().ShouldBe(1);
+            result.IEnumerable.First().ShouldBe(45);
+
+            result.One.ShouldNotBeNull();
+            result.One.HasValue.ShouldBeTrue();
+            result.One.Value.ShouldBe(46);
+
+            result.IReadOnlyCollection.ShouldNotBeNull();
+            result.IReadOnlyCollection.ShouldBeOfType<List<int>>();
+            result.IReadOnlyCollection.Count.ShouldBe(1);
+            result.IReadOnlyCollection.First().ShouldBe(47);
+        }
         public void Test_Insert_AllTypes()
         {
             throw new NotImplementedException();
