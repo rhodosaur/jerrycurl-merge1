@@ -39,7 +39,10 @@ namespace Jerrycurl.Data.Commands.Internal
         public void Write(object value)
         {
             if (this.Column != null)
+            {
                 this.Column.Value = value;
+                this.Column.HasChanged = true;
+            }
         }
 
         public void Bind()
