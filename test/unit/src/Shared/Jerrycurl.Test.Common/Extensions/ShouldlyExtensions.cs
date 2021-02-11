@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization.Formatters;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using System.Text.Json;
 using Shouldly;
 
 namespace Jerrycurl.Test.Extensions
@@ -10,14 +10,8 @@ namespace Jerrycurl.Test.Extensions
     {
         public static void ShouldBeSameAsJson<T>(this T source, T expected)
         {
-            var settings = new JsonSerializerSettings()
-            {
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                Formatting = Formatting.Indented,
-                TypeNameHandling = TypeNameHandling.None,
-            };
-            var sourceJson = JsonConvert.SerializeObject(source, settings);
-            var expectedJson = JsonConvert.SerializeObject(expected, settings);
+            var sourceJson = JsonSerializer.Serialize(source);
+            var expectedJson = JsonSerializer.Serialize(expected);
 
             sourceJson.ShouldBe(expectedJson);
         }

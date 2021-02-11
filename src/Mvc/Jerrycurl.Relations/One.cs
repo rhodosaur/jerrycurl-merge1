@@ -25,6 +25,8 @@ namespace Jerrycurl.Relations
             this.Value = value;
         }
 
+        public T ValueOrDefault => this.value;
+
         public void Clear()
         {
             this.value = default;

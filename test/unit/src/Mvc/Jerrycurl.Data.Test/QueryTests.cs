@@ -15,6 +15,7 @@ using Jerrycurl.Data.Test.Model.Blogging;
 using Jerrycurl.Data.Test.Metadata;
 using Jerrycurl.Data.Test.Model;
 using Jerrycurl.Test.Extensions;
+using Jerrycurl.Collections;
 
 namespace Jerrycurl.Data.Test
 {
@@ -131,7 +132,8 @@ namespace Jerrycurl.Data.Test
             result2[0].Posts.Count.ShouldBe(1);
             result2[0].Posts[0].BlogId5.ShouldBe(2);
             result2[1].Id5.ShouldBeNull();
-            result2[1].Posts.ShouldBeNull();
+            result2[1].Posts.ShouldNotBeNull();
+            result2[1].Posts.Count.ShouldBe(0);
         }
 
         public void Test_Read_NullableSet()
@@ -327,6 +329,7 @@ namespace Jerrycurl.Data.Test
                     {
                         Id = 3,
                         Title = "Blog #3",
+                        CategoryId = 1,
                     }
                 },
                 Authors = new List<Jerrycurl.Test.Model.Database.BlogAuthor>()
@@ -413,10 +416,10 @@ namespace Jerrycurl.Data.Test
             var result1 = buffer1.Commit<List<BlogDatabaseView>>();
             var result2 = buffer2.Commit<BlogDatabaseModel>();
 
-            result1.Cast<Jerrycurl.Test.Model.Database.Blog>().ToList().ShouldBeSameAsJson(data.Blogs);
-            result1.Where(b => b.Author.HasValue).Select(b => b.Author.Value).Distinct().ToList().ShouldBeSameAsJson(data.Authors);
-            result1.Where(b => b.Category.HasValue).Select(b => b.Category.Value).Distinct().ToList().ShouldBeSameAsJson(data.Categories);
-            result1.SelectMany(b => b.Posts).Cast<Jerrycurl.Test.Model.Database.BlogPost>().ToList().ShouldBeSameAsJson(data.Posts);
+            result1.Cast<Jerrycurl.Test.Model.Database.Blog>().OrderBy(b => b.Id).ToList().ShouldBeSameAsJson(data.Blogs);
+            result1.Select(b => b.Author.ValueOrDefault).NotNull().Distinct().OrderBy(p => p.BlogId).ToList().ShouldBeSameAsJson(data.Authors);
+            result1.Select(b => b.Category.ValueOrDefault).NotNull().Distinct().OrderBy(p => p.Id).ToList().ShouldBeSameAsJson(data.Categories);
+            result1.SelectMany(b => b.Posts).Cast<Jerrycurl.Test.Model.Database.BlogPost>().OrderBy(p => p.Id).ToList().ShouldBeSameAsJson(data.Posts);
             result2.ShouldBeSameAsJson(data);
         }
 
@@ -481,7 +484,8 @@ namespace Jerrycurl.Data.Test
             result[1].Parent.Value.Parent.HasValue.ShouldBeTrue();
             result[1].Parent.Value.Parent.Value.Id.ShouldBe(1);
             result[1].Parent.Value.Parent.Value.ParentId.ShouldBeNull();
-            result[1].Parent.Value.Parent.Value.Parent.ShouldBeNull();
+            result[1].Parent.Value.Parent.Value.Parent.ShouldNotBeNull();
+            result[1].Parent.Value.Parent.Value.Parent.HasValue.ShouldBeFalse();
 
             result[1].Children.ShouldNotBeNull();
             result[1].Children.Count.ShouldBe(2);
@@ -601,7 +605,8 @@ namespace Jerrycurl.Data.Test
             result[1].Id2.ShouldBe(0);
             result[1].Title.ShouldBe("Blog 2");
 
-            result[1].Posts.ShouldBeNull();
+            result[1].Posts.ShouldNotBeNull();
+            result[1].Posts.Count.ShouldBe(0);
         }
 
         public void Test_Insert_NonMatching()
@@ -1024,7 +1029,8 @@ namespace Jerrycurl.Data.Test
             result[1].Id2.ShouldBe(0);
             result[1].Title.ShouldBe("Blog 2");
 
-            result[1].Posts.ShouldBeNull();
+            result[1].Posts.ShouldNotBeNull();
+            result[1].Posts.Count.ShouldBe(0);
         }
 
         public async Task Test_Insert_OneToMany_Async()

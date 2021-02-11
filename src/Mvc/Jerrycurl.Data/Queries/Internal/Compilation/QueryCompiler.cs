@@ -390,9 +390,9 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             }
             else
             {
-                Expression list = this.GetElasticGetOrSetExpression(bufferIndex, reader.Target.NewList);
+                Expression getOrSetList = this.GetElasticGetOrSetExpression(bufferIndex, reader.Target.NewList);
 
-                return Expression.Condition(bufferNotNull, list, Expression.Default(list.Type));
+                return Expression.Condition(bufferNotNull, getOrSetList, reader.Target.NewList);
             }
         }
 
