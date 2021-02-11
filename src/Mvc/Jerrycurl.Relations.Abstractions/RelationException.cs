@@ -46,7 +46,7 @@ namespace Jerrycurl.Relations
 
         public static RelationException From(IRelationHeader header, string message = null, Exception innerException = null)
         {
-            string attributeList = string.Join(", ", header.Attributes.Select(a => a.Identity));
+            string attributeList = string.Join(", ", header.Attributes.Select(a => $"\"{a.Identity.Name}\""));
             string fullMessage = $"Error in relation {header.Schema}({attributeList}).";
 
             if (message != null || innerException != null)
@@ -86,11 +86,14 @@ namespace Jerrycurl.Relations
         internal static RelationException CannotForwardQueue(IRelation relation, MetadataIdentity identity, Exception innerException)
             => From(relation.Header, $"Cannot move cursor for '{identity}'.", innerException);
 
-        internal static RelationException Unreachable(MetadataIdentity source, IRelationHeader header, IEnumerable<IRelationMetadata> attributes)
+        internal static RelationException Unreachable(MetadataIdentity source, IRelationHeader header, IList<IRelationMetadata> attributes)
         {
-            string attributeNames = string.Join(", ", attributes.Select(a => a.Identity));
+            string attributeNames = string.Join(", ", attributes.Select(a => $"\"{a.Identity.Name}\""));
 
-            return From(header, $"Following attributes are unreachable from {source}: {attributeNames}");
+            if (attributes.Count == 1)
+                return From(header, $"Attribute {attributeNames} is unreachable from source \"{source.Name}\".");
+            else
+                return From(header, $"Attributes {attributeNames} are unreachable from source \"{source.Name}\".");
         }
             
         #endregion

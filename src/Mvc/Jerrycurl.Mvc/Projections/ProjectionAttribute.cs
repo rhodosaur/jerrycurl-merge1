@@ -22,7 +22,7 @@ namespace Jerrycurl.Mvc.Projections
             this.Identity = projection.Identity;
             this.Context = projection.Context;
             this.Metadata = projection.Metadata;
-            this.Data = projection.Data;
+            this.Data = ProjectionData.Resolve(projection.Data, projection.Metadata);
             this.Content = SqlContent.Empty;
         }
 

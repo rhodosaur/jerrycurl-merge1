@@ -22,7 +22,7 @@ namespace Jerrycurl.Mvc
             this.M = model?.Cast<TModel>() ?? throw new ArgumentNullException(nameof(model));
             this.R = result?.Cast<TResult>() ?? throw new ArgumentNullException(nameof(result));
             this.Context = model.Context;
-            this.Model = (TModel)(this.M.Data?.Source.Snapshot ?? default);
+            this.Model = (TModel)(this.M.Attr().Data?.Source.Snapshot ?? default);
         }
 
         public virtual void Execute() { }

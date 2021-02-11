@@ -24,7 +24,7 @@ namespace Jerrycurl.Data.Metadata
             {
                 Type declaringType = this.GetDeclaringTypeOfAttribute(metadata.Relation.Parent.Type, table);
 
-                if (declaringType == metadata.Relation.Parent.Type)
+                if (declaringType == metadata.Relation.Member?.DeclaringType)
                     return this.GetDefaultColumnName(metadata);
             }
 

@@ -17,8 +17,6 @@ namespace Jerrycurl.Mvc.Projections
         public IEnumerable<IProjectionMetadata> Header { get; }
 
         private RelationReader innerReader;
-        private List<int> indexMap;
-        private int headerSize;
 
         public ProjectionReader(IField source, IEnumerable<IProjectionMetadata> header)
         {
@@ -41,57 +39,19 @@ namespace Jerrycurl.Mvc.Projections
         {
             ITuple data = this.innerReader;
 
-            for (int i = 0; i < this.headerSize; i++)
-            {
-                int sourceIndex = this.indexMap[i * 3];
-                int inputIndex = this.indexMap[i * 3 + 1];
-                int outputIndex = this.indexMap[i * 3 + 2];
-
-                yield return new ProjectionData(data[sourceIndex], data[inputIndex], data[outputIndex]);
-            }
+            for (int i = 0; i < data.Degree; i += 3)
+                yield return new ProjectionData(data[i], data[i + 1], data[i + 2]);
         }
 
         private RelationReader CreateReader()
         {
-            this.indexMap = new List<int>();
-            this.headerSize = 0;
-
             List<IRelationMetadata> header = new List<IRelationMetadata>();
-            int i = 0;
 
             foreach (IProjectionMetadata attribute in this.Header)
             {
                 header.Add(attribute.Relation);
-                this.indexMap.Add(i);
-
-                if (attribute.Input == attribute && attribute.Output == attribute)
-                {
-                    this.indexMap.Add(i);
-                    this.indexMap.Add(i++);
-                }
-                else if (attribute.Input == attribute.Output)
-                {
-                    header.Add(attribute.Input.Relation);
-
-                    this.indexMap.Add(++i);
-                    this.indexMap.Add(i++);
-                }
-                else
-                {
-                    if (attribute.Input != attribute)
-                    {
-                        header.Add(attribute.Input.Relation);
-                        this.indexMap.Add(++i);
-                    }
-
-                    if (attribute.Output != attribute)
-                    {
-                        header.Add(attribute.Output.Relation);
-                        this.indexMap.Add(++i);
-                    }
-                }
-
-                this.headerSize++;
+                header.Add(attribute.Input.Relation);
+                header.Add(attribute.Output.Relation);
             }
 
             Relation body = new Relation(this.Source, new RelationHeader(this.Source.Identity.Schema, header));
