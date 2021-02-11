@@ -79,16 +79,16 @@ namespace Jerrycurl.Relations.Internal.Compilation
 
         public Expression GetReadWriteExpression(QueueReader reader)
         {
-            Expression queueIndex = this.GetQueueIndexExpression(reader.Index);
-            Expression assignVariable = Expression.Assign(reader.Index.Variable, queueIndex);
             Expression parentValue = this.GetQueuePropertyExpression(reader.Index, "List");
-            Expression readWrite = this.GetReadWriteExpression(reader, parentValue);
-            Expression writeBody = this.GetBlockOrExpression(new[] { assignVariable, readWrite }, new[] { reader.Index.Variable });
+            Expression body = this.GetReadWriteExpression(reader, parentValue);
 
             if (reader.Index.Type == RelationQueueType.Cached && reader.Index.Cache.Any())
-                return this.GetCacheExpression(reader.Index, writeBody);
+                body = this.GetCacheExpression(reader.Index, body);
 
-            return writeBody;
+            Expression queueIndex = this.GetQueueIndexExpression(reader.Index);
+            Expression assignVariable = Expression.Assign(reader.Index.Variable, queueIndex);
+
+            return this.GetBlockOrExpression(new[] { assignVariable, body }, new[] { reader.Index.Variable });
         }
 
         public Expression GetReadWriteExpression(NodeReader reader, Expression parentValue)
@@ -186,8 +186,7 @@ namespace Jerrycurl.Relations.Internal.Compilation
         #region " Cache "
         private Expression GetCacheExpression(QueueIndex queue, Expression nonCachedWrite)
         {
-            Expression cache = this.GetQueuePropertyExpression(queue, "Cache");
-            Expression isNull = Expression.ReferenceEqual(cache, Expression.Constant(null));
+            Expression isCached = this.GetQueuePropertyExpression(queue, "IsCached");
 
             List<Expression> writeBody = new List<Expression>() { nonCachedWrite };
             List<Expression> readBody = new List<Expression>();
@@ -195,16 +194,15 @@ namespace Jerrycurl.Relations.Internal.Compilation
             foreach (CacheWriter writer in queue.Cache)
             {
                 writeBody.Add(this.GetCacheWriteExpression(writer));
-                readBody.Add(this.GetCacheWriteExpression(writer));
+                readBody.Add(this.GetCacheReadExpression(writer));
             }
 
-            return Expression.IfThenElse(isNull, this.GetBlockOrExpression(writeBody), this.GetBlockOrExpression(readBody));
+            return Expression.IfThenElse(isCached, this.GetBlockOrExpression(readBody), this.GetBlockOrExpression(writeBody));
         }
 
         private Expression GetCacheWriteExpression(CacheWriter writer)
         {
-            Expression cache = this.GetQueuePropertyExpression(writer.Queue, "Cache");
-            Expression cacheIndex = Expression.ArrayAccess(cache, Expression.Constant(writer.CacheIndex));
+            Expression cacheIndex = this.GetCacheIndexExpression(writer);
             Expression bufferIndex = Expression.ArrayAccess(Arguments.Fields, Expression.Constant(writer.BufferIndex));
 
             return Expression.Assign(cacheIndex, bufferIndex);
@@ -212,11 +210,16 @@ namespace Jerrycurl.Relations.Internal.Compilation
 
         private Expression GetCacheReadExpression(CacheWriter writer)
         {
-            Expression cache = this.GetQueuePropertyExpression(writer.Queue, "Cache");
-            Expression cacheIndex = Expression.ArrayAccess(cache, Expression.Constant(writer.CacheIndex));
+            Expression cacheIndex = this.GetCacheIndexExpression(writer);
             Expression bufferIndex = Expression.ArrayAccess(Arguments.Fields, Expression.Constant(writer.BufferIndex));
 
             return Expression.Assign(bufferIndex, cacheIndex);
+        }
+        private Expression GetCacheIndexExpression(CacheWriter writer)
+        {
+            Expression cache = this.GetQueuePropertyExpression(writer.Queue, "Cache");
+
+            return Expression.Property(cache, "Item", Expression.Constant(writer.CacheIndex));
         }
         #endregion
 
@@ -251,7 +254,7 @@ namespace Jerrycurl.Relations.Internal.Compilation
 
         #endregion
 
-        #region " Missing writers "
+        #region " Missing "
         private Expression GetWriteMissingExpression(FieldWriter writer)
         {
             Expression bufferIndex = Expression.ArrayAccess(Arguments.Fields, Expression.Constant(writer.BufferIndex));
@@ -501,7 +504,6 @@ namespace Jerrycurl.Relations.Internal.Compilation
 
             return Expression.Lambda(binderType, bindExpression, new[] { parentValue, index, value }).Compile();
         }
-        #endregion
 
         private static class Arguments
         {
@@ -512,7 +514,8 @@ namespace Jerrycurl.Relations.Internal.Compilation
             public static ParameterExpression Notation { get; } = Expression.Parameter(typeof(DotNotation), "notation");
             public static ParameterExpression Binders { get; } = Expression.Parameter(typeof(Delegate[]), "binders");
             public static ParameterExpression Queues { get; } = Expression.Parameter(typeof(IRelationQueue[]), "queues");
-
         }
+
+        #endregion
     }
 }

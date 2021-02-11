@@ -69,7 +69,7 @@ namespace Jerrycurl.Relations.Internal.IO
                 return new QueueIndex()
                 {
                     Buffer = tree.Queues.Count,
-                    Variable = Expression.Parameter(queueType),
+                    Variable = Expression.Parameter(queueType, $"_queue{tree.Queues.Count}"),
                     List = node.Metadata,
                     Item = node.Item.Metadata,
                 };

@@ -20,6 +20,7 @@ namespace Jerrycurl.Relations.Internal.Queues
         public RelationQueueType Type { get; }
         public IRelationMetadata Metadata { get; }
         public FieldArray Cache { get; private set; }
+        public bool IsCached => this.usingCache;
 
         private Queue<RelationQueueItem<TList>> innerQueue = new Queue<RelationQueueItem<TList>>();
         private Queue<RelationQueueItem<TList>> innerQueue2 = new Queue<RelationQueueItem<TList>>();
@@ -63,33 +64,39 @@ namespace Jerrycurl.Relations.Internal.Queues
         {
             this.Reset();
 
-            if (this.innerQueue.Count == 0 && this.innerQueue2.Count > 0)
-            {
-                this.innerQueue = new Queue<RelationQueueItem<TList>>(this.innerQueue2);
-                this.innerQueue2.Clear();
-            }
-
             if (this.innerQueue.Count > 0)
             {
                 this.Debug(this.CurrentItem, "Start");
+
                 if (this.usingCache)
                     this.cacheEnumerator = this.CurrentItem.Cache.GetEnumerator();
                 else
                     this.innerEnumerator = (this.CurrentItem.List ?? (IEnumerable<TItem>)Array.Empty<TItem>()).GetEnumerator();
             }
-                
+        }
+
+        private bool IsStarted => this.usingCache ? this.cacheEnumerator != null : this.innerEnumerator != null;
+
+        private bool MoveNext()
+        {
+            if (!this.IsStarted)
+                return false;
+            else if (this.usingCache)
+                return this.cacheEnumerator.MoveNext();
+            else
+                return this.innerEnumerator.MoveNext();
         }
 
         public string GetFieldName(string namePart) => this.CurrentItem.CombineWith(namePart);
 
         public bool Read()
         {
-            while (this.innerQueue.Count > 0 || this.innerQueue2.Count > 0)
+            while (this.innerQueue.Count > 0)
             {
-                if (this.innerEnumerator == null)
+                if (!this.IsStarted)
                     this.Start();
 
-                if (this.innerEnumerator != null && this.innerEnumerator.MoveNext())
+                if (this.MoveNext())
                 {
                     this.CurrentItem.Increment();
 
@@ -105,6 +112,12 @@ namespace Jerrycurl.Relations.Internal.Queues
                 this.Reset();
             }
 
+            if (this.Type == RelationQueueType.Cached)
+            {
+                this.innerQueue = new Queue<RelationQueueItem<TList>>(this.innerCache);
+                this.usingCache = true;
+            }
+
             return false;
         }
 
@@ -112,7 +125,10 @@ namespace Jerrycurl.Relations.Internal.Queues
         {
             this.innerEnumerator?.Dispose();
             this.innerEnumerator = null;
+
             this.Cache = null;
+            this.cacheEnumerator?.Dispose();
+            this.cacheEnumerator = null;
         }
 
         private void Dequeue()
@@ -121,10 +137,10 @@ namespace Jerrycurl.Relations.Internal.Queues
             {
                 RelationQueueItem<TList> item = this.innerQueue.Dequeue();
 
-                this.Debug(item, "Dequeue");
-
-                if (this.Type == RelationQueueType.Cached)
+                if (!this.usingCache && this.Type == RelationQueueType.Cached)
                     this.innerCache.Add(item);
+
+                this.Debug(item, "Dequeue");
             }
             else if (this.Type == RelationQueueType.Cached)
             {
@@ -134,16 +150,5 @@ namespace Jerrycurl.Relations.Internal.Queues
         }
 
         public void Dispose() => this.Reset();
-
-        private class PriorityItem
-        {
-            public int Priority { get; set; }
-            public RelationQueueItem<TList> Item { get; set; }
-        }
-
-        private class DepthComparer : IComparer<PriorityItem>
-        {
-            public int Compare(PriorityItem x, PriorityItem y) => x.Priority.CompareTo(y.Priority);
-        }
     }
 }

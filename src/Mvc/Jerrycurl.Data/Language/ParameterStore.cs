@@ -7,13 +7,13 @@ using Jerrycurl.Relations;
 
 namespace Jerrycurl.Data.Language
 {
-    public class ParameterStore2 : Collection<IParameter>
+    public class ParameterStore : Collection<IParameter>
     {
         private readonly Dictionary<IField, IParameter> innerMap = new Dictionary<IField, IParameter>();
 
         public char? Prefix { get; }
 
-        public ParameterStore2(char? prefix = null)
+        public ParameterStore(char? prefix = null)
         {
             this.Prefix = prefix;
         }
@@ -27,7 +27,7 @@ namespace Jerrycurl.Data.Language
             {
                 string paramName = $"{this.Prefix}P{this.innerMap.Count}";
 
-                this.innerMap.Add(field, param = new Parameter(paramName, field)); // should be field
+                this.innerMap.Add(field, param = new Parameter(paramName, field));
                 this.Add(param);
             }
 

@@ -32,7 +32,7 @@ namespace Jerrycurl.Data.Language
 
         public static Command ToCommand(this IRelation relation, Func<IList<IParameter>, string> textBuilder)
         {
-            ParameterStore2 store = new ParameterStore2();
+            ParameterStore store = new ParameterStore();
 
             Command command = new Command()
             {
@@ -64,10 +64,10 @@ namespace Jerrycurl.Data.Language
             => source.Select(header).ToParameters();
 
         public static IList<IParameter> ToParameters(this ITuple tuple)
-            => new ParameterStore2().Add(tuple);
+            => new ParameterStore().Add(tuple);
 
         public static IList<IParameter> ToParameters(this IRelation relation)
-            => new ParameterStore2().Add(relation);
+            => new ParameterStore().Add(relation);
 
         public static IParameter ToParameter(this IField field, string parameterName)
             => new Parameter(parameterName, field);
