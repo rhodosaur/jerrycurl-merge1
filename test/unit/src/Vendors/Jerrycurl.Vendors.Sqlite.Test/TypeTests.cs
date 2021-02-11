@@ -28,7 +28,10 @@ CREATE TABLE jerry_types(
             Runnable<TypeModel, object> insert = new Runnable<TypeModel, object>(TypeModel.GetSample());
 
             insert.Sql("INSERT INTO jerry_types ( ");
-            insert.M(p => p.ColNames());
+            insert.M(
+                p =>
+                p.ColNames()
+            );
             insert.Sql(" ) VALUES ( ");
             insert.M(p => p.Pars());
             insert.Sql(");");

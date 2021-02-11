@@ -20,7 +20,6 @@ namespace Jerrycurl.Vendors.Sqlite.Test.Models
                 Text = "Jerrycurl",
                 Blob = Encoding.ASCII.GetBytes("Jerrycurl"),
             };
-
         }
     }
 }

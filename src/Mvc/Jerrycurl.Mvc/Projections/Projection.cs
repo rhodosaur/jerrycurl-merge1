@@ -28,7 +28,7 @@ namespace Jerrycurl.Mvc.Projections
             this.Metadata = metadata;
             this.Data = ProjectionData.FromIdentity(identity);
             this.Options = ProjectionOptions.Default;
-            this.Header = this.CreateDefaultHeader();
+            this.Header = this.CreateDefaultHeader(metadata);
         }
 
         protected Projection(IProjection projection)
@@ -69,11 +69,11 @@ namespace Jerrycurl.Mvc.Projections
             return metadata.Properties;
         }
 
-        private IEnumerable<IProjectionAttribute> CreateDefaultHeader()
+        private IEnumerable<IProjectionAttribute> CreateDefaultHeader(IProjectionMetadata metadata)
         {
             ProjectionIdentity identity = this.Identity;
             IProcContext context = this.Context;
-            IEnumerable<IProjectionMetadata> header = this.SelectAttributes(this.Metadata);
+            IEnumerable<IProjectionMetadata> header = this.SelectAttributes(metadata);
 
             if (this.Data != null)
             {
@@ -81,15 +81,15 @@ namespace Jerrycurl.Mvc.Projections
 
                 if (reader.Read())
                 {
-                    foreach (var (metadata, data) in header.Zip(reader.GetData()))
-                        yield return new ProjectionAttribute(identity, context, metadata, data);
+                    foreach (var (valueMetadata, data) in header.Zip(reader.GetData()))
+                        yield return new ProjectionAttribute(identity, context, valueMetadata, data);
 
                     yield break;
                 }
             }
 
-            foreach (IProjectionMetadata metadata in header)
-                yield return new ProjectionAttribute(identity, context, metadata, data: null);
+            foreach (IProjectionMetadata attributeMetadata in header)
+                yield return new ProjectionAttribute(identity, context, attributeMetadata, data: null);
         }
 
         public IProjection Map(Func<IProjectionAttribute, IProjectionAttribute> mapperFunc) => this.With(header: this.Header.Select(mapperFunc));
@@ -106,12 +106,16 @@ namespace Jerrycurl.Mvc.Projections
 
             foreach (IProjectionAttribute attribute in this.Header)
             {
-                attribute.WriteTo(buffer);
-
-                if (wroteFirst)
-                    buffer.Append(this.Options.Separator);
-                else
+                if (!wroteFirst)
+                {
+                    attribute.WriteTo(buffer);
                     wroteFirst = true;
+                }
+                else
+                {
+                    buffer.Append(this.Options.Separator);
+                    attribute.WriteTo(buffer);
+                }
             }
         }
 
@@ -122,7 +126,8 @@ namespace Jerrycurl.Mvc.Projections
         {
             IProjectionMetadata newMetadata = metadata ?? this.Metadata;
             IProjectionData newData = data ?? this.Data;
-            IEnumerable<IProjectionAttribute> newHeader = header ?? this.Header;
+            
+            IEnumerable<IProjectionAttribute> newHeader = header ?? (newMetadata != this.Metadata ? this.CreateDefaultHeader(newMetadata) : this.Header);
             IProjectionOptions newOptions = options ?? this.Options;
 
             return new Projection(this, newMetadata, newData, newHeader, newOptions);

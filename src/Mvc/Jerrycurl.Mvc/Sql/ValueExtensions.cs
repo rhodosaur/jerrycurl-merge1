@@ -28,9 +28,9 @@ namespace Jerrycurl.Mvc.Sql
                 while (reader.Read())
                 {
                     IProjectionData[] data = reader.GetData().ToArray();
-                    IProjectionAttribute[] attributes = projection.Header.Zip(data).Select(t => t.First.With(data: t.Second)).ToArray();
+                    IProjectionAttribute[] attributes = projection.Header.Zip(data.Skip(1)).Select(t => t.First.With(data: t.Second)).ToArray();
 
-                    yield return projection.With(data: attributes[0].Data, header: attributes.Skip(1));
+                    yield return projection.With(data: data[0], header: attributes);
                 }
             }
         }
