@@ -19,8 +19,8 @@ namespace Jerrycurl.Mvc.Sql
         /// <returns>A new attribute containing the appended buffer.</returns>
         public static IProjectionAttribute Prop(this IProjectionAttribute attribute, string tblAlias = null, string propName = null)
         {
-            if ((propName == null || attribute.Field != null) && attribute.Metadata.HasFlag(RelationMetadataFlags.Model))
-                throw ProjectionException.FromProjection(attribute, "Cannot reference model directly.");
+            if (attribute.Metadata.HasFlag(RelationMetadataFlags.Model) && (propName == null || attribute.Field != null))
+                throw ProjectionException.PropertyNotFound(attribute.Metadata);
 
             if (attribute.Field != null)
             {

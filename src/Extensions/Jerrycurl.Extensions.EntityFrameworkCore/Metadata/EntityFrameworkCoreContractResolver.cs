@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace Jerrycurl.Extensions.EntityFrameworkCore.Metadata
 {
-    public class EntityFrameworkCoreContractResolver : ITableContractResolver
+    public class EntityFrameworkCoreContractResolver : IRelationContractResolver, ITableContractResolver
     {
         public int Priority { get; } = 1000;
 
@@ -29,6 +29,8 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Metadata
         {
             this.entities = dbContext.Model.GetEntityTypes().ToArray();
         }
+
+        public IRelationContract GetContract(IRelationMetadata metadata) => null;
 
         public IEnumerable<Attribute> GetAnnotations(IRelationMetadata metadata)
         {
@@ -76,7 +78,7 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Metadata
         {
             IProperty property = this.FindProperty(metadata.Relation);
 
-            if (property?.DeclaringType.ClrType == metadata.Relation.Type)
+            if (property != null && property.DeclaringType.ClrType == metadata.Relation.Member?.DeclaringType)
                 return this.GetColumnName(property);
 
             return null;

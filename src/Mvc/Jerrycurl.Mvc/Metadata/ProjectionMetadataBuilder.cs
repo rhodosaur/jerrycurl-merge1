@@ -68,7 +68,20 @@ namespace Jerrycurl.Mvc.Metadata
             metadata.Item = this.CreateItem(context, metadata);
             metadata.Flags = this.GetFlags(metadata);
 
+            this.CreateTableMetadata(metadata);
+
             return metadata;
+        }
+
+        private void CreateTableMetadata(ProjectionMetadata metadata)
+        {
+            ITableMetadata table = metadata.Identity.Lookup<ITableMetadata>();
+
+            if (table != null)
+            {
+                metadata.Table = table.HasFlag(TableMetadataFlags.Table) ? table : table.Owner;
+                metadata.Column = table.HasFlag(TableMetadataFlags.Column) ? table : null;
+            }
         }
 
         private ProjectionMetadataFlags GetFlags(ProjectionMetadata metadata)

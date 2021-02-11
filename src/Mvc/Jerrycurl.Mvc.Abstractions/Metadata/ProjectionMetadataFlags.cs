@@ -9,6 +9,5 @@ namespace Jerrycurl.Mvc.Metadata
         Input = 1,
         Output = 2,
         Identity = 4,
-        OutputParameter = 8,
     }
 }

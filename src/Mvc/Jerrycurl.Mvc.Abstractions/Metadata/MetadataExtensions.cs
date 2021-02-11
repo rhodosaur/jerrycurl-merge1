@@ -5,8 +5,24 @@ namespace Jerrycurl.Mvc.Metadata
 {
     public static class MetadataExtensions
     {
-        public static bool HasFlag(this IProjectionMetadata metadata, TableMetadataFlags flag) => (metadata.Table != null && metadata.Table.HasFlag(flag));
-        public static bool HasAnyFlag(this IProjectionMetadata metadata, TableMetadataFlags flag) => (metadata.Table != null && metadata.Table.HasAnyFlag(flag));
+        public static bool HasFlag(this IProjectionMetadata metadata, TableMetadataFlags flag)
+        {
+            if (metadata.Table != null && metadata.Table.HasFlag(flag))
+                return true;
+            else if (metadata.Column != null && metadata.Column.HasFlag(flag))
+                return true;
+
+            return false;
+        }
+        public static bool HasAnyFlag(this IProjectionMetadata metadata, TableMetadataFlags flag)
+        {
+            if (metadata.Table != null && metadata.Table.HasAnyFlag(flag))
+                return true;
+            else if (metadata.Column != null && metadata.Column.HasAnyFlag(flag))
+                return true;
+
+            return false;
+        }
 
         public static bool HasFlag(this IProjectionMetadata metadata, RelationMetadataFlags flag) => (metadata.Relation != null && metadata.Relation.HasFlag(flag));
         public static bool HasAnyFlag(this IProjectionMetadata metadata, RelationMetadataFlags flag) => (metadata.Relation != null && metadata.Relation.HasAnyFlag(flag));

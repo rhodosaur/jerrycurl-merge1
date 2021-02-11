@@ -15,7 +15,7 @@ namespace Jerrycurl.Mvc.Sql
         /// <returns>A new attribute containing the appended buffer.</returns>
         public static IProjectionAttribute TblName(this IProjectionAttribute attribute)
         {
-            ITableMetadata table = ProjectionHelper.GetPreferredTableMetadata(attribute);
+            ITableMetadata table = ProjectionHelper.GetTableMetadata(attribute);
 
             string qualifier = attribute.Context.Domain.Dialect.Qualifier;
             string tableName = string.Join(qualifier, table.TableName.Select(attribute.Context.Domain.Dialect.Identifier));
@@ -30,7 +30,7 @@ namespace Jerrycurl.Mvc.Sql
         /// <returns>A new attribute containing the appended buffer.</returns>
         public static IProjectionAttribute Ali(this IProjectionAttribute attribute)
         {
-            ITableMetadata table = ProjectionHelper.GetPreferredTableMetadata(attribute);
+            ITableMetadata table = ProjectionHelper.GetTableMetadata(attribute);
 
             string alias = attribute.Context.Lookup.Table(attribute.Identity, table.Identity);
 

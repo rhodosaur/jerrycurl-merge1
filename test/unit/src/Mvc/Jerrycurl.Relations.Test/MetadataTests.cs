@@ -52,7 +52,7 @@ namespace Jerrycurl.Relations.Test
 
             schema.ShouldNotBeNull();
 
-            Should.Throw<MetadataBuilderException>(() => schema.Lookup<CustomMetadata>("Item.Value"));
+            Should.Throw<MetadataBuilderException>(() => schema.Lookup<CustomMetadata>("Value"));
         }
 
         public void Test_Notation_StringComparison()

@@ -1,4 +1,5 @@
-﻿using Jerrycurl.Reflection;
+﻿using Jerrycurl.Mvc.Metadata;
+using Jerrycurl.Reflection;
 using System;
 using System.Runtime.Serialization;
 
@@ -61,6 +62,15 @@ namespace Jerrycurl.Mvc.Projections
 
         public static ProjectionException ValueNotFound(IProjection projection) => FromProjection(projection, "Value not found.");
         public static ProjectionException ValueNotFound(IProjectionAttribute attribute) => FromProjection(attribute, "Value not found.");
+
+        internal static ProjectionException TableNotFound(IProjectionMetadata metadata)
+            => new ProjectionException($"No table information found for {metadata.Identity}.");
+
+        internal static ProjectionException ColumnNotFound(IProjectionMetadata metadata)
+            => new ProjectionException($"No column information found for {metadata.Identity}.");
+
+        internal static ProjectionException PropertyNotFound(IProjectionMetadata metadata)
+            => new ProjectionException($"No property information found for {metadata.Identity}.");
 
         #endregion
     }

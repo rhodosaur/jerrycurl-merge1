@@ -9,36 +9,12 @@ namespace Jerrycurl.Mvc.Sql
 {
     internal static class ProjectionHelper
     {
-        public static ITableMetadata GetPreferredTableMetadata(IProjection projection) => GetPreferredTableMetadata(projection.Metadata) ??
-            throw ProjectionException.FromProjection(projection, "No table information found.");
-
-        public static ITableMetadata GetPreferredTableMetadata(IProjectionAttribute attribute) => GetPreferredTableMetadata(attribute.Metadata) ??
-            throw ProjectionException.FromProjection(attribute, "No table information found.");
-
-        private static ITableMetadata GetPreferredTableMetadata(IProjectionMetadata metadata)
-        {
-            ITableMetadata table = metadata.Table;
-            ITableMetadata item = metadata.Item?.Table;
-
-            if (table != null && table.HasFlag(TableMetadataFlags.Table))
-                return table;
-            else if (table?.MemberOf != null && table.MemberOf.HasFlag(TableMetadataFlags.Table))
-                return table.MemberOf;
-            else if (item != null && item.HasFlag(TableMetadataFlags.Table))
-                return item;
-
-            return null;
-        }
-
-        public static ITableMetadata GetPreferredColumnMetadata(IProjectionAttribute attribute)
-        {
-            if (attribute.Metadata.HasFlag(TableMetadataFlags.Column))
-                return attribute.Metadata.Table;
-            else if (attribute.Metadata.Item != null && attribute.Metadata.Item.HasFlag(TableMetadataFlags.Column))
-                return attribute.Metadata.Item.Table;
-
-            throw ProjectionException.FromProjection(attribute, "No column information found.");
-        }
+        public static ITableMetadata GetTableMetadata(IProjection projection) => GetTableMetadata(projection.Metadata);
+        public static ITableMetadata GetTableMetadata(IProjectionAttribute attribute) => GetTableMetadata(attribute.Metadata);
+        private static ITableMetadata GetTableMetadata(IProjectionMetadata metadata)
+            => metadata.Table ?? metadata.Item?.Table ?? throw ProjectionException.TableNotFound(metadata);
+        public static ITableMetadata GetColumnMetadata(IProjectionAttribute attribute)
+            => attribute.Metadata.Column ?? attribute.Metadata.Item?.Column ?? throw ProjectionException.ColumnNotFound(attribute.Metadata);
 
         public static IProjectionMetadata GetMetadataFromRelativeLambda(IProjection projection, LambdaExpression expression)
         {

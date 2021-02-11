@@ -31,5 +31,12 @@ namespace Jerrycurl.Relations.Metadata
 
         internal static MetadataBuilderException InvalidContract(IRelationMetadata metadata, string message)
             => new MetadataBuilderException($"Invalid contract for {metadata.Identity}: {message}");
+
+        internal static MetadataBuilderException NoRecursion<TMetadata>(string name, Exception innerException)
+        {
+            string message = $"Recursive calls to ISchema.Lookup are not supported. Please use IMetadataBuilderContext.GetMetadata<{typeof(TMetadata).Name}>(\"{name}\") instead.";
+
+            return new MetadataBuilderException(message, innerException);
+        }
     }
 }

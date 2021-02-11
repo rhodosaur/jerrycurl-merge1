@@ -28,12 +28,12 @@ namespace Jerrycurl.Data.Metadata
             return parent.Properties.FirstOrDefault(m => m.Identity.Equals(relation.Identity));
         }
 
-        public void Initialize(IMetadataBuilderContext context) => this.CreateMetadata(context, context.Relation);
+        public void Initialize(IMetadataBuilderContext context) => this.CreateMetadata(context, context.Relation, null);
 
         private IEnumerable<TableMetadata> CreateProperties(IMetadataBuilderContext context, TableMetadata parent)
         {
             foreach (IRelationMetadata property in parent.Relation.Properties)
-                yield return this.CreateMetadata(context, property);
+                yield return this.CreateMetadata(context, property, parent);
         }
 
         private TableMetadata CreateItem(IMetadataBuilderContext context, TableMetadata parent)
@@ -41,16 +41,16 @@ namespace Jerrycurl.Data.Metadata
             if (parent.Relation.Item == null)
                 return null;
 
-            return this.CreateMetadata(context, parent.Relation.Item);
+            return this.CreateMetadata(context, parent.Relation.Item, parent);
         }
 
-        private TableMetadata CreateMetadata(IMetadataBuilderContext context, IRelationMetadata relation)
+        private TableMetadata CreateMetadata(IMetadataBuilderContext context, IRelationMetadata relation, TableMetadata parent)
         {
             TableMetadata metadata = new TableMetadata(relation);
 
             metadata.Item = this.CreateItem(context, metadata);
             
-            this.ApplyContracts(metadata);
+            this.ApplyContracts(metadata, parent);
 
             metadata.Properties = new Lazy<IReadOnlyList<TableMetadata>>(() => this.CreateProperties(context, metadata).ToList());
 
@@ -59,7 +59,7 @@ namespace Jerrycurl.Data.Metadata
             return metadata;
         }
 
-        private void ApplyContracts(TableMetadata metadata)
+        private void ApplyContracts(TableMetadata metadata, TableMetadata parent)
         {
             IEnumerable<ITableContractResolver> allResolvers = this;
 
@@ -77,6 +77,9 @@ namespace Jerrycurl.Data.Metadata
 
             if (metadata.ColumnName != null)
                 metadata.Flags |= TableMetadataFlags.Column;
+
+            if (metadata.HasFlag(TableMetadataFlags.Column) && parent != null && parent.HasFlag(TableMetadataFlags.Table))
+                metadata.Owner = parent;
         }
     }
 }

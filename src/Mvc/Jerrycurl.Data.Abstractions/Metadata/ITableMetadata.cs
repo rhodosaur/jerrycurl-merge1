@@ -8,7 +8,7 @@ namespace Jerrycurl.Data.Metadata
     {
         MetadataIdentity Identity { get; }
         TableMetadataFlags Flags { get; }
-        ITableMetadata MemberOf { get; }
+        ITableMetadata Owner { get; }
         IReadOnlyList<ITableMetadata> Properties { get; }
         ITableMetadata Item { get; }
 

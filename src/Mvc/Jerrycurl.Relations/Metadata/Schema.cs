@@ -79,7 +79,7 @@ namespace Jerrycurl.Relations.Metadata
             }
             catch (LockRecursionException ex)
             {
-                throw new MetadataBuilderException("To mitigate async deadlocks, fetching metadata recursively through ISchema is not supported.", ex);
+                throw MetadataBuilderException.NoRecursion<TMetadata>(name, ex);
             }
             finally
             {
