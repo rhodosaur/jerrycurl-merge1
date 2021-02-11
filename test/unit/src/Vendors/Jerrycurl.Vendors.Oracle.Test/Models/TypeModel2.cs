@@ -14,7 +14,6 @@ namespace Jerrycurl.Vendors.Oracle.Test.Models
             {
                 LongRaw = Encoding.ASCII.GetBytes("Jerrycurl"),
             };
-
         }
     }
 }

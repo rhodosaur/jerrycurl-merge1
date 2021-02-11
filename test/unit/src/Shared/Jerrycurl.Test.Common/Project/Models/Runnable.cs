@@ -10,10 +10,12 @@ namespace Jerrycurl.Test.Project.Models
     {
         private readonly List<ActionItem> actions = new List<ActionItem>();
         public TModel Model { get; }
+        public string Separator { get; }
 
-        public Runnable(TModel model = default)
+        public Runnable(TModel model = default, string separator = null)
         {
             this.Model = model;
+            this.Separator = separator;
         }
 
         private void R(Func<IProjection, ISqlWritable> func) => this.actions.Add(new ActionItem() { Result = func });
@@ -29,7 +31,7 @@ namespace Jerrycurl.Test.Project.Models
 
         public void Execute(ISqlPage page)
         {
-            ProcPage<IRunnable, object> proc = (ProcPage<IRunnable, object>)page;
+            var proc = (ProcPage<IRunnable, object>)page;
 
             foreach (ActionItem a in this.actions)
             {
@@ -37,10 +39,20 @@ namespace Jerrycurl.Test.Project.Models
                     proc.WriteLiteral(a.Sql);
 
                 if (a.Result != null)
-                    proc.Write(a.Result(proc.R));
+                    proc.Write(a.Result(WithOptions(proc.R)));
 
                 if (a.Model != null)
-                    proc.Write(a.Model(proc.M));
+                    proc.Write(a.Model(WithOptions(proc.M)));
+            }
+
+            IProjection WithOptions(IProjection projection)
+            {
+                if (this.Separator == null)
+                    return projection;
+
+                var newOptions = new ProjectionOptions(projection.Options) { Separator = this.Separator };
+
+                return projection.With(options: newOptions);
             }
         }
 

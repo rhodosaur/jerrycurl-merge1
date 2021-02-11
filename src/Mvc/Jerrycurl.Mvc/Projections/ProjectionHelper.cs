@@ -23,7 +23,7 @@ namespace Jerrycurl.Mvc.Projections
         {
             if (metadata.Table != null)
                 return metadata;
-            else if (metadata.Item.Table != null)
+            else if (metadata.Item?.Table != null)
                 return metadata.Item;
 
             throw ProjectionException.TableNotFound(metadata);
