@@ -21,7 +21,16 @@ namespace Jerrycurl.Data.V11.Language
             };
         }
 
-        public static Command ToCommand(this IRelation2 relation, Func<IList<IParameter>, string> textFactory)
+        public static Command ToCommand(this IRelation2 relation, string commandText)
+        {
+            return new Command()
+            {
+                CommandText = commandText,
+                Parameters = relation.ToParameters()
+            };
+        }
+
+        public static Command ToCommand(this IRelation2 relation, Func<IList<IParameter>, string> textBuilder)
         {
             ParameterStore2 store = new ParameterStore2();
 
@@ -36,7 +45,7 @@ namespace Jerrycurl.Data.V11.Language
             {
                 IList<IParameter> parameters = store.Add(reader);
 
-                command.CommandText += textFactory(parameters) + Environment.NewLine;
+                command.CommandText += textBuilder(parameters) + Environment.NewLine;
             }
 
             return command;

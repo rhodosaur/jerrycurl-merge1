@@ -145,6 +145,7 @@ namespace Jerrycurl.Data.Test
             model1.Value2.ShouldBe("apple");
             model2.Value2.ShouldBe("apple");
         }
+
         public async Task Test_Execute_WithColumnBindingToIndexer()
         {
             IList<int> model1 = new List<int>() { 0, 0 };
