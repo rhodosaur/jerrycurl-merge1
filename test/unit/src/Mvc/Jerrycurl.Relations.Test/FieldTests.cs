@@ -8,6 +8,45 @@ namespace Jerrycurl.Relations.Test
 {
     public class FieldTests
     {
+        public void Test_Field_Names_Recursive()
+        {
+            var model = new List<RecursiveModel>()
+            {
+                new RecursiveModel()
+                {
+                    Subs = new List<RecursiveModel>()
+                    {
+                        new RecursiveModel()
+                        {
+                            Subs = new List<RecursiveModel>()
+                            {
+
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        public void Test_Field_Names()
+        {
+            var model = new List<RootModel>()
+            {
+                new RootModel()
+                {
+                    ComplexList = new List<RootModel.SubModel>()
+                    {
+                        new RootModel.SubModel() { Value = 12 },
+                        new RootModel.SubModel() { Value = 12 },
+                    }
+                },
+                new RootModel()
+                {
+
+                }
+            };
+        }
+
         public void Test_Field_FieldTypes()
         {
             RootModel model = new RootModel() { Complex = new RootModel.SubModel() };

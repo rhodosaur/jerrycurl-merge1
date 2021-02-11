@@ -541,9 +541,51 @@ namespace Jerrycurl.Data.Test
             result.Posts.ShouldBeNull();
         }
 
+        public void Test_Insert_OneToMany_Natural()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(List<NaturalModel>));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            buffer.Insert(100, ("", "Item.NaturalId"));
+            buffer.Insert(100, ("", "Item.Many.Item.NaturalId"));
+
+            var result = buffer.Commit<List<NaturalModel>>();
+
+            result.ShouldNotBeNull();
+            result.Count.ShouldBe(1);
+            result[0].NaturalId.ShouldBe(100);
+            result[0].Many.ShouldNotBeNull();
+            result[0].Many.Count.ShouldBe(1);
+            result[0].Many[0].NaturalId.ShouldBe(100);
+
+        }
         public void Test_Insert_Key_Priority()
         {
-            throw new NotImplementedException();
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(List<PriorityModel>));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            buffer.Insert((200, 100), ("Item1", "Item.Id2"), ("Item2", "Item.Id1"));
+            buffer.Insert(100, ("", "Item.Many.Item.PriorityId1"));
+            buffer.Insert(200, ("", "Item.Many.Item.PriorityId2"));
+            buffer.Insert(100, ("", "Item.One.Item.PriorityId1"));
+            buffer.Insert(200, ("", "Item.One.Item.PriorityId2"));
+
+            var result = buffer.Commit<List<PriorityModel>>();
+
+            result.ShouldNotBeNull();
+            result.Count.ShouldBe(1);
+            result[0].Id1.ShouldBe(100);
+            result[0].Id2.ShouldBe(200);
+            result[0].Many.ShouldNotBeNull();
+            result[0].Many.Count.ShouldNotBeNull();
+            result[0].Many[0].PriorityId1.ShouldBe(100);
+            result[0].Many[0].PriorityId2.ShouldBe(0);
+            result[0].One.ShouldNotBeNull();
+            result[0].One.HasValue.ShouldBeTrue();
+            result[0].One.Value.PriorityId1.ShouldBe(0);
+            result[0].One.Value.PriorityId2.ShouldBe(200);
         }
 
         public void Test_Aggregate_Result_Priority()
@@ -566,15 +608,24 @@ namespace Jerrycurl.Data.Test
         {
             var store = DatabaseHelper.Default.Store;
             var schema = store.GetSchema(typeof(List<int>));
-            var buffer = new QueryBuffer(schema, QueryType.List);
+            var buffer1 = new QueryBuffer(schema, QueryType.List);
+            var buffer2 = new QueryBuffer(schema, QueryType.List);
 
-            buffer.Insert(10, ("", "Item"), ("", "Capacity"));
+            buffer1.Insert(11, ("", "Item"), ("", "Capacity"));
+            buffer2.Insert(11, ("", "Capacity"), ("", "Item"));
 
-            var result = buffer.Commit<List<int>>();
+            var result1 = buffer1.Commit<List<int>>();
+            var result2 = buffer2.Commit<List<int>>();
 
-            result.ShouldNotBeNull();
-            result.Count.ShouldBe(1);
-            result[0].ShouldBe(15);
+            result1.ShouldNotBeNull();
+            result1.Count.ShouldBe(1);
+            result1[0].ShouldBe(11);
+            result1.Capacity.ShouldNotBe(11);
+
+            result2.ShouldNotBeNull();
+            result2.Count.ShouldBe(1);
+            result2[0].ShouldBe(11);
+            result2.Capacity.ShouldNotBe(11);
         }
 
         public void Test_Insert_Missing_ChildKey()

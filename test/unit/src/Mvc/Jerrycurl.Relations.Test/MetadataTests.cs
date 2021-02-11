@@ -43,7 +43,7 @@ namespace Jerrycurl.Relations.Test
             metadata1_1.ShouldNotBeSameAs(metadata2_1);
         }
 
-        public void Test_SchemaStore_DisallowsRecursiveCalls()
+        public void Test_SchemaStore_DisallowsRecursion()
         {
             SchemaStore store = new SchemaStore(new DotNotation(StringComparer.Ordinal)) { new RecursiveMetadataBuilder() };
 
@@ -54,7 +54,7 @@ namespace Jerrycurl.Relations.Test
             Should.Throw<MetadataBuilderException>(() => schema.Lookup<CustomMetadata>("Item.Value"));
         }
 
-        public void Test_MetadataNotation_StringComparison()
+        public void Test_Notation_StringComparison()
         {
             SchemaStore sensitive = new SchemaStore(new DotNotation(StringComparer.Ordinal)) { new RelationMetadataBuilder() };
             SchemaStore insensitive = new SchemaStore(new DotNotation()) { new RelationMetadataBuilder() };
@@ -72,7 +72,7 @@ namespace Jerrycurl.Relations.Test
             insensitive2.ShouldNotBeNull();
         }
 
-        public void Test_Metadata_WithCustomListContract()
+        public void Test_Metadata_Custom_Contract()
         {
             RelationMetadataBuilder builder = new RelationMetadataBuilder() { new CustomContractResolver() };
             SchemaStore customStore = new SchemaStore(new DotNotation()) { builder };
@@ -89,7 +89,7 @@ namespace Jerrycurl.Relations.Test
             found.Annotations.OfType<CustomAttribute>().FirstOrDefault().ShouldNotBeNull();
         }
 
-        public void Test_Metadata_WithInvalidListContract_Throws()
+        public void Test_Metadata_Invalid_Constract()
         {
             RelationMetadataBuilder builder = new RelationMetadataBuilder() { new InvalidContractResolver() };
             SchemaStore customStore = new SchemaStore(new DotNotation()) { builder };

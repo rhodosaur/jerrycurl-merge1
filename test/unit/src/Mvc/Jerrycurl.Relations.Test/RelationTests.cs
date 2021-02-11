@@ -518,9 +518,11 @@ namespace Jerrycurl.Relations.Test
             data[1][1].ShouldBeSameAs(data[3][1]);
         }
 
-        public void Test_Select_RecursiveBreadthFirst()
+        public void Test_Select_Recursive()
         {
-            List<RecursiveModel> model = new List<RecursiveModel>()
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema<List<RecursiveModel>>();
+            var model = new List<RecursiveModel>()
             {
                 new RecursiveModel()
                 {
@@ -606,14 +608,20 @@ namespace Jerrycurl.Relations.Test
                 new RecursiveModel() { Name = "4" },
             };
 
-            IRelation rel1 = DatabaseHelper.Default.Relation(model, "Item.Name");
-            IRelation rel2 = DatabaseHelper.Default.Relation(model, "Item.Subs.Item.Name");
+            var rel1 = store.From(model).Select("Item.Name");
+            var rel2 = store.From(model).Select("Item.Subs.Item.Name");
 
-            IList<string> actual1 = rel1.Body.Select(t => (string)t[0].Snapshot).ToList();
-            IList<string> actual2 = rel2.Body.Select(t => (string)t[0].Snapshot).ToList();
+            var names1 = rel1.Body.Select(t => t[0].Identity.Name).ToList();
+            var values1 = rel1.Body.Select(t => (string)t[0].Snapshot).ToList();
 
-            actual1.ShouldBe(new[] { "1", "2", "3", "4" });
-            actual2.ShouldBe(new[] { "1.1",
+            var names2 = rel2.Body.Select(t => t[0].Identity.Name).ToList();
+            var values2 = rel2.Body.Select(t => (string)t[0].Snapshot).ToList();
+
+            names1.ShouldBe(new[] { "Item[0].Name", "Item[1].Name" });
+            values1.ShouldBe(new[] { "1", "2", "3", "4" });
+
+            names2.ShouldBe()
+            values2.ShouldBe(new[] { "1.1",
                                        "1.1.1", "1.1.2", "1.1.3",
                                          "1.1.1.1", "1.1.1.2", "1.1.1.3", "1.1.1.4", "1.1.2.1", "1.1.2.2",
                                            "1.1.1.3.1",
