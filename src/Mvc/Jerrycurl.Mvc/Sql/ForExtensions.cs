@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using Jerrycurl.Mvc.Metadata;
 using Jerrycurl.Mvc.Projections;
+using Jerrycurl.Relations.Language;
 using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Mvc.Sql
@@ -64,7 +66,13 @@ namespace Jerrycurl.Mvc.Sql
         /// <param name="projection">The current projection</param>
         /// <returns>A new attribute</returns>
         public static IProjectionAttribute Attr(this IProjection projection) => new ProjectionAttribute(projection);
-        public static IProjectionAttribute Attr<TModel, TProperty>(this IProjection<TModel> projection, Expression<Func<TModel, TProperty>> expression) => projection.For(expression).Attr();
+        public static IProjectionAttribute Attr<TModel, TProperty>(this IProjection<TModel> projection, Expression<Func<TModel, TProperty>> expression)
+        {
+            IProjectionMetadata metadata = ProjectionHelper.GetMetadataFromRelativeLambda(projection, expression);
+            IProjectionData data = projection.Header.FirstOrDefault(a => a.Metadata == metadata)?.Data;
+
+            return projection.Attr().With(metadata, data);
+        }
 
         public static IEnumerable<IProjectionAttribute> Attrs(this IProjection projection) => projection.Header;
         public static IEnumerable<IProjectionAttribute> Attrs<TModel, TProperty>(this IProjection<TModel> projection, Expression<Func<TModel, TProperty>> expression) => projection.For(expression).Attrs();

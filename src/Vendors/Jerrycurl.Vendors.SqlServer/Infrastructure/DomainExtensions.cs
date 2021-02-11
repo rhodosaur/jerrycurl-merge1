@@ -18,10 +18,7 @@ namespace Jerrycurl.Mvc
         {
             options.ConnectionFactory = () => new SqlConnection(connectionString);
             options.Use(new SqlServerContractResolver());
-
-            if (options.Sql == null)
-                options.Sql = new SqlOptions();
-
+            options.Sql ??= new SqlOptions();
             options.Sql.MaxParameters = 2098;
         }
     }

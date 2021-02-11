@@ -11,7 +11,9 @@ namespace Jerrycurl.Mvc
         void Append(string text);
         void Append(ISqlContent content);
 
-        SqlOffset Mark();
+        void Push(int batchIndex);
+        void Pop();
+        void Mark();
 
         IEnumerable<ISqlContent> Read(ISqlOptions options);
         ISqlContent ReadToEnd();

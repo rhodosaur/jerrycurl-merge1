@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Jerrycurl.Mvc.Metadata;
 using Jerrycurl.Relations;
@@ -17,6 +18,7 @@ namespace Jerrycurl.Mvc.Projections
         {
             this.Source = this.Input = this.Output = value ?? throw new ArgumentNullException(nameof(value));
         }
+
         public ProjectionData(IField source, IField input, IField output)
         {
             this.Source = source ?? throw new ArgumentNullException(nameof(source));
@@ -24,7 +26,17 @@ namespace Jerrycurl.Mvc.Projections
             this.Output = output ?? throw new ArgumentNullException(nameof(output));
         }
 
-        internal static ProjectionData FromIdentity(ProjectionIdentity identity)
+        internal static IProjectionData Resolve(IProjectionData data, IProjectionMetadata metadata)
+        {
+            if (data == null)
+                return null;
+            else if (data.Source.Metadata == metadata.Relation)
+                return data;
+            else
+                return ProjectionReader.Lookup(data.Source, new[] { metadata }).FirstOrDefault();
+        }
+
+        internal static IProjectionData Resolve(ProjectionIdentity identity)
         {
             if (identity.Source != null)
                 return new ProjectionData(identity.Source);

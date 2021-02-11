@@ -5,6 +5,7 @@ using Jerrycurl.Data.Sessions;
 using Jerrycurl.Mvc.Metadata;
 using Jerrycurl.Mvc.Projections;
 using Jerrycurl.Relations;
+using Jerrycurl.Relations.Language;
 
 namespace Jerrycurl.Mvc.Projections
 {
@@ -58,7 +59,7 @@ namespace Jerrycurl.Mvc.Projections
         public IProjectionAttribute With(IProjectionMetadata metadata = null, IProjectionData data = null, ISqlContent content = null)
         {
             IProjectionMetadata newMetadata = metadata ?? this.Metadata;
-            IProjectionData newData = data ?? this.Data;
+            IProjectionData newData = data ?? (metadata != newMetadata ? ProjectionData.Resolve(this.Data, newMetadata) : this.Data);
             ISqlContent newContent = content ?? this.Content;
 
             return new ProjectionAttribute(this, newMetadata, newData, newContent);

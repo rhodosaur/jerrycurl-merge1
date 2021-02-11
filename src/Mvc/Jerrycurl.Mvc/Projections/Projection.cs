@@ -26,7 +26,7 @@ namespace Jerrycurl.Mvc.Projections
             this.Identity = identity ?? throw ProjectionException.ArgumentNull(nameof(identity), metadata);
             this.Context = context ?? throw ProjectionException.ArgumentNull(nameof(context), metadata);
             this.Metadata = metadata;
-            this.Data = ProjectionData.FromIdentity(identity);
+            this.Data = ProjectionData.Resolve(identity);
             this.Options = ProjectionOptions.Default;
             this.Header = this.CreateDefaultHeader(metadata);
         }

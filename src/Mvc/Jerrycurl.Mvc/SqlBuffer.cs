@@ -48,13 +48,11 @@ namespace Jerrycurl.Mvc
             this.text.Append(text);
         }
 
-        public SqlOffset Mark()
+        public void Mark()
         {
             SqlOffset current = this.GetCurrentOffset();
 
             this.offsets.Add(current);
-
-            return current;
         }
 
         private SqlOffset GetCurrentOffset()
@@ -130,5 +128,14 @@ namespace Jerrycurl.Mvc
             }
         }
 
+        public void Push(int bufferIndex)
+        {
+            
+        }
+
+        public void Pop()
+        {
+            
+        }
     }
 }
