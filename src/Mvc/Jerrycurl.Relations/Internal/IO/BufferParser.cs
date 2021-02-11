@@ -64,7 +64,7 @@ namespace Jerrycurl.Relations.Internal.IO
             }
             else if (node.Item != null)
             {
-                Type queueType = typeof(RelationQueueSexy<,>).MakeGenericType(node.Metadata.Type, node.Item.Metadata.Type);
+                Type queueType = typeof(RelationQueue<,>).MakeGenericType(node.Metadata.Type, node.Item.Metadata.Type);
 
                 return new QueueIndex()
                 {
