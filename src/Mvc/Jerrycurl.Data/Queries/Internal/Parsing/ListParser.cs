@@ -130,6 +130,9 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             {
                 writer.PrimaryKey = newReader.PrimaryKey;
                 newReader.PrimaryKey = null;
+
+                writer.JOINS.AddRange(newReader.Joins);
+                newReader.Joins.Clear();
             }
         }
 
@@ -137,7 +140,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
         {
             if (joinKey != null)
             {
-                Type dictType = typeof(Dictionary<,>).MakeGenericType(joinKey.Variable.Type, typeof(ElasticArray));
+                Type dictType = typeof(Dictionary<,>).MakeGenericType(joinKey.KeyType, typeof(ElasticArray));
 
                 return this.GetNamedVariable(dictType, metadata.Identity);
             }
@@ -169,7 +172,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
             if (joinKey == null && metadata.HasFlag(BindingMetadataFlags.Item))
             {
-                target.NewList = target.NewTarget = metadata.Parent.Composition.Construct;
+                target.NewList = target.NewTarget = metadata.Parent.Composition?.Construct ?? throw BindingException.InvalidConstructor(metadata.Parent);
                 target.AddMethod = metadata.Parent.Composition.Add;
             }
 
@@ -191,7 +194,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             JoinTarget target = new JoinTarget()
             {
                 Key = joinKey,
-                Buffer = Expression.Variable(typeof(ElasticArray)),
+                Buffer = Expression.Variable(typeof(ElasticArray), "_joinbuf"),
                 Index = this.Buffer.GetJoinIndex(joinKey.Reference),
                 List = list,
             };
@@ -259,7 +262,10 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 foreach (DataReader value in key.Values)
                     value.KeyType = value.Metadata.Type.GetKeyType();
 
-                key.Variable = Expression.Variable(CompositeKey.Create(key.Values.Select(v => v.KeyType)));
+                key.KeyType = CompositeKey.Create(key.Values.Select(v => v.KeyType));
+
+                if (key.Values.Count > 1)
+                    key.Variable = Expression.Variable(key.KeyType);
 
                 if (key.Reference.HasFlag(ReferenceFlags.Self))
                     key.Reference = this.GetRecursiveReference(key.Reference);
@@ -267,20 +273,16 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
             foreach (DataReader value in key.Values)
             {
-                value.IsDbNull ??= this.GetNamedVariable(typeof(bool), value);
+                value.IsDbNull ??= this.GetNamedVariable(typeof(bool), value, "_isnull");
                 value.Variable ??= this.GetNamedVariable(value.KeyType, value);
-
-                if (key.Reference.HasFlag(ReferenceFlags.Child))
-                    value.CanBeDbNull = false;
             }
-
         }
 
-        private ParameterExpression GetNamedVariable(Type type, MetadataIdentity identity)
-            => Expression.Variable(type, "_" + identity.Name.ToLower());
+        private ParameterExpression GetNamedVariable(Type type, MetadataIdentity identity, string suffix = "")
+            => Expression.Variable(type, "_" + identity.Name.ToLower() + suffix);
 
-        private ParameterExpression GetNamedVariable(Type type, BaseReader reader)
-            => this.GetNamedVariable(type, reader.Identity);
+        private ParameterExpression GetNamedVariable(Type type, BaseReader reader, string suffix = "")
+            => this.GetNamedVariable(type, reader.Identity, suffix);
 
         private bool IsValidJoinKey(KeyReader joinKey, bool throwOnInvalid = false)
         {

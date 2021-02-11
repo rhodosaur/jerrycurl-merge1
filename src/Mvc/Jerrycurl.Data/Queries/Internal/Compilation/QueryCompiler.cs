@@ -228,7 +228,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 primaryKeys.Add(writer.Join.Key);
             }
 
-            return this.GetKeyBlockExpression(primaryKeys, new[] { writer.Join }, body);
+            return this.GetKeyBlockExpression(primaryKeys, new[] { writer.Join }.Concat(writer.JOINS), body);
         }
         
         private Expression GetWriterExpression(HelperWriter writer)
@@ -284,13 +284,23 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
         private Expression GetKeyInitializeBufferExpression(JoinTarget join)
         {
-            Expression newKey = this.GetNewCompositeKeyExpression(join.Key);
-            Expression assignKey = Expression.Assign(join.Key.Variable, newKey);
-            Expression tryGet = this.GetDictionaryTryGetExpression(join.List.Variable, assignKey, join.Buffer);
+            Expression dictKey, dictKey2;
+
+            if (join.Key.Variable != null)
+            {
+                Expression newKey = this.GetNewCompositeKeyExpression(join.Key);
+
+                dictKey = Expression.Assign(join.Key.Variable, newKey);
+                dictKey2 = join.Key.Variable;
+            }
+            else
+                dictKey = dictKey2 = join.Key.Values[0].Variable;
+            
+            Expression tryGet = this.GetDictionaryTryGetExpression(join.List.Variable, dictKey, join.Buffer);
             Expression newBuffer = Expression.New(typeof(ElasticArray));
             Expression bufferIndex = this.GetElasticIndexExpression(join.Buffer, join.Index);
             Expression assignBuffer = Expression.Assign(join.Buffer, newBuffer);
-            Expression addArray = this.GetDictionaryAddExpression(join.List.Variable, join.Key.Variable, assignBuffer);
+            Expression addArray = this.GetDictionaryAddExpression(join.List.Variable, dictKey, assignBuffer);
             Expression getOrAdd = Expression.IfThenElse(tryGet, Expression.Default(typeof(void)), addArray);
 
             IEnumerable<ParameterExpression> isNullVars = join.Key.Values.Where(v => v.CanBeDbNull).Select(v => v.IsDbNull).ToList();
@@ -325,7 +335,9 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             {
                 expressions.Add(this.GetKeyInitializeBufferExpression(join));
                 variables.Add(join.Buffer);
-                variables.Add(join.Key.Variable);
+
+                if (join.Key.Variable != null)
+                    variables.Add(join.Key.Variable);
             }
                 
             expressions.Add(body);
@@ -391,7 +403,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                     value = this.GetTryCatchExpression(reader, value);
             }
 
-            if (canBeDbNull)
+            if (canBeDbNull && reader.Metadata.Type != value.Type)
                 value = Expression.Condition(isDbNull, Expression.Default(reader.Metadata.Type), value);
 
             return value;
