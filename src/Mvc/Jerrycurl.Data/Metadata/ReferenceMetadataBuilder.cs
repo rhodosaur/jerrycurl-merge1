@@ -99,8 +99,8 @@ namespace Jerrycurl.Data.Metadata
             if (this.IsNativeKeylessType(parent.Type))
                 return Array.Empty<ReferenceKey>();
 
-            List<(ReferenceMetadata m, KeyAttribute a, string kn)> keyMap = new List<(ReferenceMetadata, KeyAttribute, string)>();
-            List<(ReferenceMetadata m, RefAttribute a, string rn, string kn)> refMap = new List<(ReferenceMetadata, RefAttribute, string, string)>();
+            List<(ReferenceMetadata Metadata, KeyAttribute Attribute, string KeyName)> keyMap = new List<(ReferenceMetadata, KeyAttribute, string)>();
+            List<(ReferenceMetadata Metadata, RefAttribute Attribute, string ReferenceName, string KeyName)> refMap = new List<(ReferenceMetadata, RefAttribute, string, string)>();
 
             foreach (ReferenceMetadata property in parent.Properties.Value)
             {
@@ -120,19 +120,19 @@ namespace Jerrycurl.Data.Metadata
                 }
             }
 
-            IEnumerable<ReferenceKey> candidateKeys = keyMap.GroupBy(t => t.kn).Select(g => new ReferenceKey()
+            IEnumerable<ReferenceKey> candidateKeys = keyMap.GroupBy(t => t.KeyName).Select(g => new ReferenceKey()
             {
-                Flags = g.All(t => t.a.IsPrimary) ? ReferenceKeyFlags.Primary : ReferenceKeyFlags.Candidate,
-                Name = g.First().kn,
-                Properties = g.OrderBy(t => t.a.Index).Select(t => t.m).ToList(),
+                Flags = g.All(t => t.Attribute.IsPrimary) ? ReferenceKeyFlags.Primary : ReferenceKeyFlags.Candidate,
+                Name = g.First().KeyName,
+                Properties = g.OrderBy(t => t.Attribute.Index).Select(t => t.Metadata).ToList(),
             });
 
-            IEnumerable<ReferenceKey> foreignKeys = refMap.GroupBy(t => (t.rn, t.kn)).Select(g => new ReferenceKey()
+            IEnumerable<ReferenceKey> foreignKeys = refMap.GroupBy(t => (t.ReferenceName, t.KeyName)).Select(g => new ReferenceKey()
             {
                 Flags = ReferenceKeyFlags.Foreign,
-                Name = g.First().rn,
-                Other = g.First().kn,
-                Properties = g.OrderBy(t => t.a.Index).Select(t => t.m).ToList(),
+                Name = g.First().ReferenceName,
+                Other = g.First().KeyName,
+                Properties = g.OrderBy(t => t.Attribute.Index).Select(t => t.Metadata).ToList(),
             });
 
             return candidateKeys.Concat(foreignKeys);

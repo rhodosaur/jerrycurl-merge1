@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Queries.Internal.Caching;
 using Jerrycurl.Relations.Metadata;
@@ -64,7 +65,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
             if (thisNode != null)
                 return thisNode;
-            else if (metadata.HasFlag(BindingMetadataFlags.Item))
+            else if (metadata.HasFlag(BindingMetadataFlags.Item) || HasValidReference(metadata))
             {
                 thisNode = new Node(metadata)
                 {
@@ -93,7 +94,22 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             return thisNode;
         }
 
+        private static bool HasValidReference(IBindingMetadata metadata)
+        {
+            IReferenceMetadata referenceMetadata = metadata.Identity.Lookup<IReferenceMetadata>();
+
+            if (referenceMetadata != null)
+            {
+                IEnumerable<IReference> childReferences = referenceMetadata.References.Where(r => r.HasFlag(ReferenceFlags.Child));
+
+                return childReferences.Any(r => r.HasFlag(ReferenceFlags.Many) || r.Other.HasFlag(ReferenceFlags.Many));
+            }
+
+            return false;
+        }
+
         private static bool IsValidMetadata(IBindingMetadata metadata) => (metadata != null && !metadata.MemberOf.HasFlag(BindingMetadataFlags.Model));
+
         private static IBindingMetadata FindDynamicMetadata(MetadataIdentity identity)
         {
             IBindingMetadata metadata = identity.Lookup<IBindingMetadata>();

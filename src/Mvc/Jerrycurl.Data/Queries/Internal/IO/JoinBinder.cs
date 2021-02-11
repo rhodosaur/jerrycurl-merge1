@@ -13,6 +13,6 @@ namespace Jerrycurl.Data.Queries.Internal.IO
 
         public ParameterExpression Array { get; set; }
         public int ArrayIndex { get; set; }
-        public bool IsManyToOne { get; set; }
+        public KeyBinder Key { get; set; }
     }
 }

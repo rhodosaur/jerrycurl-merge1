@@ -28,6 +28,9 @@ csharp_new_line_between_query_expression_clauses = true
 # Modifier preferences
 dotnet_style_require_accessibility_modifiers = always:warning
 
+# IDE
+dotnet_diagnostic.IDE0047.severity = none
+
 [*.{nuspec,props,targets,xml}]
 indent_style = tab
 indent_size = 4

@@ -12,6 +12,11 @@ namespace Jerrycurl.Data.Test
 {
     public class Query2Tests
     {
+        public void Test_Insert_DualRecursiveTree()
+        {
+
+        }
+
         public void Test_Insert_OneToMany_NonPrimary()
         {
             var store = DatabaseHelper.Default.Schemas2;

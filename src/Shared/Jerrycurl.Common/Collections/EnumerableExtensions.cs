@@ -7,6 +7,21 @@ namespace Jerrycurl.Collections
 {
     internal static class EnumerableExtensions
     {
+        public static IEnumerable<T> DistinctBy<T, TDistinct>(this IEnumerable<T> source, Func<T, TDistinct> keySelector)
+        {
+            HashSet<TDistinct> set = new HashSet<TDistinct>();
+
+            foreach (T value in source)
+            {
+                TDistinct key = keySelector(value);
+
+                if (!set.Contains(key))
+                    yield return value;
+
+                set.Add(key);
+            }
+        }
+
         public static T Second<T>(this IEnumerable<T> source) => source.Skip(1).First();
         public static T SecondOrDefault<T>(this IEnumerable<T> source) => source.Skip(1).FirstOrDefault();
 

@@ -103,7 +103,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             foreach (AggregateWriter writer in tree.Aggregates)
                 body.Add(this.GetWriterExpression(writer));
 
-            foreach (ListWriter writer in tree.Lists.OrderBy(w => w.Priority))
+            foreach (ListWriter writer in tree.Lists)
                 body.Add(this.GetWriterExpression(writer));
 
             oneList.AddRange(body);
@@ -192,7 +192,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             {
                 Expression arrayIndex = this.GetElasticIndexExpression(writer.JoinKey.Array, writer.BufferIndex);
 
-                if (writer.IsOneToMany)
+                if (writer.JoinKey.Metadata.List == null)
                     writeItem = Expression.Assign(arrayIndex, value);
                 else
                 {
@@ -322,7 +322,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             Expression arrayIndex = this.GetElasticIndexExpression(binder.Array, binder.ArrayIndex);
             Expression hasArray = Expression.ReferenceNotEqual(binder.Array, Expression.Constant(null));
 
-            if (binder.IsManyToOne)
+            if (binder.Key.Metadata.List == null)
             {
                 Expression ifArray = Expression.Condition(hasArray, arrayIndex, Expression.Constant(null));
 
