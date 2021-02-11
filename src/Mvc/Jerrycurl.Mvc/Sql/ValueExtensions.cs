@@ -20,7 +20,7 @@ namespace Jerrycurl.Mvc.Sql
             IProjectionMetadata[] header = new[] { projection.Metadata }.Concat(projection.Header.Select(a => a.Metadata)).ToArray();
             IProjectionAttribute[] attributes = header.Skip(1).Select(m => new ProjectionAttribute(projection.Identity, projection.Context, m, data: null)).ToArray();
 
-            return new ProjectionValues<TModel>(projection.Context, projection.Identity, innerReader());
+            return new ProjectionValues<TModel>(projection.Context, projection.Identity, innerReader(), batchIndex);
 
             IEnumerable<IProjection<TModel>> innerReader()
             {
@@ -95,10 +95,14 @@ namespace Jerrycurl.Mvc.Sql
             return attribute;
         }
 
-        public static IEnumerable<IProjection> Vals(this IProjection projection, int batchIndex = -1) => projection.Cast<object>().Vals(batchIndex);
-        public static IProjectionValues<TItem> Vals<TModel, TItem>(this IProjection<TModel> projection, Expression<Func<TModel, IEnumerable<TItem>>> expression, int batchIndex = -1) => projection.Open(expression).Vals(batchIndex);
+        public static IEnumerable<IProjection> Vals(this IProjection projection, int batchIndex = -1)
+            => projection.Cast<object>().Vals(batchIndex);
+        public static IProjectionValues<TItem> Vals<TModel, TItem>(this IProjection<TModel> projection, Expression<Func<TModel, IEnumerable<TItem>>> expression, int batchIndex = -1)
+            => projection.Open(expression).Vals(batchIndex);
 
-        public static IProjection<TProperty> Val<TModel, TProperty>(this IProjection<TModel> projection, Expression<Func<TModel, TProperty>> expression) => projection.For(expression).Val();
-        public static IProjection<TModel> Val<TModel>(this IProjection<TModel> projection) => ((IProjection)projection).Val().Cast<TModel>();
+        public static IProjection<TProperty> Val<TModel, TProperty>(this IProjection<TModel> projection, Expression<Func<TModel, TProperty>> expression)
+            => projection.For(expression).Val();
+        public static IProjection<TModel> Val<TModel>(this IProjection<TModel> projection)
+            => ((IProjection)projection).Val().Cast<TModel>();
     }
 }
