@@ -22,6 +22,9 @@ namespace Jerrycurl.Data.Queries
         }
 
         #region " Execute "
+        public TResult Execute<TResult>(Query query, QueryType queryType)
+            => this.Execute<TResult>(new[] { query }, queryType);
+
         public TResult Execute<TResult>(IEnumerable<Query> queries, QueryType queryType)
         {
             if (queries == null)
