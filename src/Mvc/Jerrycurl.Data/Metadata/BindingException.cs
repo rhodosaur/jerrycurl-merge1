@@ -63,9 +63,7 @@ namespace Jerrycurl.Data.Metadata
         public static BindingException FromProperty(string propertyName, string message = null, Exception innerException = null) => FromProperty(null, propertyName, message, innerException);
 
         internal static BindingException InvalidCast(IBindingMetadata metadata, Exception innerException)
-        {
-            return new BindingException($"Unable to bind to {metadata.Identity}: {innerException.Message}", innerException);
-        }
+            => new BindingException($"Unable to bind to {metadata.Identity}: {innerException.Message}", innerException);
 
         internal static BindingException NoValidReference(MetadataIdentity from, MetadataIdentity to)
             => throw new BindingException($"No valid reference found between {from} and {to}. Please specify matching [Key] and [Ref] annotations to map across one-to-many boundaries.");

@@ -13,28 +13,31 @@ using Jerrycurl.Reflection;
 using Jerrycurl.Data.Queries.Internal.IO;
 using Jerrycurl.Data.Queries.Internal.Caching;
 using System.Collections;
+using System.Security.Cryptography;
 
 namespace Jerrycurl.Data.Queries.Internal.Compilation
 {
     internal class QueryCompiler
     {
-        private delegate void BufferInternalWriter(IDataReader dataReader, ElasticArray slots, ElasticArray aggregates, ElasticArray helpers, Type schemaType);
+        public const bool UseTryCatchExpressions = true;
+
+        private delegate void BufferInternalWriter(IDataReader dataReader, ElasticArray slots, ElasticArray aggregates, ElasticArray helpers, ISchema schema);
         private delegate void BufferInternalInitializer(ElasticArray slots);
-        private delegate TItem AggregateInternalReader<TItem>(ElasticArray slots, ElasticArray aggregates, Type schemaType);
-        private delegate object AggregateInternalReader(ElasticArray slots, ElasticArray aggregates, Type schemaType);
-        private delegate TItem EnumerateInternalReader<TItem>(IDataReader dataReader, ElasticArray helpers, Type schemaType);
+        private delegate TItem AggregateInternalReader<TItem>(ElasticArray slots, ElasticArray aggregates, ISchema schema);
+        private delegate object AggregateInternalReader(ElasticArray slots, ElasticArray aggregates, ISchema schema);
+        private delegate TItem EnumerateInternalReader<TItem>(IDataReader dataReader, ElasticArray helpers, ISchema schema);
 
         private BufferWriter CompileBuffer(BufferTree tree, Expression initialize, Expression writeOne, Expression writeAll)
         {
             ParameterExpression[] initArgs = new[] { Arguments.Slots };
-            ParameterExpression[] writeArgs = new[] { Arguments.DataReader, Arguments.Slots, Arguments.Aggregates, Arguments.Helpers, Arguments.SchemaType };
+            ParameterExpression[] writeArgs = new[] { Arguments.DataReader, Arguments.Slots, Arguments.Aggregates, Arguments.Helpers, Arguments.Schema };
 
             BufferInternalInitializer initializeFunc = this.Compile<BufferInternalInitializer>(initialize, initArgs);
             BufferInternalWriter writeOneFunc = this.Compile<BufferInternalWriter>(writeOne, writeArgs);
             BufferInternalWriter writeAllFunc = this.Compile<BufferInternalWriter>(writeAll, writeArgs);
 
             ElasticArray helpers = this.GetHelperArray(tree.Helpers);
-            Type schemaType = tree.Schema.Model;
+            ISchema schema = tree.Schema;
 
             if (tree.QueryType == QueryType.Aggregate && tree.AggregateNames.Any())
             {
@@ -48,12 +51,12 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
                         initializeFunc(buf.Slots);
                     },
-                    WriteOne = (buf, dr) => writeOneFunc(dr, buf.Slots, buf.Aggregate.Values, helpers, schemaType),
+                    WriteOne = (buf, dr) => writeOneFunc(dr, buf.Slots, buf.Aggregate.Values, helpers, schema),
                     WriteAll = (buf, dr) =>
                     {
                         buf.Aggregate.Names.AddRange(names);
 
-                        writeAllFunc(dr, buf.Slots, buf.Aggregate.Values, helpers, schemaType);
+                        writeAllFunc(dr, buf.Slots, buf.Aggregate.Values, helpers, schema);
                     },
                 };
             }
@@ -61,8 +64,8 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             {
                 return new BufferWriter()
                 {
-                    WriteAll = (buf, dr) => writeAllFunc(dr, buf.Slots, buf.Aggregate?.Values, helpers, schemaType),
-                    WriteOne = (buf, dr) => writeOneFunc(dr, buf.Slots, buf.Aggregate?.Values, helpers, schemaType),
+                    WriteAll = (buf, dr) => writeAllFunc(dr, buf.Slots, buf.Aggregate?.Values, helpers, schema),
+                    WriteOne = (buf, dr) => writeOneFunc(dr, buf.Slots, buf.Aggregate?.Values, helpers, schema),
                     Initialize = buf => initializeFunc(buf.Slots),
                 };
             }
@@ -131,12 +134,12 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 body = this.GetBlockOrExpression(new[] { assignList, callAdd, variable }, new[] { variable });
             }
 
-            ParameterExpression[] arguments = new[] { Arguments.Slots, Arguments.Aggregates, Arguments.SchemaType };
+            ParameterExpression[] arguments = new[] { Arguments.Slots, Arguments.Aggregates, Arguments.Schema };
             AggregateInternalReader reader = this.Compile<AggregateInternalReader>(body, arguments);
 
-            Type schemaType = tree.Schema.Model;
+            ISchema schema = tree.Schema;
 
-            return buf => reader(buf.Slots, buf.Aggregate.Values, schemaType);
+            return buf => reader(buf.Slots, buf.Aggregate.Values, schema);
         }
 
         public EnumerateReader<TItem> Compile<TItem>(EnumerateTree tree)
@@ -151,13 +154,13 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
             body.Add(this.GetBinderExpression(tree.Item));
 
-            ParameterExpression[] arguments = new[] { Arguments.DataReader, Arguments.Helpers, Arguments.SchemaType };
+            ParameterExpression[] arguments = new[] { Arguments.DataReader, Arguments.Helpers, Arguments.Schema };
             EnumerateInternalReader<TItem> reader = this.Compile<EnumerateInternalReader<TItem>>(body, arguments);
 
             ElasticArray helpers = this.GetHelperArray(tree.Helpers);
-            Type schemaType = tree.Schema.Model;
+            ISchema schema = tree.Schema;
 
-            return dr => reader(dr, helpers, schemaType);
+            return dr => reader(dr, helpers, schema);
         }
 
         #region " Initialize "
@@ -366,7 +369,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             }
         }
 
-        private Expression GetBinderOrNullExpression(ColumnBinder binder)
+        private Expression GetBinderOrNullExpression(ColumnBinder binder, bool useTryCatch = true)
         {
             if (!binder.CanBeDbNull)
                 return this.GetBinderExpression(binder, binder.IsDbNull, binder.Variable, binder.CanBeDbNull);
@@ -381,10 +384,13 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 value = this.GetConvertExpression(value, binder);
             }
 
+            if (useTryCatch)
+                value = this.GetTryCatchExpression(binder, value);
+
             return Expression.Condition(isDbNull, nullValue, Expression.Convert(value, typeof(object)));
         }
 
-        private Expression GetBinderExpression(ValueBinder binder, Expression isDbNull, Expression value, bool canBeDbNull)
+        private Expression GetBinderExpression(ValueBinder binder, Expression isDbNull, Expression value, bool canBeDbNull, bool useTryCatch = true)
         {
             isDbNull ??= this.GetIsDbNullExpression(binder);
 
@@ -398,7 +404,10 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 value = Expression.Convert(value, binder.Metadata.Type);
 
             if (canBeDbNull)
-                return Expression.Condition(isDbNull, Expression.Default(binder.Metadata.Type), value);
+                value = Expression.Condition(isDbNull, Expression.Default(binder.Metadata.Type), value);
+
+            if (useTryCatch)
+                value = this.GetTryCatchExpression(binder, value);
 
             return value;
         }
@@ -538,7 +547,10 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             Type targetType = binder.KeyType ?? binder.Metadata.Type;
 
             if (value.Type != targetType)
-                return Expression.Convert(value, targetType);
+                value = Expression.Convert(value, targetType);
+
+            if (UseTryCatchExpressions)
+                value = this.GetTryCatchExpression(binder, value);
 
             return value;
         }
@@ -572,6 +584,13 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
             if (convertedValue == null || object.ReferenceEquals(convertedValue, variable))
                 return value;
+            else if (convertedValue is UnaryExpression ue)
+            {
+                if (ue.NodeType == ExpressionType.Convert && ue.Operand.Equals(variable))
+                    return Expression.Convert(value, ue.Type);
+                else if (ue.NodeType == ExpressionType.ConvertChecked && ue.Operand.Equals(variable))
+                    return Expression.ConvertChecked(value, ue.Type);
+            }
 
             Expression assignVar = Expression.Assign(variable, value);
 
@@ -642,19 +661,19 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             return array;
         }
 
-        private Expression GetTryCatchPropertyExpression(NodeBinder binder, Expression propertyExpression)
+        private Expression GetTryCatchExpression(NodeBinder binder, Expression expression)
         {
             if (this.IsRunningNetFramework() && binder.Metadata.Type.IsValueType)
-                return propertyExpression;
+                return expression;
 
             ParameterExpression ex = Expression.Variable(typeof(Exception));
 
-            MethodInfo constructor = typeof(BindingException).GetStaticMethod(nameof(BindingException.FromProperty), typeof(Type), typeof(string), typeof(string), typeof(Exception));
+            MethodInfo constructor = typeof(QueryCompiler).GetStaticMethod(nameof(QueryCompiler.GetInvalidCastException), typeof(ISchema), typeof(string), typeof(Exception));
 
-            Expression newException = Expression.Call(constructor, Arguments.SchemaType, Expression.Constant(binder.Identity.Name), Expression.Default(typeof(string)), ex);
-            CatchBlock catchBlock = Expression.Catch(ex, Expression.Throw(newException, propertyExpression.Type));
+            Expression newException = Expression.Call(constructor, Arguments.Schema, Expression.Constant(binder.Identity.Name), ex);
+            CatchBlock catchBlock = Expression.Catch(ex, Expression.Throw(newException, expression.Type));
 
-            return Expression.TryCatch(propertyExpression, catchBlock);
+            return Expression.TryCatch(expression, catchBlock);
         }
 
         private Type GetDictionaryType(Type keyType)
@@ -697,6 +716,13 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
         private bool IsRunningNetFramework() => RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework");
 
+        private static BindingException GetInvalidCastException(ISchema schema, string attributeName, Exception innerException)
+        {
+            IBindingMetadata metadata = schema.Require<IBindingMetadata>(attributeName);
+
+            return BindingException.InvalidCast(metadata, innerException);
+        }
+
         #endregion
 
         private static class Arguments
@@ -705,7 +731,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             public static ParameterExpression Slots { get; } = Expression.Parameter(typeof(ElasticArray), "slots");
             public static ParameterExpression Aggregates { get; } = Expression.Parameter(typeof(ElasticArray), "aggregates");
             public static ParameterExpression Helpers { get; } = Expression.Parameter(typeof(ElasticArray), "helpers");
-            public static ParameterExpression SchemaType { get; } = Expression.Parameter(typeof(Type), "schemaType");
+            public static ParameterExpression Schema { get; } = Expression.Parameter(typeof(ISchema), "schema");
         }
     }
 }

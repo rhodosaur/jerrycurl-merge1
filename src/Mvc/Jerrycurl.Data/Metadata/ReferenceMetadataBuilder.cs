@@ -173,9 +173,9 @@ namespace Jerrycurl.Data.Metadata
         {
             if (metadata.Parent != null)
             {
-                yield return metadata.Parent;
-
-                if (metadata.Parent.HasFlag(RelationMetadataFlags.List) && metadata.Parent.Parent != null)
+                if (!metadata.Parent.HasFlag(RelationMetadataFlags.List))
+                    yield return metadata.Parent;
+                else if (metadata.Parent.Parent != null)
                     yield return metadata.Parent.Parent;
             }
         }

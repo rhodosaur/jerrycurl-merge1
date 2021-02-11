@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jerrycurl.Data.Metadata;
 using Jerrycurl.Diagnostics;
+using Jerrycurl.Relations.Metadata;
 using HashCode = Jerrycurl.Diagnostics.HashCode;
 
 namespace Jerrycurl.Data.Commands.Internal.Caching
@@ -13,6 +15,17 @@ namespace Jerrycurl.Data.Commands.Internal.Caching
         public CommandCacheKey(IEnumerable<ColumnName> columns)
         {
             this.Columns = columns?.ToList() ?? throw new ArgumentNullException(nameof(columns));
+        }
+
+        public CommandCacheKey(MetadataIdentity metadata, ColumnMetadata column)
+        {
+            if (metadata == null)
+                throw new ArgumentNullException(nameof(metadata));
+
+            if (column == null)
+                throw new ArgumentNullException(nameof(column));
+
+            this.Columns = new List<ColumnName>() { new ColumnName(metadata, column) };
         }
 
         public bool Equals(CommandCacheKey other) => Equality.CombineAll(this.Columns, other?.Columns);

@@ -16,7 +16,7 @@ namespace Jerrycurl.Reflection
         }
 
         public static MethodInfo GetStaticMethod(this Type type, string methodName, params Type[] arguments)
-            => type.GetMethods(BindingFlags.Static | BindingFlags.Public).FirstOrDefault(m => m.Name == methodName && m.GetParameters().Select(pi => pi.ParameterType).SequenceEqual(arguments));
+            => type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).FirstOrDefault(m => m.Name == methodName && m.GetParameters().Select(pi => pi.ParameterType).SequenceEqual(arguments));
 
         public static bool IsOpenGeneric(this Type type, Type openType, out Type[] arguments)
         {

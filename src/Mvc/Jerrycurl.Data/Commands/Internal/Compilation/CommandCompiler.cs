@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Jerrycurl.Data.Commands.Internal.Caching;
@@ -51,7 +52,15 @@ namespace Jerrycurl.Data.Commands.Internal.Compilation
                     Helper = helperVariable,
                 };
 
-                value = binding.Value?.Convert?.Invoke(valueInfo) ?? inputParam;
+                try
+                {
+                    value = binding.Value?.Convert?.Invoke(valueInfo) ?? inputParam;
+                }
+                catch (Exception ex)
+                {
+                    throw BindingException.InvalidCast(binding, ex);
+                }
+                
             }
 
             value = this.GetObjectExpression(value);
@@ -86,6 +95,9 @@ namespace Jerrycurl.Data.Commands.Internal.Compilation
 
                 body.Add(writer);
             }
+
+            if (!body.Any())
+                return (dr, buf) => { };
 
             ParameterExpression[] arguments = new[] { Arguments.DataReader, Arguments.Buffers };
             Expression block = Expression.Block(body);
