@@ -10,10 +10,10 @@ using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Test.Model;
 using Jerrycurl.Data.Language;
 using Jerrycurl.Mvc;
-using Jerrycurl.Extensions.Json.Metadata.Contracts;
 using System.Text.Json;
 using Jerrycurl.Relations.Language;
 using Microsoft.Data.Sqlite;
+using Jerrycurl.Extensions.Json.Metadata;
 
 namespace Jerrycurl.Data.Test
 {

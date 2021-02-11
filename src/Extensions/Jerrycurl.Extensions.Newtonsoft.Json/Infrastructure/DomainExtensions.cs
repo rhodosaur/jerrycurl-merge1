@@ -1,5 +1,5 @@
-﻿using Newtonsoft.Json;
-using Jerrycurl.Extensions.Newtonsoft.Json.Metadata.Contracts;
+﻿using Jerrycurl.Extensions.Newtonsoft.Json.Metadata;
+using Newtonsoft.Json;
 
 namespace Jerrycurl.Mvc
 {
@@ -11,7 +11,7 @@ namespace Jerrycurl.Mvc
         {
             settings ??= JsonConvert.DefaultSettings?.Invoke() ?? new JsonSerializerSettings();
 
-            options.Schemas.AddContract(new NewtonsoftBindingContractResolver(settings));
+            options.Schemas.AddContract(new NewtonsoftJsonBindingContractResolver(settings));
             options.Schemas.AddContract(new NewtonsoftJsonContractResolver(settings));
         }
     }

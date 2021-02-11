@@ -1,5 +1,5 @@
 ﻿using System.Text.Json;
-using Jerrycurl.Extensions.Json.Metadata.Contracts;
+using Jerrycurl.Extensions.Json.Metadata;
 
 namespace Jerrycurl.Mvc
 {

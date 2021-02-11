@@ -4,7 +4,7 @@ using Newtonsoft.Json.Serialization;
 using System;
 using System.Reflection;
 
-namespace Jerrycurl.Extensions.Newtonsoft.Json.Metadata.Contracts
+namespace Jerrycurl.Extensions.Newtonsoft.Json.Metadata
 {
     public class NewtonsoftJsonContractResolver : IJsonContractResolver
     {

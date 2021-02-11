@@ -11,20 +11,20 @@ using Jerrycurl.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Jerrycurl.Extensions.Newtonsoft.Json.Metadata.Contracts
+namespace Jerrycurl.Extensions.Newtonsoft.Json.Metadata
 {
-    public class NewtonsoftBindingContractResolver : IBindingContractResolver
+    public class NewtonsoftJsonBindingContractResolver : IBindingContractResolver
     {
         public int Priority => 1;
 
         public JsonSerializerSettings Settings { get; }
 
-        private readonly NewtonsoftBindingHelperContract helper;
+        private readonly NewtonsoftJsonBindingHelperContract helper;
 
-        public NewtonsoftBindingContractResolver(JsonSerializerSettings settings)
+        public NewtonsoftJsonBindingContractResolver(JsonSerializerSettings settings)
         {
             this.Settings = settings ?? throw new ArgumentNullException(nameof(settings));
-            this.helper = new NewtonsoftBindingHelperContract(settings);
+            this.helper = new NewtonsoftJsonBindingHelperContract(settings);
         }
 
         private MethodInfo GetColumnReaderProxy(IBindingColumnInfo columnInfo)

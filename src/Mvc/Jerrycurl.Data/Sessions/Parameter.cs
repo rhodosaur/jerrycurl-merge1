@@ -10,16 +10,16 @@ namespace Jerrycurl.Data.Sessions
         public string Name { get; }
         public IField Source { get; }
 
-        public Parameter(string name, IField field = null)
+        public Parameter(string name, IField source = null)
         {
             this.Name = name ?? throw new ArgumentNullException(nameof(name));
-            this.Source = field;
+            this.Source = source;
         }
 
         [Obsolete("Should we use Snapshot or Data.Value?")]
         public void Build(IDbDataParameter adoParameter)
         {
-            IBindingMetadata metadata = this.Source?.Identity.Metadata.Lookup<IBindingMetadata>();
+            IBindingMetadata metadata = this.Source?.Identity.Metadata.Require<IBindingMetadata>();
             IBindingParameterContract contract = metadata?.Parameter;
 
             adoParameter.ParameterName = this.Name;
