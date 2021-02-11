@@ -2,7 +2,7 @@
 
 namespace Jerrycurl.Extensions.EntityFrameworkCore.Test.Entities
 {
-    public partial class Address
+    public partial class Address : BaseEntity
     {
         public Address()
         {
@@ -10,7 +10,6 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Test.Entities
             this.OrderShippingAddress = new HashSet<Order>();
         }
 
-        public int Id { get; set; }
         public string Street { get; set; }
 
         public virtual ICollection<Order> OrderBillingAddress { get; set; }

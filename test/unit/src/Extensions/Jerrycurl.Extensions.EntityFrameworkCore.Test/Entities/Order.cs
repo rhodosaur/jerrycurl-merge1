@@ -2,14 +2,13 @@
 
 namespace Jerrycurl.Extensions.EntityFrameworkCore.Test.Entities
 {
-    public partial class Order
+    public partial class Order : BaseEntity
     {
         public Order()
         {
             this.OrderLine = new HashSet<OrderLine>();
         }
 
-        public int Id { get; set; }
         public int BillingAddressId { get; set; }
         public int? ShippingAddressId { get; set; }
 

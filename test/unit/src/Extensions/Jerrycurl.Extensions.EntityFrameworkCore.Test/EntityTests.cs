@@ -23,11 +23,11 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Test
 
             address.ColumnName.ShouldBeNull();
             address.TableName.ShouldBe(new[] { "Address" });
-            address.Properties.Select(m => m.ColumnName).NotNull().ShouldBe(new[] { "Id", "Street" });
+            address.Properties.Select(m => m.ColumnName).NotNull().ShouldBe(new[] { "Street", "Id" });
 
             addressView.ColumnName.ShouldBeNull();
             addressView.TableName.ShouldBe(new[] { "Address" });
-            addressView.Properties.Select(m => m.ColumnName).NotNull().ShouldBe(new[] { "Id", "Street" });
+            addressView.Properties.Select(m => m.ColumnName).NotNull().ShouldBe(new[] { "Street", "Id" });
         }
 
         public void Test_EfCore_ReferenceMetadata()
