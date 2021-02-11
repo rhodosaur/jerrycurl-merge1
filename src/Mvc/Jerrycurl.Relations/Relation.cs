@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -16,6 +17,7 @@ namespace Jerrycurl.Relations
         public RelationHeader Header { get; }
         public IField2 Model => this.Source.Model;
         public IField2 Source { get; }
+
         IRelationReader IRelation2.GetReader() => this.GetReader();
 
         public Relation2(IField2 source, RelationHeader header)
@@ -25,14 +27,14 @@ namespace Jerrycurl.Relations
         }
 
         public RelationReader GetReader() => new RelationReader(this);
-        public IDataReader GetDataReader(IEnumerable<string> header) => new RelationDataReader(this.GetReader(), header);
-        public IDataReader GetDataReader() => this.GetDataReader(this.Header.Attributes.Select(a => a.Name));
+        public DbDataReader GetDataReader(IEnumerable<string> header) => new RelationDataReader(this.GetReader(), header);
+        public DbDataReader GetDataReader() => this.GetDataReader(this.Header.Attributes.Select(a => a.Name));
 
         public IEnumerable<ITuple2> Body
         {
             get
             {
-                using IRelationReader reader = this.GetReader();
+                using RelationReader reader = this.GetReader();
 
                 while (reader.Read())
                 {

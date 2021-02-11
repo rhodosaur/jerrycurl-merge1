@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 
 namespace Jerrycurl.Relations
 {
@@ -8,8 +9,8 @@ namespace Jerrycurl.Relations
         RelationHeader Header { get; }
         IField2 Source { get; }
         IRelationReader GetReader();
-        IDataReader GetDataReader(IEnumerable<string> header);
-        IDataReader GetDataReader();
+        DbDataReader GetDataReader(IEnumerable<string> header);
+        DbDataReader GetDataReader();
 
         IEnumerable<ITuple2> Body { get; }
     }

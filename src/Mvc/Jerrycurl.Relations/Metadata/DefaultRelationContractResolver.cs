@@ -74,7 +74,7 @@ namespace Jerrycurl.Relations.Metadata.Contracts
 
             Type openType = metadata.Type.GetGenericTypeDefinition();
 
-            if (openType == typeof(Many<>))
+            if (openType == typeof(One<>))
                 return true;
 
             return false;

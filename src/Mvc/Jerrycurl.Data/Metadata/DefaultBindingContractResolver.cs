@@ -64,7 +64,7 @@ namespace Jerrycurl.Data.Metadata
                 return typeof(ICollection<>).MakeGenericType(itemType).GetMethod("Add");
             else if (manyType != null)
             {
-                PropertyInfo valueInfo = metadata.Type.GetProperty(nameof(Many<object>.Value), BindingFlags.Instance | BindingFlags.Public);
+                PropertyInfo valueInfo = metadata.Type.GetProperty(nameof(One<object>.Value), BindingFlags.Instance | BindingFlags.Public);
 
                 if (valueInfo == null || valueInfo.SetMethod == null)
                     throw new InvalidOperationException("Invalid 'Value' property.");
@@ -81,7 +81,7 @@ namespace Jerrycurl.Data.Metadata
         {
             Type openType = this.GetOpenType(metadata);
 
-            if (openType == typeof(Many<>))
+            if (openType == typeof(One<>))
                 return metadata.Type.GetGenericArguments()[0];
 
             return null;
@@ -183,7 +183,7 @@ namespace Jerrycurl.Data.Metadata
             Type elementType = this.GetListElementType(metadata);
             Type openType = this.GetOpenType(metadata);
 
-            if (elementType != null && openType == typeof(Many<>))
+            if (elementType != null && openType == typeof(One<>))
                 return Expression.New(metadata.Type);
             else if (elementType != null)
             {

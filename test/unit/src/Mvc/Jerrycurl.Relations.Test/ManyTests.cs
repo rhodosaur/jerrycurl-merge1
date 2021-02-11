@@ -6,13 +6,13 @@ namespace Jerrycurl.Relations.Test
     {
         public void Test_Many_Equality()
         {
-            Many<int> empty = new Many<int>();
-            Many<int> zero = new Many<int>(0);
-            Many<int> one = new Many<int>(1);
+            One<int> empty = new One<int>();
+            One<int> zero = new One<int>(0);
+            One<int> one = new One<int>(1);
 
-            Many<int> empty2 = new Many<int>();
-            Many<int> zero2 = new Many<int>(0);
-            Many<int> one2 = new Many<int>(1);
+            One<int> empty2 = new One<int>();
+            One<int> zero2 = new One<int>(0);
+            One<int> one2 = new One<int>(1);
 
             empty.Equals(empty2).ShouldBeTrue();
             empty.Equals(zero).ShouldBeFalse();

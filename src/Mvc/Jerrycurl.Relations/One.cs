@@ -6,7 +6,7 @@ using Jerrycurl.Relations.Language;
 
 namespace Jerrycurl.Relations
 {
-    public class Many<T> : IEnumerable<T>, IEquatable<T>, IEquatable<Many<T>>
+    public class One<T> : IEnumerable<T>, IEquatable<T>, IEquatable<One<T>>
     {
         private T value = default;
 
@@ -21,8 +21,8 @@ namespace Jerrycurl.Relations
             }
         }
 
-        public Many() { }
-        public Many(T value)
+        public One() { }
+        public One(T value)
         {
             this.Value = value;
         }
@@ -36,7 +36,7 @@ namespace Jerrycurl.Relations
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {
             if (this.HasValue)
-                yield return this.value;
+                yield return this.Value;
         }
 
         IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<T>)this).GetEnumerator();
@@ -45,18 +45,18 @@ namespace Jerrycurl.Relations
         {
             if (obj is T t)
                 return this.Equals(t);
-            else if (obj is Many<T> mt)
+            else if (obj is One<T> mt)
                 return this.Equals(mt);
 
             return false;
         }
 
-        public bool Equals(Many<T> other)
+        public bool Equals(One<T> other)
         {
             if (other == null)
                 return false;
             else if (other.HasValue)
-                return this.Equals(other.value);
+                return this.Equals(other.Value);
             else if (!this.HasValue)
                 return true;
 

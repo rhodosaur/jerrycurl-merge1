@@ -1,13 +1,17 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using HashCode = Jerrycurl.Diagnostics.HashCode;
 
 namespace Jerrycurl.Relations
 {
-    internal class RelationDataReader : IDataReader
+    internal class RelationDataReader : DbDataReader
     {
         public RelationReader InnerReader { get; }
         public IReadOnlyList<string> Header { get; }
@@ -41,13 +45,13 @@ namespace Jerrycurl.Relations
             }
         }
 
-        public int Depth => 0;
-        public bool IsClosed => false;
-        public int RecordsAffected => 0;
-        public int FieldCount => this.InnerReader.Degree;
+        public override int Depth => 0;
+        public override bool IsClosed => false;
+        public override int RecordsAffected => 0;
+        public override int FieldCount => this.InnerReader.Degree;
 
-        public object this[string name] => this[this.GetOrdinal(name)];
-        public object this[int i]
+        public override object this[string name] => this[this.GetOrdinal(name)];
+        public override object this[int i]
         {
             get
             {
@@ -58,15 +62,16 @@ namespace Jerrycurl.Relations
             }
         }
 
-        public void Close() { }
-        public bool NextResult() => false;
-        public bool Read() => this.InnerReader.Read();
+        public override void Close() { }
+        public override bool NextResult() => false;
+        public override bool Read() => this.InnerReader.Read();
+        public override bool HasRows => true;
 
-        public string GetDataTypeName(int i) => null;
-        public Type GetFieldType(int i) => this.InnerReader.Relation.Header.Attributes[i].Metadata.Type;
-        public string GetName(int i) => this.Header[i];
-        public int GetOrdinal(string name) => this.headerMap[name];
-        public T GetFieldValue<T>(int i)
+        public override string GetDataTypeName(int i) => null;
+        public override Type GetFieldType(int i) => this.InnerReader.Relation.Header.Attributes[i].Metadata.Type;
+        public override string GetName(int i) => this.Header[i];
+        public override int GetOrdinal(string name) => this.headerMap[name];
+        public override T GetFieldValue<T>(int i)
         {
             if (this.IsDBNull(i))
                 throw new InvalidOperationException("Data is null.");
@@ -74,26 +79,37 @@ namespace Jerrycurl.Relations
             return (T)this[i];
         }
 
-        public bool IsDBNull(int i) => this.InnerReader[i].Type == FieldType2.Missing;
+        public override bool IsDBNull(int i)
+        {
+            if (this.InnerReader[i].Type == FieldType2.Missing)
+                return true;
+            else if (this.InnerReader[i].Data.Value == null)
+                return true;
 
-        public void Dispose() => this.InnerReader.Dispose();
+            return false;
+        }
 
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+                this.InnerReader?.Dispose();
+        }
         #region " Get methods "
 
-        public float GetFloat(int i) => this.GetFieldValue<float>(i);
-        public Guid GetGuid(int i) => this.GetFieldValue<Guid>(i);
-        public short GetInt16(int i) => this.GetFieldValue<short>(i);
-        public int GetInt32(int i) => this.GetFieldValue<int>(i);
-        public long GetInt64(int i) => this.GetFieldValue<long>(i);
-        public string GetString(int i) => this.GetFieldValue<string>(i);
-        public object GetValue(int i) => this[i];
-        public bool GetBoolean(int i) => this.GetFieldValue<bool>(i);
-        public byte GetByte(int i) => this.GetFieldValue<byte>(i);
-        public char GetChar(int i) => this.GetFieldValue<char>(i);
-        public DateTime GetDateTime(int i) => this.GetFieldValue<DateTime>(i);
-        public decimal GetDecimal(int i) => this.GetFieldValue<decimal>(i);
-        public double GetDouble(int i) => this.GetFieldValue<double>(i);
-        public int GetValues(object[] values)
+        public override float GetFloat(int i) => this.GetFieldValue<float>(i);
+        public override Guid GetGuid(int i) => this.GetFieldValue<Guid>(i);
+        public override short GetInt16(int i) => this.GetFieldValue<short>(i);
+        public override int GetInt32(int i) => this.GetFieldValue<int>(i);
+        public override long GetInt64(int i) => this.GetFieldValue<long>(i);
+        public override string GetString(int i) => this.GetFieldValue<string>(i);
+        public override object GetValue(int i) => this[i];
+        public override bool GetBoolean(int i) => this.GetFieldValue<bool>(i);
+        public override byte GetByte(int i) => this.GetFieldValue<byte>(i);
+        public override char GetChar(int i) => this.GetFieldValue<char>(i);
+        public override DateTime GetDateTime(int i) => this.GetFieldValue<DateTime>(i);
+        public override decimal GetDecimal(int i) => this.GetFieldValue<decimal>(i);
+        public override double GetDouble(int i) => this.GetFieldValue<double>(i);
+        public override int GetValues(object[] values)
         {
             int maxLength = Math.Min(values.Length, this.FieldCount);
 
@@ -106,10 +122,10 @@ namespace Jerrycurl.Relations
         #endregion
 
         #region " Not supported "
-        public DataTable GetSchemaTable() => throw new NotSupportedException();
-        public long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length) => throw new NotSupportedException();
-        public long GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length) => throw new NotSupportedException();
-        public IDataReader GetData(int i) => throw new NotSupportedException();
+        public override DataTable GetSchemaTable() => throw new NotSupportedException();
+        public override long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length) => throw new NotSupportedException();
+        public override long GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length) => throw new NotSupportedException();
+        public override IEnumerator GetEnumerator() => throw new NotSupportedException();
         #endregion
     }
 }

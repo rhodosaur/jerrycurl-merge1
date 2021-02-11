@@ -19,7 +19,7 @@ namespace Jerrycurl.Data.Test.Models
         public SubModel OneToOne { get; set; }
         [One]
         public SubModel OneToManyAsOne { get; set; }
-        public Many<SubModel> ManyType { get; set; }
+        public One<SubModel> ManyType { get; set; }
         
         public class SubModel
         {
