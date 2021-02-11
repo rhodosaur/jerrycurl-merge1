@@ -26,6 +26,6 @@ namespace Jerrycurl.Vendors.Oracle
                 throw new InvalidOperationException("Refcursors are only available for parameters of type OracleParameter.");
         }
 
-        IField IParameter.Field => null;
+        IField2 IParameter.Source => null;
     }
 }

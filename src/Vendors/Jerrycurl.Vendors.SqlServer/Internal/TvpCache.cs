@@ -12,6 +12,6 @@ namespace Jerrycurl.Vendors.SqlServer.Internal
 {
     internal static class TvpCache
     {
-        public static ConcurrentDictionary<RelationIdentity, Action<SqlParameter, IRelation>> Binders { get; } = new ConcurrentDictionary<RelationIdentity, Action<SqlParameter, IRelation>>();
+        public static ConcurrentDictionary<RelationHeader, Action<SqlParameter, IRelation2>> Binders { get; } = new ConcurrentDictionary<RelationHeader, Action<SqlParameter, IRelation2>>();
     }
 }
