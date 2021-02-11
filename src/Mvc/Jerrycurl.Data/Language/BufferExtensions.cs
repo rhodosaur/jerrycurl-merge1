@@ -17,10 +17,10 @@ namespace Jerrycurl.Data.Language
             => (T)buffer.Commit();
 
         #region " Insert "
-        public static void Insert(this QueryBuffer buffer, IRelation relation, params string[] targetHeader)
+        public static QueryBuffer Insert(this QueryBuffer buffer, IRelation relation, params string[] targetHeader)
             => buffer.Insert(relation, (IEnumerable<string>)targetHeader);
 
-        public static void Insert(this QueryBuffer buffer, IRelation relation, IEnumerable<string> targetHeader)
+        public static QueryBuffer Insert(this QueryBuffer buffer, IRelation relation, IEnumerable<string> targetHeader)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
@@ -28,9 +28,11 @@ namespace Jerrycurl.Data.Language
             using IDataReader dataReader = relation.GetDataReader(targetHeader);
 
             buffer.Insert(dataReader);
+
+            return buffer;
         }
 
-        public static void Insert(this QueryBuffer buffer, IRelation relation)
+        public static QueryBuffer Insert(this QueryBuffer buffer, IRelation relation)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
@@ -41,12 +43,14 @@ namespace Jerrycurl.Data.Language
             using IDataReader dataReader = relation.GetDataReader();
 
             buffer.Insert(dataReader);
+
+            return buffer;
         }
 
-        public static void Insert<TSource>(this QueryBuffer buffer, TSource source, params string[] sourceHeader)
+        public static QueryBuffer Insert<TSource>(this QueryBuffer buffer, TSource source, params string[] sourceHeader)
             => buffer.Insert(source, (IEnumerable<string>)sourceHeader);
 
-        public static void Insert<TSource>(this QueryBuffer buffer, TSource source, IEnumerable<string> sourceHeader)
+        public static QueryBuffer Insert<TSource>(this QueryBuffer buffer, TSource source, IEnumerable<string> sourceHeader)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
@@ -54,9 +58,11 @@ namespace Jerrycurl.Data.Language
             ISchema schema = buffer.Store.GetSchema(typeof(TSource));
 
             buffer.Insert(source, schema.Select(sourceHeader));
+
+            return buffer;
         }
 
-        public static void Insert<TSource>(this QueryBuffer buffer, TSource source, RelationHeader sourceHeader)
+        public static QueryBuffer Insert<TSource>(this QueryBuffer buffer, TSource source, RelationHeader sourceHeader)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
@@ -64,9 +70,11 @@ namespace Jerrycurl.Data.Language
             IRelation relation = new Relation(buffer.Store.From(source), sourceHeader);
 
             buffer.Insert(relation);
+
+            return buffer;
         }
 
-        public static void Insert<TSource>(this QueryBuffer buffer, TSource source, params (string Source, string Target)[] mappingHeader)
+        public static QueryBuffer Insert<TSource>(this QueryBuffer buffer, TSource source, params (string Source, string Target)[] mappingHeader)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
@@ -75,9 +83,11 @@ namespace Jerrycurl.Data.Language
             IEnumerable<string> targetHeader = mappingHeader.Select(t => t.Target);
 
             buffer.Insert(source, sourceHeader, targetHeader);
+
+            return buffer;
         }
 
-        public static void Insert<TSource>(this QueryBuffer buffer, TSource source, IEnumerable<string> sourceHeader, IEnumerable<string> targetHeader)
+        public static QueryBuffer Insert<TSource>(this QueryBuffer buffer, TSource source, IEnumerable<string> sourceHeader, IEnumerable<string> targetHeader)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
@@ -85,14 +95,16 @@ namespace Jerrycurl.Data.Language
             IRelation relation = buffer.Store.From(source).Select(sourceHeader);
 
             buffer.Insert(relation, targetHeader);
+
+            return buffer;
         }
         #endregion
 
         #region " InsertAsync "
-        public static Task InsertAsync(this QueryBuffer buffer, IRelation relation, params string[] targetHeader)
+        public static Task<QueryBuffer> InsertAsync(this QueryBuffer buffer, IRelation relation, params string[] targetHeader)
             => buffer.InsertAsync(relation, (IEnumerable<string>)targetHeader);
 
-        public static async Task InsertAsync(this QueryBuffer buffer, IRelation relation, IEnumerable<string> targetHeader)
+        public static async Task<QueryBuffer> InsertAsync(this QueryBuffer buffer, IRelation relation, IEnumerable<string> targetHeader)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
@@ -103,9 +115,11 @@ namespace Jerrycurl.Data.Language
             using DbDataReader dataReader = relation.GetDataReader(targetHeader);
 
             await buffer.InsertAsync(dataReader);
+
+            return buffer;
         }
 
-        public static async Task InsertAsync(this QueryBuffer buffer, IRelation relation)
+        public static async Task<QueryBuffer> InsertAsync(this QueryBuffer buffer, IRelation relation)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
@@ -116,12 +130,14 @@ namespace Jerrycurl.Data.Language
             using DbDataReader dataReader = relation.GetDataReader();
 
             await buffer.InsertAsync(dataReader);
+
+            return buffer;
         }
 
-        public static Task InsertAsync<TSource>(this QueryBuffer buffer, TSource source, params string[] sourceHeader)
+        public static Task<QueryBuffer> InsertAsync<TSource>(this QueryBuffer buffer, TSource source, params string[] sourceHeader)
             => buffer.InsertAsync(source, (IEnumerable<string>)sourceHeader);
 
-        public static async Task InsertAsync<TSource>(this QueryBuffer buffer, TSource source, IEnumerable<string> sourceHeader)
+        public static async Task<QueryBuffer> InsertAsync<TSource>(this QueryBuffer buffer, TSource source, IEnumerable<string> sourceHeader)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
@@ -129,9 +145,11 @@ namespace Jerrycurl.Data.Language
             ISchema schema = buffer.Store.GetSchema(typeof(TSource));
 
             await buffer.InsertAsync(source, schema.Select(sourceHeader));
+
+            return buffer;
         }
 
-        public static async Task InsertAsync<TSource>(this QueryBuffer buffer, TSource source, RelationHeader sourceHeader)
+        public static async Task<QueryBuffer> InsertAsync<TSource>(this QueryBuffer buffer, TSource source, RelationHeader sourceHeader)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
@@ -142,9 +160,11 @@ namespace Jerrycurl.Data.Language
             IRelation relation = new Relation(buffer.Store.From(source), sourceHeader);
 
             await buffer.InsertAsync(relation);
+
+            return buffer;
         }
 
-        public static async Task InsertAsync<TSource>(this QueryBuffer buffer, TSource source, params (string Source, string Target)[] mappingHeader)
+        public static async Task<QueryBuffer> InsertAsync<TSource>(this QueryBuffer buffer, TSource source, params (string Source, string Target)[] mappingHeader)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
@@ -156,9 +176,11 @@ namespace Jerrycurl.Data.Language
             IEnumerable<string> targetHeader = mappingHeader.Select(t => t.Target);
 
             await buffer.InsertAsync(source, sourceHeader, targetHeader);
+
+            return buffer;
         }
 
-        public static async Task InsertAsync<TSource>(this QueryBuffer buffer, TSource source, IEnumerable<string> sourceHeader, IEnumerable<string> targetHeader)
+        public static async Task<QueryBuffer> InsertAsync<TSource>(this QueryBuffer buffer, TSource source, IEnumerable<string> sourceHeader, IEnumerable<string> targetHeader)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
@@ -166,6 +188,8 @@ namespace Jerrycurl.Data.Language
             IRelation relation = buffer.Store.From(source).Select(sourceHeader);
 
             await buffer.InsertAsync(relation, targetHeader);
+
+            return buffer;
         }
         #endregion
     }

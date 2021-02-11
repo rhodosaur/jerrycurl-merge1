@@ -19,7 +19,6 @@
             <group targetFramework="netstandard2.0">
                 <dependency id="Jerrycurl.Mvc" version="$PackageVersion$" />
                 <dependency id="$SqlServerPackageId$" version="$SqlServerPackageVersion$" />
-				<dependency id="System.Data.SqlClient" version="4.8.2" />
             </group>
             <group targetFramework="netstandard2.1">
                 <dependency id="Jerrycurl.Mvc" version="$PackageVersion$" />
