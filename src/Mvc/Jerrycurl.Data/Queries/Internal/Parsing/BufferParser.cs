@@ -8,6 +8,7 @@ using Jerrycurl.Data.Queries.Internal.IO;
 using Jerrycurl.Data.Queries.Internal.Caching;
 using Jerrycurl.Data.Queries.Internal.Extensions;
 using Jerrycurl.Relations.Metadata;
+using Jerrycurl.Collections;
 
 namespace Jerrycurl.Data.Queries.Internal.Parsing
 {
@@ -143,6 +144,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
         {
             int bufferIndex;
             Type variableType;
+
             if (joinKey == null)
             {
                 bufferIndex = metadata.Relation.Depth == 0 ? this.Buffer.GetResultIndex() : this.Buffer.GetListIndex(metadata.Identity);
@@ -260,12 +262,13 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             if (writer.Item is NewBinder binder)
             {
                 IReferenceMetadata metadata = writer.Item.Metadata.To<IReferenceMetadata>();
-                IReference reference = metadata?.References.FirstOrDefault(r => r.HasFlag(ReferenceFlags.Child) && this.IsValidReference(r));
+                IEnumerable<IReference> references = metadata?.References.Where(r => r.HasFlag(ReferenceFlags.Child) && this.IsValidReference(r));
+                IEnumerable<KeyBinder> childKeys = references?.Select(r => BindingHelper.FindChildKey(binder, r));
 
-                if (reference == null)
+                if (childKeys == null)
                     return;
 
-                KeyBinder joinKey = writer.JoinKey = BindingHelper.FindChildKey(binder, reference);
+                KeyBinder joinKey = writer.JoinKey = childKeys.NotNull().OrderBy(b => !b.Metadata.Key.HasFlag(ReferenceKeyFlags.Primary)).FirstOrDefault();
 
                 if (joinKey != null)
                 {

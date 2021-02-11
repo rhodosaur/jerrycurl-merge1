@@ -8,7 +8,7 @@ namespace Jerrycurl.Relations.Test
 {
     public class FieldTests
     {
-        public void Test_Fields_HaveCorrectTypes()
+        public void Test_Field_FieldTypes()
         {
             RootModel model = new RootModel() { Complex = new RootModel.SubModel() };
             IRelation rel = DatabaseHelper.Default.Relation(model, "", "Complex", "Complex.Complex", "Complex.Complex.Value");

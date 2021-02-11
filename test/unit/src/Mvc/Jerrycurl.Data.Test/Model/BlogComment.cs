@@ -6,7 +6,7 @@ namespace Jerrycurl.Data.Test.Model
     {
         [Key("PK_BlogComment")]
         public int Id { get; set; }
-        [Ref("PK_BlogPost")]
+        //[Ref("PK_BlogPost")]
         public int BlogPostId { get; set; }
         public string Author { get; set; }
         public string Comment { get; set; }

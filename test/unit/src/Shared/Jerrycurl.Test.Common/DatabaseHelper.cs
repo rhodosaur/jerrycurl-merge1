@@ -22,17 +22,19 @@ namespace Jerrycurl.Test
         public static DatabaseHelper Default { get; } = new DatabaseHelper();
 
         public SchemaStore Schemas { get; set; }
+        public SchemaStore Schemas2 { get; set; }
         public QueryOptions QueryOptions { get; set; }
         public CommandOptions CommandOptions { get; set; }
 
         public DatabaseHelper()
         {
             this.Schemas = this.GetSchemas();
+            this.Schemas2 = this.GetSchemas(useSqlite: false);
             this.QueryOptions = this.GetQueryOptions();
             this.CommandOptions = this.GetCommandOptions();
         }
 
-        public SchemaStore GetSchemas()
+        public SchemaStore GetSchemas(bool useSqlite = true)
         {
             RelationMetadataBuilder relationBuilder = new RelationMetadataBuilder();
             BindingMetadataBuilder bindingBuilder = new BindingMetadataBuilder();
@@ -40,7 +42,8 @@ namespace Jerrycurl.Test
 
             SchemaStore store = new SchemaStore(new DotNotation(), relationBuilder, bindingBuilder, referenceBuilder);
 
-            bindingBuilder.Add(new SqliteContractResolver());
+            if (useSqlite)
+                bindingBuilder.Add(new SqliteContractResolver());
 
             return store;
         }

@@ -58,11 +58,11 @@ namespace Jerrycurl.Data.Metadata
         private MethodInfo GetAddMethod(IBindingMetadata metadata)
         {
             Type itemType = this.GetListElementType(metadata);
-            Type manyType = this.GetManyValueType(metadata);
+            Type oneType = this.GetOneValueType(metadata);
 
             if (itemType != null)
                 return typeof(ICollection<>).MakeGenericType(itemType).GetMethod("Add");
-            else if (manyType != null)
+            else if (oneType != null)
             {
                 PropertyInfo valueInfo = metadata.Type.GetProperty(nameof(One<object>.Value), BindingFlags.Instance | BindingFlags.Public);
 
@@ -77,7 +77,7 @@ namespace Jerrycurl.Data.Metadata
 
         private NewExpression GetConstructor(IBindingMetadata metadata) => this.GetListConstructor(metadata) ?? this.GetDefaultConstructor(metadata);
 
-        private Type GetManyValueType(IBindingMetadata metadata)
+        private Type GetOneValueType(IBindingMetadata metadata)
         {
             Type openType = this.GetOpenType(metadata);
 
@@ -153,7 +153,7 @@ namespace Jerrycurl.Data.Metadata
             return null;
         }
 
-        private Type GetUnwrappedType(Type type) => Nullable.GetUnderlyingType(type) ?? type;
+        private Type GetUnwrappedType(Type type) => type != null ? (Nullable.GetUnderlyingType(type) ?? type) : null;
         private Type GetOpenType(IBindingMetadata metadata)
         {
             if (metadata.Type.IsGenericType)
@@ -385,29 +385,31 @@ namespace Jerrycurl.Data.Metadata
 
         private MethodInfo GetRecordReaderMethod(IBindingColumnInfo bindingInfo)
         {
-            if (bindingInfo.Column.Type == typeof(bool))
+            Type columnType = this.GetUnwrappedType(bindingInfo.Column.Type);
+
+            if (columnType == typeof(bool))
                 return this.GetRecordMethod(nameof(IDataReader.GetBoolean));
-            else if (bindingInfo.Column.Type == typeof(byte))
+            else if (columnType == typeof(byte))
                 return this.GetRecordMethod(nameof(IDataReader.GetByte));
-            else if (bindingInfo.Column.Type == typeof(float))
+            else if (columnType == typeof(float))
                 return this.GetRecordMethod(nameof(IDataReader.GetFloat));
-            else if (bindingInfo.Column.Type == typeof(double))
+            else if (columnType == typeof(double))
                 return this.GetRecordMethod(nameof(IDataReader.GetDouble));
-            else if (bindingInfo.Column.Type == typeof(decimal))
+            else if (columnType == typeof(decimal))
                 return this.GetRecordMethod(nameof(IDataReader.GetDecimal));
-            else if (bindingInfo.Column.Type == typeof(short))
+            else if (columnType == typeof(short))
                 return this.GetRecordMethod(nameof(IDataReader.GetInt16));
-            else if (bindingInfo.Column.Type == typeof(int))
+            else if (columnType == typeof(int))
                 return this.GetRecordMethod(nameof(IDataReader.GetInt32));
-            else if (bindingInfo.Column.Type == typeof(long))
+            else if (columnType == typeof(long))
                 return this.GetRecordMethod(nameof(IDataReader.GetInt64));
-            else if (bindingInfo.Column.Type == typeof(DateTime))
+            else if (columnType == typeof(DateTime))
                 return this.GetRecordMethod(nameof(IDataReader.GetDateTime));
-            else if (bindingInfo.Column.Type == typeof(Guid))
+            else if (columnType == typeof(Guid))
                 return this.GetRecordMethod(nameof(IDataReader.GetGuid));
-            else if (bindingInfo.Column.Type == typeof(char))
+            else if (columnType == typeof(char))
                 return this.GetRecordMethod(nameof(IDataReader.GetChar));
-            else if (bindingInfo.Column.Type == typeof(string))
+            else if (columnType == typeof(string))
                 return this.GetRecordMethod(nameof(IDataReader.GetString));
 
             return null;

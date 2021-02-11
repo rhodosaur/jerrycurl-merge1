@@ -4,14 +4,65 @@ using Jerrycurl.Test;
 using Jerrycurl.Data.Test.Model;
 using Jerrycurl.Data.Queries;
 using Jerrycurl.Data.Language;
+using Jerrycurl.Relations.Language;
+using System.Collections.Generic;
+using Jerrycurl.Data.Metadata;
 
 namespace Jerrycurl.Data.Test
 {
     public class Query2Tests
     {
+        public void Test_Insert_OneToMany_NonPrimary()
+        {
+            var store = DatabaseHelper.Default.Schemas2;
+
+            var data1 = new (int?, string)[]
+            {
+                ( 1, "Blog 1" ),
+                ( null, "Blog 2" ),
+            };
+            var data2 = new (int, int, string)[]
+            {
+                ( 1, 1, "Post 1.1" ),
+                ( 2, 1, "Post 1.2" ),
+                ( 3, 2, "Post 2.1" ),
+            };
+
+            var buffer = new ListBuffer<Blog>(store);
+
+            buffer.Insert(data1,
+                ("Item.Item1", "Item.Id2"),
+                ("Item.Item2", "Item.Title")
+            );
+
+            buffer.Insert(data2,
+                ("Item.Item1", "Item.Posts.Item.Id"),
+                ("Item.Item2", "Item.Posts.Item.BlogId2"),
+                ("Item.Item3", "Item.Posts.Item.Headline")
+            );
+
+            var result = buffer.Commit();
+
+            result.Count.ShouldBe(2);
+
+            result[0].Id2.ShouldBe(1);
+            result[0].Title.ShouldBe("Blog 1");
+
+            result[0].Posts.Count.ShouldBe(2);
+            result[0].Posts[0].BlogId2.ShouldBe(result[0].Id2);
+            result[0].Posts[0].Headline.ShouldBe("Post 1.1");
+            result[0].Posts[1].BlogId2.ShouldBe(result[0].Id2);
+            result[0].Posts[1].Headline.ShouldBe("Post 1.2");
+
+            result[1].Id2.ShouldBe(0);
+            result[1].Title.ShouldBe("Blog 1");
+
+            result[1].Posts.ShouldBeNull();
+        }
+
         public async Task Test_Insert_OneToMany_Async()
         {
-            var store = DatabaseHelper.Default.Schemas;
+            var store = DatabaseHelper.Default.Schemas2;
             var data1 = new (int, string)[]
             {
                 ( 1, "Blog 1" ),
@@ -84,7 +135,7 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Insert_OneToMany()
         {
-            var store = DatabaseHelper.Default.Schemas;
+            var store = DatabaseHelper.Default.Schemas2;
             var data1 = new (int, string)[]
             {
                 ( 1, "Blog 1" ),

@@ -10,7 +10,7 @@ namespace Jerrycurl.Relations.Test
 {
     public class LanguageTests
     {
-        public static void Test_Select_NonDimensional()
+        public static void Test_Select_ZeroDimensional()
         {
             ISchemaStore store = DatabaseHelper.Default.Schemas;
 
@@ -40,7 +40,7 @@ namespace Jerrycurl.Relations.Test
             actual.ShouldBe(expected);
         }
 
-        public static void Test_Select_TwoDimensional()
+        public static void Test_LambdaSelect_TwoDimensional()
         {
             ISchemaStore store = DatabaseHelper.Default.Schemas;
 
@@ -58,7 +58,7 @@ namespace Jerrycurl.Relations.Test
             actual.ShouldBe(expected);
         }
 
-        public static void Test_Select_All()
+        public static void Test_LambdaSelect_SelectAll()
         {
             ISchemaStore store = DatabaseHelper.Default.Schemas;
 
