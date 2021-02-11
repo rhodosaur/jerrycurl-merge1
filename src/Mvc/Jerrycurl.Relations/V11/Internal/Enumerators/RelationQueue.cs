@@ -21,7 +21,6 @@ namespace Jerrycurl.Relations.V11.Internal.Enumerators
         private Queue<RelationQueueItem<TList>> innerQueue = new Queue<RelationQueueItem<TList>>();
         private readonly List<RelationQueueItem<TList>> innerCache = new List<RelationQueueItem<TList>>();
         private bool usingCache = false;
-        public char[] c = new char[] { 'm', 'i', 'a', 'v', 'k', 'a', 't' };
 
         public RelationQueue(RelationQueueType queueType)
         {
@@ -47,7 +46,6 @@ namespace Jerrycurl.Relations.V11.Internal.Enumerators
                 this.CurrentItem.Reset();
                 this.innerEnumerator = (this.CurrentItem.List ?? (IEnumerable<TItem>)Array.Empty<TItem>()).GetEnumerator();
             }
-                
         }
 
         public string GetFieldName(string namePart) => this.CurrentItem.CombineWith(namePart);

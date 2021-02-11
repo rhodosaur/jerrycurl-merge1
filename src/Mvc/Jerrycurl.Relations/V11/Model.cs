@@ -10,7 +10,7 @@ namespace Jerrycurl.Relations.V11
     public class Model2 : IField2
     {
         public FieldIdentity Identity { get; }
-        public object Snapshot { get; set; }
+        public object Snapshot { get; }
         public FieldType2 Type { get; } = FieldType2.Model;
         public IRelationMetadata Metadata { get; }
         public bool HasChanged => false;
@@ -29,8 +29,9 @@ namespace Jerrycurl.Relations.V11
             this.Data = new ModelData(value);
         }
 
-        public void Commit() => throw new NotSupportedException("Models are not not bindable due to having no container.");
-        public void Rollback() => throw new NotSupportedException("Models are not not bindable due to having no container.");
+        public void Commit() { }
+        public void Rollback() { }
+        public void Update(object model) { }
 
         public bool Equals(IField2 other) => Equality.Combine(this, other, m => m.Identity, m => m.Snapshot);
         public override bool Equals(object obj) => (obj is IField2 other && this.Equals(other));

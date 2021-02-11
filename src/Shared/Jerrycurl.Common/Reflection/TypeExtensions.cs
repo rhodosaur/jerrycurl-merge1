@@ -35,6 +35,18 @@ namespace Jerrycurl.Reflection
             return false;
         }
 
+        public static PropertyInfo GetIndexer(this Type type, string propertyName = "Item")
+        {
+            foreach (PropertyInfo propertyInfo in type.GetProperties())
+            {
+                ParameterInfo[] indexParams = propertyInfo.GetIndexParameters();
+
+                if (propertyInfo.Name == propertyName && indexParams.Length == 1 && indexParams[0].ParameterType == typeof(int))
+                    return propertyInfo;
+            }
+
+            return null;
+        }
         public static bool IsNullable(this Type type, out Type underlyingType)
         {
             underlyingType = Nullable.GetUnderlyingType(type);

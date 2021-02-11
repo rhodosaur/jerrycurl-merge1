@@ -8,7 +8,7 @@ namespace Jerrycurl.Relations.V11
     public interface IField2 : IEquatable<IField2>
     {
         FieldIdentity Identity { get; }
-        object Snapshot { get; set; }
+        object Snapshot { get; }
         IField2 Model { get; }
         FieldType2 Type { get; }
         IRelationMetadata Metadata { get; }
@@ -17,5 +17,6 @@ namespace Jerrycurl.Relations.V11
 
         void Commit();
         void Rollback();
+        void Update(object value);
     }
 }

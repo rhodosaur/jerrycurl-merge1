@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Jerrycurl.Reflection;
 
 namespace Jerrycurl.Relations.Metadata.Contracts
 {
@@ -92,11 +93,20 @@ namespace Jerrycurl.Relations.Metadata.Contracts
 
         private PropertyInfo GetListIndexer(IRelationMetadata metadata)
         {
-            Type[] allowedTypes = new Type[]
+            Type[] allowedTypes = new[]
             {
                 typeof(IList<>),
                 typeof(List<>),
+                typeof(IEnumerable<>),
+                typeof(ICollection<>),
                 typeof(IReadOnlyList<>),
+                typeof(IReadOnlyCollection<>),
+            };
+            Type[] convertTypes = new[]
+            {
+                typeof(IEnumerable<>),
+                typeof(ICollection<>),
+                typeof(IReadOnlyCollection<>),
             };
 
             Type openType = metadata.Type.GetGenericTypeDefinition();
@@ -104,7 +114,15 @@ namespace Jerrycurl.Relations.Metadata.Contracts
             if (!allowedTypes.Contains(openType))
                 return null;
 
-            return metadata.Type.GetProperties().FirstOrDefault(pi => pi.Name == "Item" && pi.GetIndexParameters().FirstOrDefault()?.ParameterType == typeof(int));
+            if (convertTypes.Contains(openType))
+            {
+                Type itemType = metadata.Type.GetGenericArguments()[0];
+                Type listType = typeof(IList<>).MakeGenericType(itemType);
+
+                return listType.GetIndexer();
+            }
+
+            return metadata.Type.GetIndexer();
         }
     }
 }

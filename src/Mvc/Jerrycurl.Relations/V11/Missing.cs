@@ -15,14 +15,9 @@ namespace Jerrycurl.Relations.V11
         public IRelationMetadata Metadata { get; }
         public bool HasChanged => false;
         public IFieldData Data => null;
-        public object Snapshot
-        {
-            get => default(TValue);
-            set
-            {
-                throw new InvalidOperationException();
-            }
-        }
+        public object Snapshot => default(TValue);
+
+        public void Update(object value) => throw new InvalidOperationException();
 
         public Missing2(string name, IRelationMetadata metadata, IField2 model)
         {

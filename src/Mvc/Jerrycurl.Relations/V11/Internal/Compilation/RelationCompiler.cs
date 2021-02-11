@@ -46,15 +46,18 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
         {
             Expression body = this.GetInitializerExpression(reader, queueReaders);
 
-            ParameterExpression[] innerArgs = new[] { Arguments.Fields, Arguments.Queues, Arguments.Source, Arguments.Model, Arguments.Notation, Arguments.Binders, Arguments.Metadata };
-
-            return Expression.Lambda<BufferInternalWriter>(body, innerArgs).Compile();
+            return this.Compile(body);
         }
 
         private BufferInternalWriter Compile(QueueReader reader)
         {
             Expression body = this.GetReadWriteExpression(reader);
 
+            return this.Compile(body);
+        }
+
+        private BufferInternalWriter Compile(Expression body)
+        {
             ParameterExpression[] innerArgs = new[] { Arguments.Fields, Arguments.Queues, Arguments.Source, Arguments.Model, Arguments.Notation, Arguments.Binders, Arguments.Metadata };
 
             return Expression.Lambda<BufferInternalWriter>(body, innerArgs).Compile();
@@ -99,26 +102,28 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
             Expression value = this.GetReadExpression(reader, parentValue);
             Expression assignVariable = Expression.Assign(variable, value);
 
-            List<Expression> body = new List<Expression>();
+            List<Expression> valueBody = new List<Expression>();
+            List<Expression> nullBody = new List<Expression>();
 
-            body.AddRange(this.GetWriteExpressions(reader, parentValue, variable));
-            //body.AddRange(this.GetReadExpressions(reader, variable));
-            body.AddRange(this.GetReadWriteExpressions(reader, value));
+            valueBody.AddRange(this.GetWriteExpressions(reader, parentValue, variable, isNull: false));
+            valueBody.AddRange(this.GetReadWriteExpressions(reader, value));
 
-            //if (!value.Type.IsValueType || Nullable.GetUnderlyingType(value.Type) != null)
-            //{
-            //    List<Expression> nullBody = new List<Expression>();
+            nullBody.AddRange(this.GetWriteExpressions(reader, parentValue, variable, isNull: true));
+            nullBody.AddRange(this.GetWriteMissingExpressions(reader));
 
-            //    Expression isNull = Expression.ReferenceEqual(assignVariable, Expression.Constant(null));
-            //    Expression ifThen = Expression.IfThenElse(isNull, this.GetBlockOrExpression(nullBody), this.GetBlockOrExpression(body));
+            if (!value.Type.IsValueType || Nullable.GetUnderlyingType(value.Type) != null)
+            {
+                Expression isNull = Expression.ReferenceEqual(assignVariable, Expression.Constant(null));
+                Expression valueBlock = this.GetBlockOrExpression(valueBody);
+                Expression nullBlock = this.GetBlockOrExpression(nullBody);
+                Expression ifThen = Expression.IfThenElse(isNull, nullBlock, valueBlock);
 
-            //    body.Clear();
-            //    body.Add(ifThen);
-            //}
-            //else
-                body.Insert(0, assignVariable);
+                return Expression.Block(new[] { variable }, ifThen);
+            }
 
-            return this.GetBlockOrExpression(body, new[] { variable });
+            valueBody.Insert(0, assignVariable);
+
+            return this.GetBlockOrExpression(valueBody, new[] { variable });
         }
 
         private IEnumerable<Expression> GetReadWriteExpressions(NodeReader reader, Expression value)
@@ -180,29 +185,68 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
         #endregion
 
         #region " Writers "
-        private Expression GetWriteExpression(NodeWriter writer, Expression parentValue, Expression value) => writer switch
+        private Expression GetWriteExpression(NodeWriter writer, Expression parentValue, Expression value, bool isNull) => writer switch
         {
-            FieldWriter writer2 => this.GetWriteExpression(writer2, parentValue, value),
+            FieldWriter writer2 => this.GetWriteExpression(writer2, parentValue, value, isNull),
             QueueWriter writer2 => this.GetWriteExpression(writer2, value),
             _ => throw new InvalidOperationException(),
         };
 
-        private Expression GetWriteExpression(FieldWriter writer, Expression parentValue, Expression value)
+        private Expression GetWriteExpression(FieldWriter writer, Expression parentValue, Expression value, bool isNull)
         {
             Expression bufferIndex = Expression.ArrayAccess(Arguments.Fields, Expression.Constant(writer.BufferIndex));
-            Expression newField = writer.Queue != null ? this.GetNewFieldExpression(writer, parentValue, value, false) : Arguments.Source;
+            Expression newField = this.GetNewFieldExpression(writer, parentValue, value, isNull);
 
             return Expression.Assign(bufferIndex, newField);
         }
 
         private Expression GetWriteExpression(QueueWriter writer, Expression value) => this.GetQueueAddExpression(writer, value);
 
-        private IEnumerable<Expression> GetWriteExpressions(NodeReader reader, Expression parentValue, Expression value)
+        private IEnumerable<Expression> GetWriteExpressions(NodeReader reader, Expression parentValue, Expression value, bool isNull)
         {
             foreach (NodeWriter writer in reader.Writers)
-                yield return this.GetWriteExpression(writer, parentValue, value);
+            {
+                Expression expression = this.GetWriteExpression(writer, parentValue, value, isNull);
+
+                if (expression != null)
+                    yield return expression;
+            }
         }
 
+        #endregion
+
+        #region " Missing writers "
+        private Expression GetWriteMissingExpression(FieldWriter writer)
+        {
+            Expression bufferIndex = Expression.ArrayAccess(Arguments.Fields, Expression.Constant(writer.BufferIndex));
+            Expression newField = this.GetNewMissingExpression(writer);
+
+            return Expression.Assign(bufferIndex, newField);
+        }
+
+
+        private Expression GetWriteMissingExpression(QueueWriter writer)
+            => this.GetWriteExpression(writer, Expression.Constant(null));
+
+        private Expression GetWriteMissingExpression(NodeWriter writer) => writer switch
+        {
+            FieldWriter writer2 => this.GetWriteMissingExpression(writer2),
+            QueueWriter writer2 => this.GetWriteMissingExpression(writer2),
+            _ => throw new InvalidOperationException(),
+        };
+
+        private IEnumerable<Expression> GetWriteMissingExpressions(NodeReader reader)
+        {
+            foreach (PropertyReader propReader in reader.Properties)
+            {
+                foreach (NodeWriter writer in reader.Writers)
+                    yield return this.GetWriteMissingExpression(writer);
+            }
+
+            foreach (PropertyReader propReader in reader.Properties)
+                foreach (Expression expression in this.GetWriteMissingExpressions(propReader))
+                    yield return expression;
+        }
         #endregion
 
         #region " Readers "
@@ -272,8 +316,6 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
             }
         }
 
-        //public Field2(string name, IRelationMetadata metadata, FieldData<TValue, TParent> data, IField2 model, FieldType2 type)
-        //public FieldData(object list, int index, TParent parent, TValue value, Delegate binder)
         private Expression GetNewFieldExpression(FieldWriter writer, Expression parentValue, Expression value, bool isNull)
         {
             if (parentValue == null)
@@ -286,7 +328,7 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
             ConstructorInfo newDataInfo = dataType.GetConstructors()[0];
 
             Expression relation = Expression.Constant(null);
-            Expression index = this.GetQueuePropertyExpression(writer.Queue, "Index");
+            Expression index = writer.Queue != null ? this.GetQueuePropertyExpression(writer.Queue, "Index") : Expression.Constant(0);
             Expression binder = this.GetBinderExpression(writer);
             
             Expression name = this.GetFieldNameExpression(writer);
@@ -299,7 +341,7 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
 
         private Expression GetNewMissingExpression(FieldWriter writer)
         {
-            Type fieldType = typeof(Missing<>).MakeGenericType(writer.Metadata.Type);
+            Type fieldType = typeof(Missing2<>).MakeGenericType(writer.Metadata.Type);
             ConstructorInfo ctor = fieldType.GetConstructors()[0];
 
             Expression name = this.GetFieldNameExpression(writer);
@@ -359,7 +401,14 @@ namespace Jerrycurl.Relations.V11.Internal.Compilation
             if (writer.Metadata.HasFlag(RelationMetadataFlags.Item))
             {
                 if (writer.Metadata.WriteIndex != null)
-                    bindExpression = Expression.Call(parentValue, writer.Metadata.WriteIndex, index, value);
+                {
+                    Expression listValue = parentValue;
+
+                    if (parentValue.Type != writer.Metadata.WriteIndex.DeclaringType)
+                        listValue = Expression.Convert(listValue, writer.Metadata.WriteIndex.DeclaringType);
+
+                    bindExpression = Expression.Call(listValue, writer.Metadata.WriteIndex, index, value);
+                }
                 else
                     bindExpression = Expression.Throw(Expression.New(typeof(NotIndexableException)));
             }

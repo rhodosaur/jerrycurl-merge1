@@ -42,14 +42,9 @@ namespace Jerrycurl.Relations.V11.Language
             => new RelationHeader<TModel>(store.GetSchema(typeof(TModel)));
 
         public static void Update<T>(this IField2 field, Func<T, T> valueFactory)
-        {
-            field.Snapshot = valueFactory((T)field.Snapshot);
-            field.Commit();
-        }
+            => field.Update(valueFactory((T)field.Snapshot));
+
         public static void Update<T>(this IField2 field, T value)
-        {
-            field.Snapshot = value;
-            field.Commit();
-        }
+            => field.Update(value);
     }
 }

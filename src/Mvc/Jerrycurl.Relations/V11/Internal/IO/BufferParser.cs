@@ -111,7 +111,7 @@ namespace Jerrycurl.Relations.V11.Internal.IO
                     Next = nextQueue,
                 };
 
-                if (prevQueue != null && !prevQueue.List.Identity.Equals(nextQueue.List.Identity))
+                if (prevQueue != null && !prevQueue.List.Identity.Equals(nextQueue.List.MemberOf?.Parent.Identity))
                     nextQueue.Type = RelationQueueType.Cartesian;
 
                 reader.Writers.Add(writer);

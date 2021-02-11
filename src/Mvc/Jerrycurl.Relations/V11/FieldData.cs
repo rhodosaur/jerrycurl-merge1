@@ -22,9 +22,9 @@ namespace Jerrycurl.Relations.V11
             this.Binder = (FieldBinder<TParent, TValue>)binder;
         }
 
-        public void Update(TValue newValue)
+        public void Bind(TValue newValue)
         {
-            this.Binder(this.Parent, this.Index, this.Value);
+            this.Binder(this.Parent, this.Index, newValue);
             this.Value = newValue;
         }
 

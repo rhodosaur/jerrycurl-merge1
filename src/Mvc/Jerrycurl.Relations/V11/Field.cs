@@ -17,8 +17,7 @@ namespace Jerrycurl.Relations.V11
         public IRelationMetadata Metadata { get; }
         public FieldData<TValue, TParent> Data { get; }
         public bool HasChanged { get; private set; }
-
-        private object value;
+        public object Snapshot { get; private set; }
 
         public Field2(string name, IRelationMetadata metadata, FieldData<TValue, TParent> data, IField2 model, FieldType2 type)
         {
@@ -32,17 +31,14 @@ namespace Jerrycurl.Relations.V11
             this.Model = model ?? throw new ArgumentNullException(nameof(model));
             this.Type = type;
             this.Metadata = metadata;
-            this.value = data.Value;
+            this.Data = data;
+            this.Snapshot = data.Value;
         }
 
-        public object Snapshot
+        public void Update(object value)
         {
-            get => this.value;
-            set
-            {
-                this.value = value;
-                this.HasChanged = true;
-            }
+            this.Snapshot = value;
+            this.HasChanged = true;
         }
 
         public void Commit()
@@ -57,26 +53,32 @@ namespace Jerrycurl.Relations.V11
             {
                 TValue typedValue = (TValue)this.Snapshot;
 
-                this.Data.Update((TValue)this.Snapshot);
+                this.Data.Bind((TValue)this.Snapshot);
                 this.HasChanged = false;
             }
             catch (NotIndexableException)
             {
+                throw;
                 //throw BindingException.FromField(this, "Property has no indexer.");
             }
             catch (NotWritableException)
             {
+                throw;
                 //throw BindingException.FromField(this, "Property has no setter.");
             }
             catch (Exception ex)
             {
+                throw;
                 //throw BindingException.FromField(this, innerException: ex);
             }
         }
 
         public void Rollback()
         {
-            this.value = this.Data.Value;
+            if (!this.HasChanged)
+                return;
+
+            this.Snapshot = this.Data.Value;
             this.HasChanged = false;
         }
 
