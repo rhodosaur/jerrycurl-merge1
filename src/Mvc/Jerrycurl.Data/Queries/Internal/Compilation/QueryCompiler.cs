@@ -82,11 +82,11 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             {
                 Expression prepareBuffer = this.GetPrepareBufferExpression(target);
                 Expression prepareVariable = this.GetPrepareVariableExpression(target);
+                Expression prepareBufferAndVariable = this.GetPrepareBufferAndVariableExpression(target);
 
                 initList.Add(prepareBuffer);
                 oneList.Add(prepareVariable);
-                allList.Add(prepareBuffer);
-                allList.Add(prepareVariable);
+                allList.Add(prepareBufferAndVariable);
 
                 variables.Add(target.Variable);
             }
@@ -170,6 +170,17 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
         #endregion
 
         #region " Prepare "
+        private Expression GetPrepareBufferAndVariableExpression(ListTarget target)
+        {
+            Expression bufferIndex = this.GetElasticIndexExpression(Arguments.Lists, target.Index);
+            Expression newExpression = Expression.Assign(target.Variable, target.NewTarget);
+            Expression setNew = Expression.Assign(bufferIndex, newExpression);
+            Expression setOld = Expression.Assign(target.Variable, Expression.Convert(bufferIndex, target.Variable.Type));
+            Expression notNull = this.GetIsNotNullExpression(bufferIndex);
+
+            return Expression.IfThenElse(notNull, setOld, setNew);
+        }
+
         private Expression GetPrepareVariableExpression(ListTarget target)
         {
             Expression bufferIndex = this.GetElasticIndexExpression(Arguments.Lists, target.Index);
@@ -179,7 +190,11 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
         }
 
         private Expression GetPrepareBufferExpression(ListTarget target)
-            => this.GetElasticGetOrSetExpression(Arguments.Lists, target.Index, target.NewTarget, convertValue: false);
+        {
+            Expression bufferIndex = this.GetElasticIndexExpression(Arguments.Lists, target.Index);
+
+            return this.GetElasticGetOrSetExpression(bufferIndex, target.NewTarget, convertValue: false);
+        }
 
         #endregion
 
@@ -721,8 +736,13 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
             return getOrSet;
         }
+
         private Expression GetElasticGetOrSetExpression(Expression arrayExpression, int index, Expression setExpression, bool convertValue = true)
-            => this.GetElasticGetOrSetExpression(this.GetElasticIndexExpression(arrayExpression, index), setExpression, convertValue);
+        {
+            Expression arrayIndex = this.GetElasticIndexExpression(arrayExpression, index);
+
+            return this.GetElasticGetOrSetExpression(arrayIndex, setExpression, convertValue);
+        }
 
         private Expression GetElasticIndexExpression(Expression arrayExpression, int index)
         {
