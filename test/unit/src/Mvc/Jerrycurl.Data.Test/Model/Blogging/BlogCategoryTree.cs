@@ -4,7 +4,7 @@ using System.Text;
 using Jerrycurl.Data.Metadata.Annotations;
 using Jerrycurl.Relations;
 
-namespace Jerrycurl.Data.Test.Model
+namespace Jerrycurl.Data.Test.Model.Blogging
 {
     internal class BlogCategory
     {

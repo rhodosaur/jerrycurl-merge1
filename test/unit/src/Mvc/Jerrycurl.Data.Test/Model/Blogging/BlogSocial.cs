@@ -1,8 +1,8 @@
 ﻿using Jerrycurl.Data.Metadata.Annotations;
 
-namespace Jerrycurl.Data.Test.Model
+namespace Jerrycurl.Data.Test.Model.Blogging
 {
-    public class BlogSocial
+    internal class BlogSocial
     {
         [Key("PK_BlogSocial"), Ref("PK_Blog")]
         public int BlogId { get; set; }

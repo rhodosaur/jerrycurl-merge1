@@ -1,8 +1,8 @@
 ﻿using Jerrycurl.Relations;
 
-namespace Jerrycurl.Data.Test.Model
+namespace Jerrycurl.Data.Test.Model.Blogging
 {
-    public class BlogTag
+    internal class BlogTag
     {
         public int BlogPostId { get; set; }
         public int TagId { get; set; }

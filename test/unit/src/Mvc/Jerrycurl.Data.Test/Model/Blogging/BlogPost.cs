@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using Jerrycurl.Data.Metadata.Annotations;
 
-namespace Jerrycurl.Data.Test.Model
+namespace Jerrycurl.Data.Test.Model.Blogging
 {
-    public class BlogPost
+    internal class BlogPost
     {
         [Key("PK_BlogPost")]
         public int Id { get; set; }

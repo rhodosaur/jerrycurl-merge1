@@ -7,6 +7,7 @@ using Jerrycurl.Data.Language;
 using Jerrycurl.Relations.Language;
 using Jerrycurl.Data.Metadata;
 using System.Linq;
+using Jerrycurl.Data.Test.Model.Blogging;
 
 namespace Jerrycurl.Data.Test
 {

@@ -218,7 +218,8 @@ namespace Jerrycurl.Relations.Test
 
         public void Test_Select_SourceTraverse()
         {
-            DeepModel model = new DeepModel()
+            var store = DatabaseHelper.Default.Store;
+            var model = new DeepModel()
             {
                 Sub1 = new DeepModel.SubModel1()
                 {
@@ -296,19 +297,19 @@ namespace Jerrycurl.Relations.Test
                 },
             };
 
-            string valueAttr = "Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item.Sub6.Item.Value";
+            var valueAttr = "Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item.Sub6.Item.Value";
 
-            IRelation rel1 = DatabaseHelper.Default.Relation(model, valueAttr);
-            IRelation rel2 = rel1.Source.Lookup("Sub1").Select(valueAttr);
-            IRelation rel3 = rel2.Source.Lookup("Sub1.Sub2").Select(valueAttr);
-            IRelation rel4 = rel3.Source.Lookup("Sub1.Sub2.Sub3").Select(valueAttr);
-            IRelation rel5 = rel4.Source.Lookup("Sub1.Sub2.Sub3.Item").Select(valueAttr);
-            IRelation rel6 = rel5.Source.Lookup("Sub1.Sub2.Sub3.Item.Sub4").Select(valueAttr);
-            IRelation rel7 = rel6.Source.Lookup("Sub1.Sub2.Sub3.Item.Sub4.Sub5").Select(valueAttr);
-            IRelation rel8 = rel7.Source.Lookup("Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item").Select(valueAttr);
-            IRelation rel9 = rel8.Source.Lookup("Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item.Sub6").Select(valueAttr);
-            IRelation rel10 = rel9.Source.Lookup("Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item.Sub6.Item").Select(valueAttr);
-            IRelation rel11 = rel10.Source.Lookup("Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item.Sub6.Item.Value").Select(valueAttr);
+            var rel1 = store.From(model).Select(valueAttr);
+            var rel2 = rel1.Source.Lookup("Sub1").Select(valueAttr);
+            var rel3 = rel2.Source.Lookup("Sub1.Sub2").Select(valueAttr);
+            var rel4 = rel3.Source.Lookup("Sub1.Sub2.Sub3").Select(valueAttr);
+            var rel5 = rel4.Source.Lookup("Sub1.Sub2.Sub3.Item").Select(valueAttr);
+            var rel6 = rel5.Source.Lookup("Sub1.Sub2.Sub3.Item.Sub4").Select(valueAttr);
+            var rel7 = rel6.Source.Lookup("Sub1.Sub2.Sub3.Item.Sub4.Sub5").Select(valueAttr);
+            var rel8 = rel7.Source.Lookup("Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item").Select(valueAttr);
+            var rel9 = rel8.Source.Lookup("Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item.Sub6").Select(valueAttr);
+            var rel10 = rel9.Source.Lookup("Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item.Sub6.Item").Select(valueAttr);
+            var rel11 = rel10.Source.Lookup("Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item.Sub6.Item.Value").Select(valueAttr);
 
             rel1.Column().Select(f => (int?)f.Snapshot).ShouldBe(new int?[] { 1, 2, 3, 4, 5, 6, 7, 8, null, 9 });
             rel2.Column().Select(f => (int?)f.Snapshot).ShouldBe(new int?[] { 1, 2, 3, 4, 5, 6, 7, 8, null, 9 });
@@ -336,7 +337,8 @@ namespace Jerrycurl.Relations.Test
 
         public void Test_Select_OneToMany_InnerJoin()
         {
-            List<RootModel> model = new List<RootModel>()
+            var store = DatabaseHelper.Default.Store;
+            var model = new List<RootModel>()
             {
                 new RootModel()
                 {
@@ -359,84 +361,31 @@ namespace Jerrycurl.Relations.Test
                 new RootModel() { IntValue = 4, ComplexList = new List<RootModel.SubModel>() },
             };
 
-            ITuple[] result = DatabaseHelper.Default.Relation(model, "Item.IntValue", "Item.ComplexList.Item.Value").Body.ToArray();
+            var result = store.From(model).Select("Item.IntValue", "Item.ComplexList.Item.Value").Body.ToArray();
 
             result.Length.ShouldBe(3);
 
-            result[0][0].Snapshot.ShouldBe(1);
-            result[0][1].Snapshot.ShouldBe(10);
+            result[0].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 10 });
+            result[0].Select(f => f.Identity.Name).ShouldBe(new[] { "Item[0].IntValue", "Item[0].ComplexList.Item[0].Value" });
 
-            result[1][0].Snapshot.ShouldBe(2);
-            result[1][1].Snapshot.ShouldBe(11);
+            result[1].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 11 });
+            result[1].Select(f => f.Identity.Name).ShouldBe(new[] { "Item[1].IntValue", "Item[1].ComplexList.Item[0].Value" });
 
-            result[2][0].Snapshot.ShouldBe(2);
-            result[2][1].Snapshot.ShouldBe(12);
-        }
-
-        public void Test_Select_AdjacentCrossJoin()
-        {
-            RootModel model = new RootModel()
-            {
-                ComplexList = new List<RootModel.SubModel>()
-                {
-                    new RootModel.SubModel() { Value = 1 },
-                    new RootModel.SubModel() { Value = 2 },
-                    new RootModel.SubModel() { Value = 3 },
-                },
-                ComplexList2 = new List<RootModel.SubModel>()
-                {
-                    new RootModel.SubModel() { Value = 4 },
-                    new RootModel.SubModel() { Value = 5 },
-                    new RootModel.SubModel() { Value = 6 },
-                    new RootModel.SubModel() { Value = 7 },
-                }
-            };
-            IRelation rel1 = DatabaseHelper.Default.Relation(model, "ComplexList.Item.Value", "ComplexList2.Item.Value");
-            IRelation rel2 = DatabaseHelper.Default.Relation(model, "ComplexList2.Item.Value", "ComplexList.Item.Value");
-
-            IList<(int, int)> pairs1 = rel1.Body.Select(t => ((int)t[0].Snapshot, (int)t[1].Snapshot)).ToList();
-            IList<(int, int)> pairs2 = rel2.Body.Select(t => ((int)t[0].Snapshot, (int)t[1].Snapshot)).ToList();
-
-            pairs1.Count.ShouldBe(3 * 4);
-            pairs2.Count.ShouldBe(4 * 3);
-
-            pairs1[0].ShouldBe((1, 4));
-            pairs1[1].ShouldBe((1, 5));
-            pairs1[2].ShouldBe((1, 6));
-            pairs1[3].ShouldBe((1, 7));
-            pairs1[4].ShouldBe((2, 4));
-            pairs1[5].ShouldBe((2, 5));
-            pairs1[6].ShouldBe((2, 6));
-            pairs1[7].ShouldBe((2, 7));
-            pairs1[8].ShouldBe((3, 4));
-            pairs1[9].ShouldBe((3, 5));
-            pairs1[10].ShouldBe((3, 6));
-            pairs1[11].ShouldBe((3, 7));
-
-            pairs2[0].ShouldBe((4, 1));
-            pairs2[1].ShouldBe((4, 2));
-            pairs2[2].ShouldBe((4, 3));
-            pairs2[3].ShouldBe((5, 1));
-            pairs2[4].ShouldBe((5, 2));
-            pairs2[5].ShouldBe((5, 3));
-            pairs2[6].ShouldBe((6, 1));
-            pairs2[7].ShouldBe((6, 2));
-            pairs2[8].ShouldBe((6, 3));
-            pairs2[9].ShouldBe((7, 1));
-            pairs2[10].ShouldBe((7, 2));
-            pairs2[11].ShouldBe((7, 3));
+            result[2].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 12 });
+            result[2].Select(f => f.Identity.Name).ShouldBe(new[] { "Item[1].IntValue", "Item[1].ComplexList.Item[1].Value" });
         }
 
         public void Test_Select_ScalarList()
         {
-            RootModel model = new RootModel()
+            var store = DatabaseHelper.Default.Store;
+            var model = new RootModel()
             {
                 IntList = new List<int>() { 1, 2, 3, 4, 5 },
             };
-            IRelation rel = DatabaseHelper.Default.Relation(model, "IntList.Item");
-            IEnumerable<int> ints = rel.Column().Select(f => (int)f.Snapshot);
 
-            ints.ShouldBe(new[] { 1, 2, 3, 4, 5 });
+            var rel = store.From(model).Select("IntList.Item");
+
+            rel.Column().Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 2, 3, 4, 5 });
         }
 
         public void Test_Select_NotReachable_Throws()
@@ -453,7 +402,7 @@ namespace Jerrycurl.Relations.Test
             Should.Throw<RelationException>(() => rel2.Scalar());
         }
 
-        public void Test_Select_CartesianProduct_Order()
+        public void Test_Select_Adjacent_CrossJoin()
         {
             var store = DatabaseHelper.Default.GetSchemas(useSqlite: false);
             var model = new XModel()
@@ -463,41 +412,134 @@ namespace Jerrycurl.Relations.Test
                 Zs = new List<int>() { 7, 8, 9 },
             };
 
-            var relation = store.From(model).Select("Xs.Item", "Ys.Item", "Zs.Item");
-            var data = relation.Body.ToArray();
+            var rel1 = store.From(model).Select("Xs.Item", "Ys.Item", "Zs.Item");
+            var rel2 = store.From(model).Select("Zs.Item", "Ys.Item", "Xs.Item");
 
-            data.Length.ShouldBe(4 * 2 * 3);
+            var data1 = rel1.Body.ToArray();
+            var data2 = rel2.Body.ToArray();
 
-            data[0].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 5, 7 });
-            data[1].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 5, 8 });
-            data[2].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 5, 9 });
-            data[3].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 6, 7 });
-            data[4].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 6, 8 });
-            data[5].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 6, 9 });
+            data1.Length.ShouldBe(4 * 2 * 3);
 
-            data[6].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 5, 7 });
-            data[7].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 5, 8 });
-            data[8].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 5, 9 });
-            data[9].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 6, 7 });
-            data[10].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 6, 8 });
-            data[11].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 6, 9 });
+            data1[0].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[0]", "Ys.Item[0]", "Zs.Item[0]" });
+            data1[1].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[0]", "Ys.Item[0]", "Zs.Item[1]" });
+            data1[2].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[0]", "Ys.Item[0]", "Zs.Item[2]" });
+            data1[3].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[0]", "Ys.Item[1]", "Zs.Item[0]" });
+            data1[4].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[0]", "Ys.Item[1]", "Zs.Item[1]" });
+            data1[5].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[0]", "Ys.Item[1]", "Zs.Item[2]" });
 
-            data[12].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 5, 7 });
-            data[13].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 5, 8 });
-            data[14].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 5, 9 });
-            data[15].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 6, 7 });
-            data[16].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 6, 8 });
-            data[17].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 6, 9 });
+            data1[6].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[1]", "Ys.Item[0]", "Zs.Item[0]" });
+            data1[7].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[1]", "Ys.Item[0]", "Zs.Item[1]" });
+            data1[8].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[1]", "Ys.Item[0]", "Zs.Item[2]" });
+            data1[9].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[1]", "Ys.Item[1]", "Zs.Item[0]" });
+            data1[10].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[1]", "Ys.Item[1]", "Zs.Item[1]" });
+            data1[11].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[1]", "Ys.Item[1]", "Zs.Item[2]" });
 
-            data[18].Select(f => (int)f.Snapshot).ShouldBe(new[] { 4, 5, 7 });
-            data[19].Select(f => (int)f.Snapshot).ShouldBe(new[] { 4, 5, 8 });
-            data[20].Select(f => (int)f.Snapshot).ShouldBe(new[] { 4, 5, 9 });
-            data[21].Select(f => (int)f.Snapshot).ShouldBe(new[] { 4, 6, 7 });
-            data[22].Select(f => (int)f.Snapshot).ShouldBe(new[] { 4, 6, 8 });
-            data[23].Select(f => (int)f.Snapshot).ShouldBe(new[] { 4, 6, 9 });
+            data1[12].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[2]", "Ys.Item[0]", "Zs.Item[0]" });
+            data1[13].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[2]", "Ys.Item[0]", "Zs.Item[1]" });
+            data1[14].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[2]", "Ys.Item[0]", "Zs.Item[2]" });
+            data1[15].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[2]", "Ys.Item[1]", "Zs.Item[0]" });
+            data1[16].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[2]", "Ys.Item[1]", "Zs.Item[1]" });
+            data1[17].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[2]", "Ys.Item[1]", "Zs.Item[2]" });
+
+            data1[18].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[3]", "Ys.Item[0]", "Zs.Item[0]" });
+            data1[19].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[3]", "Ys.Item[0]", "Zs.Item[1]" });
+            data1[20].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[3]", "Ys.Item[0]", "Zs.Item[2]" });
+            data1[21].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[3]", "Ys.Item[1]", "Zs.Item[0]" });
+            data1[22].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[3]", "Ys.Item[1]", "Zs.Item[1]" });
+            data1[23].Select(f => f.Identity.Name).ShouldBe(new[] { "Xs.Item[3]", "Ys.Item[1]", "Zs.Item[2]" });
+
+            data1[0].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 5, 7 });
+            data1[1].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 5, 8 });
+            data1[2].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 5, 9 });
+            data1[3].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 6, 7 });
+            data1[4].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 6, 8 });
+            data1[5].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 6, 9 });
+
+            data1[6].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 5, 7 });
+            data1[7].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 5, 8 });
+            data1[8].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 5, 9 });
+            data1[9].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 6, 7 });
+            data1[10].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 6, 8 });
+            data1[11].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 6, 9 });
+
+            data1[12].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 5, 7 });
+            data1[13].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 5, 8 });
+            data1[14].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 5, 9 });
+            data1[15].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 6, 7 });
+            data1[16].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 6, 8 });
+            data1[17].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 6, 9 });
+
+            data1[18].Select(f => (int)f.Snapshot).ShouldBe(new[] { 4, 5, 7 });
+            data1[19].Select(f => (int)f.Snapshot).ShouldBe(new[] { 4, 5, 8 });
+            data1[20].Select(f => (int)f.Snapshot).ShouldBe(new[] { 4, 5, 9 });
+            data1[21].Select(f => (int)f.Snapshot).ShouldBe(new[] { 4, 6, 7 });
+            data1[22].Select(f => (int)f.Snapshot).ShouldBe(new[] { 4, 6, 8 });
+            data1[23].Select(f => (int)f.Snapshot).ShouldBe(new[] { 4, 6, 9 });
+
+            data2.Length.ShouldBe(3 * 2 * 4);
+
+            data2[0].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[0]", "Ys.Item[0]", "Xs.Item[0]" });
+            data2[1].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[0]", "Ys.Item[0]", "Xs.Item[1]" });
+            data2[2].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[0]", "Ys.Item[0]", "Xs.Item[2]" });
+            data2[3].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[0]", "Ys.Item[0]", "Xs.Item[3]" });
+
+            data2[4].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[0]", "Ys.Item[1]", "Xs.Item[0]" });
+            data2[5].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[0]", "Ys.Item[1]", "Xs.Item[1]" });
+            data2[6].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[0]", "Ys.Item[1]", "Xs.Item[2]" });
+            data2[7].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[0]", "Ys.Item[1]", "Xs.Item[3]" });
+
+            data2[8].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[1]", "Ys.Item[0]", "Xs.Item[0]" });
+            data2[9].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[1]", "Ys.Item[0]", "Xs.Item[1]" });
+            data2[10].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[1]", "Ys.Item[0]", "Xs.Item[2]" });
+            data2[11].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[1]", "Ys.Item[0]", "Xs.Item[3]" });
+
+            data2[12].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[1]", "Ys.Item[1]", "Xs.Item[0]" });
+            data2[13].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[1]", "Ys.Item[1]", "Xs.Item[1]" });
+            data2[14].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[1]", "Ys.Item[1]", "Xs.Item[2]" });
+            data2[15].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[1]", "Ys.Item[1]", "Xs.Item[3]" });
+
+            data2[16].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[2]", "Ys.Item[0]", "Xs.Item[0]" });
+            data2[17].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[2]", "Ys.Item[0]", "Xs.Item[1]" });
+            data2[18].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[2]", "Ys.Item[0]", "Xs.Item[2]" });
+            data2[19].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[2]", "Ys.Item[0]", "Xs.Item[3]" });
+
+            data2[20].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[2]", "Ys.Item[1]", "Xs.Item[0]" });
+            data2[21].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[2]", "Ys.Item[1]", "Xs.Item[1]" });
+            data2[22].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[2]", "Ys.Item[1]", "Xs.Item[2]" });
+            data2[23].Select(f => f.Identity.Name).ShouldBe(new[] { "Zs.Item[2]", "Ys.Item[1]", "Xs.Item[3]" });
+
+            data2[0].Select(f => (int)f.Snapshot).ShouldBe(new[] { 7, 5, 1 });
+            data2[1].Select(f => (int)f.Snapshot).ShouldBe(new[] { 7, 5, 2 });
+            data2[2].Select(f => (int)f.Snapshot).ShouldBe(new[] { 7, 5, 3 });
+            data2[3].Select(f => (int)f.Snapshot).ShouldBe(new[] { 7, 5, 4 });
+
+            data2[4].Select(f => (int)f.Snapshot).ShouldBe(new[] { 7, 6, 1 });
+            data2[5].Select(f => (int)f.Snapshot).ShouldBe(new[] { 7, 6, 2 });
+            data2[6].Select(f => (int)f.Snapshot).ShouldBe(new[] { 7, 6, 3 });
+            data2[7].Select(f => (int)f.Snapshot).ShouldBe(new[] { 7, 6, 4 });
+
+            data2[8].Select(f => (int)f.Snapshot).ShouldBe(new[] { 8, 5, 1 });
+            data2[9].Select(f => (int)f.Snapshot).ShouldBe(new[] { 8, 5, 2 });
+            data2[10].Select(f => (int)f.Snapshot).ShouldBe(new[] { 8, 5, 3 });
+            data2[11].Select(f => (int)f.Snapshot).ShouldBe(new[] { 8, 5, 4 });
+
+            data2[12].Select(f => (int)f.Snapshot).ShouldBe(new[] { 8, 6, 1 });
+            data2[13].Select(f => (int)f.Snapshot).ShouldBe(new[] { 8, 6, 2 });
+            data2[14].Select(f => (int)f.Snapshot).ShouldBe(new[] { 8, 6, 3 });
+            data2[15].Select(f => (int)f.Snapshot).ShouldBe(new[] { 8, 6, 4 });
+
+            data2[16].Select(f => (int)f.Snapshot).ShouldBe(new[] { 9, 5, 1 });
+            data2[17].Select(f => (int)f.Snapshot).ShouldBe(new[] { 9, 5, 2 });
+            data2[18].Select(f => (int)f.Snapshot).ShouldBe(new[] { 9, 5, 3 });
+            data2[19].Select(f => (int)f.Snapshot).ShouldBe(new[] { 9, 5, 4 });
+
+            data2[20].Select(f => (int)f.Snapshot).ShouldBe(new[] { 9, 6, 1 });
+            data2[21].Select(f => (int)f.Snapshot).ShouldBe(new[] { 9, 6, 2 });
+            data2[22].Select(f => (int)f.Snapshot).ShouldBe(new[] { 9, 6, 3 });
+            data2[23].Select(f => (int)f.Snapshot).ShouldBe(new[] { 9, 6, 4 });
         }
 
-        public void Test_Select_CartesianProduct_Cache()
+        public void Test_Select_Adjacent_CrossJoin_Cache()
         {
             var store = DatabaseHelper.Default.GetSchemas(useSqlite: false);
             var model = new XModel()
@@ -617,10 +659,32 @@ namespace Jerrycurl.Relations.Test
             var names2 = rel2.Body.Select(t => t[0].Identity.Name).ToList();
             var values2 = rel2.Body.Select(t => (string)t[0].Snapshot).ToList();
 
-            names1.ShouldBe(new[] { "Item[0].Name", "Item[1].Name" });
+            names1.ShouldBe(new[] { "Item[0].Name", "Item[1].Name", "Item[2].Name", "Item[3].Name" });
             values1.ShouldBe(new[] { "1", "2", "3", "4" });
 
-            names2.ShouldBe()
+            names2.ShouldBe(new[] {  "Item[0].Subs.Item[0].Name",
+                                     "Item[0].Subs.Item[0].Subs.Item[0].Name",
+                                     "Item[0].Subs.Item[0].Subs.Item[1].Name",
+                                     "Item[0].Subs.Item[0].Subs.Item[1].Name",
+                                     "Item[0].Subs.Item[0].Subs.Item[0].Subs.Item[0].Name",
+                                     "Item[0].Subs.Item[0].Subs.Item[0].Subs.Item[1].Name",
+                                     "Item[0].Subs.Item[0].Subs.Item[0].Subs.Item[2].Name",
+                                     "Item[0].Subs.Item[0].Subs.Item[0].Subs.Item[3].Name",
+                                     "Item[0].Subs.Item[0].Subs.Item[1].Subs.Item[0].Name",
+                                     "Item[0].Subs.Item[0].Subs.Item[1].Subs.Item[1].Name",
+                                     "Item[0].Subs.Item[0].Subs.Item[0].Subs.Item[2].Subs.Item[0].Name",
+                                     "Item[1].Subs.Item[0].Name",
+                                     "Item[1].Subs.Item[1].Name",
+                                     "Item[1].Subs.Item[0].Subs.Item[0].Name",
+                                     "Item[1].Subs.Item[0].Subs.Item[1].Name",
+                                     "Item[1].Subs.Item[0].Subs.Item[2].Name",
+                                     "Item[1].Subs.Item[1].Subs.Item[0].Name",
+                                     "Item[1].Subs.Item[1].Subs.Item[1].Name",
+                                     "Item[1].Subs.Item[1].Subs.Item[0].Name",
+                                     "Item[1].Subs.Item[0].Subs.Item[2].Subs.Item[0].Name",
+                                     "Item[1].Subs.Item[0].Subs.Item[2].Subs.Item[1].Name",
+                                     "Item[1].Subs.Item[0].Subs.Item[2].Subs.Item[2].Name",
+            });
             values2.ShouldBe(new[] { "1.1",
                                        "1.1.1", "1.1.2", "1.1.3",
                                          "1.1.1.1", "1.1.1.2", "1.1.1.3", "1.1.1.4", "1.1.2.1", "1.1.2.2",

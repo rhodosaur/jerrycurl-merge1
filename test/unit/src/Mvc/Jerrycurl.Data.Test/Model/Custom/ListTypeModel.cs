@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Jerrycurl.Relations;
 
-namespace Jerrycurl.Data.Test.Model
+namespace Jerrycurl.Data.Test.Model.Custom
 {
     public class ListTypeModel
     {

@@ -42,6 +42,11 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             return result;
         }
 
+        private void PrioritizeWriters(ListResult result)
+        {
+
+        }
+
         private void AddAggregates(ListResult result, NodeTree nodeTree)
         {
             foreach (Node node in nodeTree.Nodes.Where(n => n.Data != null && this.IsAggregateValue(n.Metadata)))

@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Jerrycurl.Data.Test.Model
+namespace Jerrycurl.Data.Test.Model.Blogging
 {
-    public class BlogLike
+    internal class BlogLike
     {
         public int BlogPostId { get; set; }
         public DateTime LikedOn { get; set; }

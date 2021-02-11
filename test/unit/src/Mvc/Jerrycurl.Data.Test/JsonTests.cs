@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Shouldly;
 using Jerrycurl.Data.Queries;
-using Jerrycurl.Data.Test.Models;
 using Jerrycurl.Test;
 using Jerrycurl.Data.Sessions;
 using Jerrycurl.Data.Metadata;
@@ -15,6 +14,7 @@ using Jerrycurl.Relations.Language;
 using Microsoft.Data.Sqlite;
 using Jerrycurl.Extensions.Json.Metadata;
 using Jerrycurl.Data.Commands;
+using Jerrycurl.Data.Test.Model.Blogging;
 
 namespace Jerrycurl.Data.Test
 {

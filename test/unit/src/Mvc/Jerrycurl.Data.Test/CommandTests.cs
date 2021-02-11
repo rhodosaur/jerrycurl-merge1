@@ -5,13 +5,13 @@ using Jerrycurl.Relations;
 using Jerrycurl.Data.Commands;
 using Jerrycurl.Data.Language;
 using Shouldly;
-using Jerrycurl.Data.Test.Models;
 using Jerrycurl.Test;
 using Jerrycurl.Data.Sessions;
 using Jerrycurl.Data.Test.Model;
 using Jerrycurl.Relations.Language;
 using System;
 using System.Data;
+using Jerrycurl.Data.Test.Model.Blogging;
 
 namespace Jerrycurl.Data.Test
 {

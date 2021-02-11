@@ -1,4 +1,4 @@
-﻿namespace Jerrycurl.Data.Test.Model
+﻿namespace Jerrycurl.Data.Test.Model.Custom
 {
     public class NoConstruct
     {
