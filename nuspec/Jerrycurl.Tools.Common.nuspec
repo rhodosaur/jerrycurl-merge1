@@ -17,6 +17,7 @@
         <description>Tooling support for the Jerrycurl CLI. Do not reference this package directly.</description>
         <dependencies>
             <group targetFramework="net472" />
+			<group targetFramework="netcoreapp2.1" />
             <group targetFramework="netcoreapp3.1" />
         </dependencies>
     </metadata>
