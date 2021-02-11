@@ -32,7 +32,8 @@
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <PackageProjectUrl>https://jerrycurl.net</PackageProjectUrl>
-        <PackageIconUrl>https://raw.githubusercontent.com/rhodosaur/jerrycurl/master/gfx/icon.png</PackageIconUrl>
+        <!--<PackageIconUrl>https://raw.githubusercontent.com/rhodosaur/jerrycurl/master/gfx/icon.png</PackageIconUrl>-->
+		<PackageIconUrl>https://jerrycurl.net/img/nuget-next.png</PackageIconUrl>
         <PackageIconFile>icon.png</PackageIconFile>
         <PackageId>$(MSBuildProjectName)</PackageId>
         <PackageLicense>MIT</PackageLicense>
