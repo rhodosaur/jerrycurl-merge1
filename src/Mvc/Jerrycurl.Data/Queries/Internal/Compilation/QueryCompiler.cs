@@ -207,9 +207,16 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
         private Expression GetWriterExpression(ListWriter writer)
         {
             Expression value = this.GetReaderExpression(writer.Source);
-            Expression buffer = writer.Target is JoinTarget jt ? jt.JoinBuffer : Arguments.Lists;
+            Expression buffer = Arguments.Lists;
             Expression bufferIndex = this.GetElasticIndexExpression(buffer, writer.Target.BufferIndex);
             Expression bufferNotNull = this.GetIsNotNullExpression(buffer);
+
+            if (writer.Target is JoinTarget join2)
+            {
+                buffer = join2.JoinBuffer;
+                bufferIndex = this.GetElasticIndexExpression(buffer, join2.JoinIndex);
+                bufferNotNull = this.GetIsNotNullExpression(buffer);
+            }
 
             Expression body;
             List<KeyReader> primaryKeys = new List<KeyReader>() { writer.PrimaryKey };

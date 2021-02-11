@@ -133,6 +133,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             else
             {
                 int bufferIndex = this.Buffer.GetParentIndex(joinKey.Reference);
+
                 JoinTarget target = new JoinTarget()
                 {
                     BufferIndex = bufferIndex,
@@ -150,7 +151,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
                     target.NewList = new NewReader(childMetadata.Parent);
                     target.Variable = Expression.Variable(dictionaryType, $"_dict{target.BufferIndex}");
-                    target.AddMethod = source.Metadata.Parent.Composition.Add;
+                    target.AddMethod = childMetadata.Parent.Composition.Add;
                 }
                     
 
