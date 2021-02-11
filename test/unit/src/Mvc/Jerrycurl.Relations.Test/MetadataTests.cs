@@ -77,7 +77,7 @@ namespace Jerrycurl.Relations.Test
             RelationMetadataBuilder builder = new RelationMetadataBuilder() { new CustomContractResolver() };
             SchemaStore customStore = new SchemaStore(new DotNotation()) { builder };
 
-            ISchema schema1 = DatabaseHelper.Default.Schemas.GetSchema(typeof(CustomModel));
+            ISchema schema1 = DatabaseHelper.Default.Store.GetSchema(typeof(CustomModel));
             ISchema schema2 = customStore.GetSchema(typeof(CustomModel));
 
             IRelationMetadata notFound = schema1.Lookup<IRelationMetadata>("Values.Item");

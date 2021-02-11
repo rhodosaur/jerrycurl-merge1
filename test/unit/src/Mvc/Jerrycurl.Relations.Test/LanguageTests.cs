@@ -12,7 +12,7 @@ namespace Jerrycurl.Relations.Test
     {
         public static void Test_Select_ZeroDimensional()
         {
-            ISchemaStore store = DatabaseHelper.Default.Schemas;
+            ISchemaStore store = DatabaseHelper.Default.Store;
 
             RelationHeader actual = store.For<RootModel>()
                                          .Select(m => m.Object)
@@ -26,7 +26,7 @@ namespace Jerrycurl.Relations.Test
 
         public static void Test_Select_OneDimensional()
         {
-            ISchemaStore store = DatabaseHelper.Default.Schemas;
+            ISchemaStore store = DatabaseHelper.Default.Store;
 
             RelationHeader actual = store.For<List<RootModel>>()
                                          .Join(m => m)
@@ -42,7 +42,7 @@ namespace Jerrycurl.Relations.Test
 
         public static void Test_LambdaSelect_TwoDimensional()
         {
-            ISchemaStore store = DatabaseHelper.Default.Schemas;
+            ISchemaStore store = DatabaseHelper.Default.Store;
 
             RelationHeader actual = store.For<List<RootModel>>()
                                          .Join(m => m)
@@ -60,7 +60,7 @@ namespace Jerrycurl.Relations.Test
 
         public static void Test_LambdaSelect_SelectAll()
         {
-            ISchemaStore store = DatabaseHelper.Default.Schemas;
+            ISchemaStore store = DatabaseHelper.Default.Store;
 
             RelationHeader actual = store.For<RootModel>()
                                          .SelectAll(m => m.Complex);
