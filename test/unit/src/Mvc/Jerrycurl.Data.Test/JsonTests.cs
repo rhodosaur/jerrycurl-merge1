@@ -49,11 +49,12 @@ namespace Jerrycurl.Data.Test
             var schema = store.GetSchema(typeof(JsonBlog));
             var buffer = new QueryBuffer(schema, QueryType.List);
 
-            buffer.Insert(data,
-                ("", "Blog")
-            );
-
-            Should.Throw<BindingException>(() => buffer.Commit());
+            Should.Throw<BindingException>(() =>
+            {
+                buffer.Insert(data,
+                    ("", "Blog")
+                );
+            });
         }
 
         public void Test_Select_Json_Parameter()
@@ -67,11 +68,11 @@ namespace Jerrycurl.Data.Test
 
             store.AddContract(new JsonBindingContractResolver(options));
 
-            var data = new JsonBlog() { Blog = new Blog() { Id } }
-            var model = store.From(data);
+            var data = new JsonBlog() { Blog = new Blog() { Id = 12 } };
+            var model = store.From(data).Lookup("Blog");
             var parameter = new Parameter("P0", model);
             var sqlParameter = new SqliteParameter();
-            var expected = "{\"hello\":\"World!\"}";
+            var expected = JsonSerializer.Serialize(data.Blog, options);
 
             parameter.Build(sqlParameter);
 
