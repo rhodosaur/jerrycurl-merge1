@@ -32,6 +32,18 @@ namespace Jerrycurl.Relations.Metadata
 
         }
 
+        public SchemaStore(params IMetadataBuilder[] builders)
+            : this(new DotNotation(), builders)
+        {
+
+        }
+
+        public SchemaStore(IEnumerable<IMetadataBuilder> builders)
+            : this(new DotNotation(), builders)
+        {
+
+        }
+
         public SchemaStore(DotNotation notation, IEnumerable<IMetadataBuilder> builders)
             : this(notation)
         {
