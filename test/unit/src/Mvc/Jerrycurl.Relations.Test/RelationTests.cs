@@ -1,4 +1,7 @@
-﻿using Jerrycurl.Relations.Test.Models;
+﻿using Jerrycurl.Relations.Metadata;
+using Jerrycurl.Relations.Test.Models;
+using Jerrycurl.Relations.V11;
+using Jerrycurl.Relations.V11.Language;
 using Jerrycurl.Test;
 using Shouldly;
 using System.Collections.Generic;
@@ -11,81 +14,111 @@ namespace Jerrycurl.Relations.Test
         public void Test_Reading_UnknownProperty_Throws()
         {
             RootModel model = new RootModel();
-            Relation rel = DatabaseHelper.Default.Relation(model, "Unknown123");
 
-            Should.Throw<RelationException>(() => rel.Scalar());
+            Should.Throw<MetadataException>(() => DatabaseHelper.Default.Relation2(model, "Unknown123"));
         }
 
         public void Test_Binding_ToModel_Throws()
         {
             RootModel model = new RootModel();
-            Relation rel = DatabaseHelper.Default.Relation(model);
+            IRelation2 rel = DatabaseHelper.Default.Relation2(model);
 
-            Should.Throw<BindingException>(() => rel.Model.Bind(new RootModel()));
+            Should.Throw<BindingException>(() =>
+            {
+                rel.Source.Model.Update(new RootModel());
+                rel.Source.Model.Commit();
+            });
         }
 
         public void Test_Binding_ToMissing_Throws()
         {
             RootModel model = new RootModel();
-            Relation rel = DatabaseHelper.Default.Relation(model, "Complex.Value");
+            IRelation2 rel = DatabaseHelper.Default.Relation2(model, "Complex.Value");
 
-            IField value = rel.Scalar();
+            IField2 value = rel.Scalar();
 
-            Should.Throw<BindingException>(() => value.Bind(10));
+            Should.Throw<BindingException>(() =>
+            {
+                value.Update(10);
+                value.Commit();
+            });
         }
 
         public void Test_Binding_ToReadOnlyProperty_Throws()
         {
-            Relation rel = DatabaseHelper.Default.Relation(new RootModel(), "ReadOnly");
+            IRelation2 rel = DatabaseHelper.Default.Relation2(new RootModel(), "ReadOnly");
+            IField2 scalar = rel.Scalar();
 
-            Should.Throw<BindingException>(() => rel.Scalar().Bind(12));
+            Should.Throw<BindingException>(() =>
+            {
+                scalar.Update(12);
+                scalar.Commit();
+            });
         }
 
         public void Test_Binding_OfNonConvertibleValue_Throws()
         {
             RootModel model = new RootModel();
-            Relation rel = DatabaseHelper.Default.Relation(model, "Complex.Value");
+            IRelation2 rel = DatabaseHelper.Default.Relation2(model, "Complex.Value");
 
-            IField value = rel.Scalar();
+            IField2 value = rel.Scalar();
 
-            Should.Throw<BindingException>(() => value.Bind("String"));
+            Should.Throw<BindingException>(() =>
+            {
+                value.Update("String");
+                value.Commit();
+            });
         }
 
 
         public void Test_Binding_NullToValueType_Throws()
         {
             RootModel model = new RootModel();
-            Relation rel = DatabaseHelper.Default.Relation(model, "Complex.Value");
+            IRelation2 rel = DatabaseHelper.Default.Relation2(model, "Complex.Value");
 
-            IField value = rel.Scalar();
+            IField2 value = rel.Scalar();
 
-            Should.Throw<BindingException>(() => value.Bind(null));
+            Should.Throw<BindingException>(() =>
+            {
+                value.Update(null);
+                value.Commit();
+            });
         }
 
 
         public void Test_Binding_ToProperty()
         {
-            RootModel model = new RootModel() { Complex = new RootModel.SubModel() };
-            Relation rel = DatabaseHelper.Default.Relation(model, "Complex.Value");
+            RootModel model = new RootModel() { Complex = new RootModel.SubModel() { Value = 6 } };
+            IRelation2 rel = DatabaseHelper.Default.Relation2(model, "Complex.Value");
 
-            IField value = rel.Scalar();
-            value.Bind(12);
-
+            IField2 value = rel.Scalar();
             value.ShouldNotBeNull();
-            value.Value.ShouldBe(12);
+
+            value.Update(12);
+            value.Snapshot.ShouldBe(12);
+            value.Data.Value.ShouldBe(6);
+            model.Complex.Value.ShouldBe(6);
+
+            value.Commit();
+            value.Snapshot.ShouldBe(12);
+            value.Data.Value.ShouldBe(12);
             model.Complex.Value.ShouldBe(12);
         }
 
         public void Test_Binding_ToNullValue()
         {
             RootModel model = new RootModel();
-            Relation rel = DatabaseHelper.Default.Relation(model, "Complex");
+            IRelation2 rel = DatabaseHelper.Default.Relation2(model, "Complex");
 
-            IField complex = rel.Scalar();
+            IField2 complex = rel.Scalar();
 
             complex.ShouldNotBeNull();
 
-            Should.NotThrow(() => complex.Bind(new RootModel.SubModel() { Value = 10 }));
+            Should.NotThrow(() =>
+            {
+                complex.Update(new RootModel.SubModel() { Value = 10 });
+                complex.Commit();
+            });
 
             model.Complex.Value.ShouldBe(10);
         }
@@ -93,29 +126,57 @@ namespace Jerrycurl.Relations.Test
         public void Test_Binding_ToListIndexer()
         {
             RootModel model = new RootModel() { IntList = new List<int>() { 1, 2, 3, 4, 5 } };
-            Relation rel = DatabaseHelper.Default.Relation(model, "IntList.Item");
+            IRelation2 rel = DatabaseHelper.Default.Relation2(model, "IntList.Item");
+            IField2 value = rel.Column().ElementAt(2);
 
-            Should.NotThrow(() => rel.Column().ElementAt(2).Bind(10));
+            Should.NotThrow(() =>
+            {
+                value.Update(10);
+                value.Commit();
+            });
 
             model.IntList.ShouldBe(new[] { 1, 2, 10, 4, 5 });
         }
 
         public void Test_Binding_ToEnumerableIndexer_Throws()
         {
-            RootModel model = new RootModel() { IntEnumerable = new List<int>() { 1, 2, 3, 4, 5 } };
-            Relation rel = DatabaseHelper.Default.Relation(model, "IntEnumerable.Item");
+            RootModel model = new RootModel() { IntEnumerable = Enumerable.Range(1, 5) };
+            IRelation2 rel = DatabaseHelper.Default.Relation2(model, "IntEnumerable.Item");
+            IField2 value = rel.Column().ElementAt(2);
 
-            Should.Throw<BindingException>(() => rel.Column().ElementAt(2).Bind(10));
+            Should.Throw<BindingException>(() =>
+            {
+                value.Update(10);
+                value.Commit();
+            });
+        }
+
+        public void Test_Binding_ToEnumerableListIndexer()
+        {
+            RootModel model = new RootModel() { IntEnumerable = new List<int>() { 1, 2, 3, 4, 5 } };
+            IRelation2 rel = DatabaseHelper.Default.Relation2(model, "IntEnumerable.Item");
+            IField2 value = rel.Column().ElementAt(2);
+
+            Should.NotThrow(() =>
+            {
+                value.Update(10);
+                value.Commit();
+            });
+
+            model.IntEnumerable.ShouldBe(new[] { 1, 2, 10, 4, 5 });
         }
 
         public void Test_Binding_WithContravariance()
         {
             RootModel model = new RootModel();
-            Relation rel = DatabaseHelper.Default.Relation(model, "Object");
+            IRelation2 rel = DatabaseHelper.Default.Relation2(model, "Object");
+            IField2 value = rel.Scalar();
 
-            IField value = rel.Scalar();
-
-            Should.NotThrow(() => value.Bind(new RootModel()));
+            Should.NotThrow(() =>
+            {
+                value.Update(new RootModel());
+                value.Commit();
+            });
         }
 
         public void Test_Binding_ToDeepObjectGraph()
@@ -136,16 +197,16 @@ namespace Jerrycurl.Relations.Test
                     new RootModel.SubModel() { Complex = new RootModel.SubModel2() { Value = "String 3" } },
                 },
             };
-            Relation rel1 = DatabaseHelper.Default.Relation(model, "Complex.Value", "Complex.Complex.Value");
-            Relation rel2 = DatabaseHelper.Default.Relation(model, "ComplexList.Item.Complex.Value");
+            IRelation2 rel1 = DatabaseHelper.Default.Relation2(model, "Complex.Value", "Complex.Complex.Value");
+            IRelation2 rel2 = DatabaseHelper.Default.Relation2(model, "ComplexList.Item.Complex.Value");
 
-            ITuple tuple1 = rel1.Row();
-            IField[] tuple2 = rel2.Column().ToArray();
+            ITuple2 tuple1 = rel1.Row();
+            IField2[] tuple2 = rel2.Column().ToArray();
 
-            tuple1[0].Bind(100);
-            tuple1[1].Bind("String 3");
-            tuple2[0].Bind("String 4");
-            tuple2[1].Bind("String 5");
+            tuple1[0].Update(100); tuple1[0].Commit();
+            tuple1[1].Update("String 3"); tuple1[1].Commit();
+            tuple2[0].Update("String 4"); tuple2[0].Commit();
+            tuple2[1].Update("String 5"); tuple2[1].Commit();
 
 
             model.Complex.Value.ShouldBe(100);
@@ -237,40 +298,40 @@ namespace Jerrycurl.Relations.Test
 
             string valueAttr = "Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item.Sub6.Item.Value";
 
-            Relation rel1 = DatabaseHelper.Default.Relation(model, valueAttr);
-            Relation rel2 = new Relation(new Relation(rel1, "Sub1").Scalar(), valueAttr);
-            Relation rel3 = new Relation(new Relation(rel2, "Sub1.Sub2").Scalar(), valueAttr);
-            Relation rel4 = new Relation(new Relation(rel3, "Sub1.Sub2.Sub3").Scalar(), valueAttr);
-            Relation rel5 = new Relation(new Relation(rel4, "Sub1.Sub2.Sub3.Item").Scalar(), valueAttr);
-            Relation rel6 = new Relation(new Relation(rel5, "Sub1.Sub2.Sub3.Item.Sub4").Scalar(), valueAttr);
-            Relation rel7 = new Relation(new Relation(rel6, "Sub1.Sub2.Sub3.Item.Sub4.Sub5").Scalar(), valueAttr);
-            Relation rel8 = new Relation(new Relation(rel7, "Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item").Scalar(), valueAttr);
-            Relation rel9 = new Relation(new Relation(rel8, "Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item.Sub6").Scalar(), valueAttr);
-            Relation rel10 = new Relation(new Relation(rel9, "Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item.Sub6.Item").Scalar(), valueAttr);
-            Relation rel11 = new Relation(new Relation(rel10, "Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item.Sub6.Item.Value").Scalar(), valueAttr);
+            IRelation2 rel1 = DatabaseHelper.Default.Relation2(model, valueAttr);
+            IRelation2 rel2 = rel1.Source.Select("Sub1").Scalar().Select(valueAttr);
+            IRelation2 rel3 = rel2.Source.Select("Sub1.Sub2").Scalar().Select(valueAttr);
+            IRelation2 rel4 = rel3.Source.Select("Sub1.Sub2.Sub3").Scalar().Select(valueAttr);
+            IRelation2 rel5 = rel4.Source.Select("Sub1.Sub2.Sub3.Item").Scalar().Select(valueAttr);
+            IRelation2 rel6 = rel5.Source.Select("Sub1.Sub2.Sub3.Item.Sub4").Scalar().Select(valueAttr);
+            IRelation2 rel7 = rel6.Source.Select("Sub1.Sub2.Sub3.Item.Sub4.Sub5").Scalar().Select(valueAttr);
+            IRelation2 rel8 = rel7.Source.Select("Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item").Scalar().Select(valueAttr);
+            IRelation2 rel9 = rel8.Source.Select("Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item.Sub6").Scalar().Select(valueAttr);
+            IRelation2 rel10 = rel9.Source.Select("Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item.Sub6.Item").Scalar().Select(valueAttr);
+            IRelation2 rel11 = rel10.Source.Select("Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item.Sub6.Item.Value").Scalar().Select(valueAttr);
 
-            rel1.Column().Select(f => (int?)f.Value).ShouldBe(new int?[] { 1, 2, 3, 4, 5, 6, 7, 8, null, 9 });
-            rel2.Column().Select(f => (int?)f.Value).ShouldBe(new int?[] { 1, 2, 3, 4, 5, 6, 7, 8, null, 9 });
-            rel3.Column().Select(f => (int?)f.Value).ShouldBe(new int?[] { 1, 2, 3, 4, 5, 6, 7, 8, null, 9 });
-            rel4.Column().Select(f => (int?)f.Value).ShouldBe(new int?[] { 1, 2, 3, 4, 5, 6, 7, 8, null, 9 });
-            rel5.Column().Select(f => (int?)f.Value).ShouldBe(new int?[] { 1, 2, 3, 4, 5, 6 });
-            rel6.Column().Select(f => (int?)f.Value).ShouldBe(new int?[] { 1, 2, 3, 4, 5, 6 });
-            rel7.Column().Select(f => (int?)f.Value).ShouldBe(new int?[] { 1, 2, 3, 4, 5, 6 });
-            rel8.Column().Select(f => (int?)f.Value).ShouldBe(new int?[] { 1, 2, 3 });
-            rel9.Column().Select(f => (int?)f.Value).ShouldBe(new int?[] { 1, 2, 3 });
-            rel10.Column().Select(f => (int?)f.Value).ShouldBe(new int?[] { 1 });
-            rel11.Column().Select(f => (int?)f.Value).ShouldBe(new int?[] { 1 });
+            rel1.Column().Select(f => (int?)f.Snapshot).ShouldBe(new int?[] { 1, 2, 3, 4, 5, 6, 7, 8, null, 9 });
+            rel2.Column().Select(f => (int?)f.Snapshot).ShouldBe(new int?[] { 1, 2, 3, 4, 5, 6, 7, 8, null, 9 });
+            rel3.Column().Select(f => (int?)f.Snapshot).ShouldBe(new int?[] { 1, 2, 3, 4, 5, 6, 7, 8, null, 9 });
+            rel4.Column().Select(f => (int?)f.Snapshot).ShouldBe(new int?[] { 1, 2, 3, 4, 5, 6, 7, 8, null, 9 });
+            rel5.Column().Select(f => (int?)f.Snapshot).ShouldBe(new int?[] { 1, 2, 3, 4, 5, 6 });
+            rel6.Column().Select(f => (int?)f.Snapshot).ShouldBe(new int?[] { 1, 2, 3, 4, 5, 6 });
+            rel7.Column().Select(f => (int?)f.Snapshot).ShouldBe(new int?[] { 1, 2, 3, 4, 5, 6 });
+            rel8.Column().Select(f => (int?)f.Snapshot).ShouldBe(new int?[] { 1, 2, 3 });
+            rel9.Column().Select(f => (int?)f.Snapshot).ShouldBe(new int?[] { 1, 2, 3 });
+            rel10.Column().Select(f => (int?)f.Snapshot).ShouldBe(new int?[] { 1 });
+            rel11.Column().Select(f => (int?)f.Snapshot).ShouldBe(new int?[] { 1 });
         }
 
         public void Test_Reading_OneToOneWithOuterJoin()
         {
             RootModel model = new RootModel() { IntValue = 1 };
-            ITuple tuple = DatabaseHelper.Default.Relation(model, "IntValue", "Complex.Complex.Value").Row();
+            ITuple2 tuple = DatabaseHelper.Default.Relation2(model, "IntValue", "Complex.Complex.Value").Row();
 
             tuple.Degree.ShouldBe(2);
 
-            tuple[0].Value.ShouldBe(1);
-            tuple[1].Value.ShouldBeNull();
+            tuple[0].Snapshot.ShouldBe(1);
+            tuple[1].Snapshot.ShouldBeNull();
         }
 
         public void Test_Reading_OneToManyWithInnerJoin()
@@ -298,18 +359,18 @@ namespace Jerrycurl.Relations.Test
                 new RootModel() { IntValue = 4, ComplexList = new List<RootModel.SubModel>() },
             };
 
-            ITuple[] result = DatabaseHelper.Default.Relation(model, "Item.IntValue", "Item.ComplexList.Item.Value").ToArray();
+            ITuple2[] result = DatabaseHelper.Default.Relation2(model, "Item.IntValue", "Item.ComplexList.Item.Value").Body.ToArray();
 
             result.Length.ShouldBe(3);
 
-            result[0][0].Value.ShouldBe(1);
-            result[0][1].Value.ShouldBe(10);
+            result[0][0].Snapshot.ShouldBe(1);
+            result[0][1].Snapshot.ShouldBe(10);
 
-            result[1][0].Value.ShouldBe(2);
-            result[1][1].Value.ShouldBe(11);
+            result[1][0].Snapshot.ShouldBe(2);
+            result[1][1].Snapshot.ShouldBe(11);
 
-            result[2][0].Value.ShouldBe(2);
-            result[2][1].Value.ShouldBe(12);
+            result[2][0].Snapshot.ShouldBe(2);
+            result[2][1].Snapshot.ShouldBe(12);
         }
 
         public void Test_Reading_AdjacentListsWithCrossJoin()
@@ -330,11 +391,11 @@ namespace Jerrycurl.Relations.Test
                     new RootModel.SubModel() { Value = 7 },
                 }
             };
-            Relation rel1 = DatabaseHelper.Default.Relation(model, "ComplexList.Item.Value", "ComplexList2.Item.Value");
-            Relation rel2 = DatabaseHelper.Default.Relation(model, "ComplexList2.Item.Value", "ComplexList.Item.Value");
+            IRelation2 rel1 = DatabaseHelper.Default.Relation2(model, "ComplexList.Item.Value", "ComplexList2.Item.Value");
+            IRelation2 rel2 = DatabaseHelper.Default.Relation2(model, "ComplexList2.Item.Value", "ComplexList.Item.Value");
 
-            IList<(int, int)> pairs1 = rel1.Select(t => ((int)t[0].Value, (int)t[1].Value)).ToList();
-            IList<(int, int)> pairs2 = rel2.Select(t => ((int)t[0].Value, (int)t[1].Value)).ToList();
+            IList<(int, int)> pairs1 = rel1.Body.Select(t => ((int)t[0].Snapshot, (int)t[1].Snapshot)).ToList();
+            IList<(int, int)> pairs2 = rel2.Body.Select(t => ((int)t[0].Snapshot, (int)t[1].Snapshot)).ToList();
 
             pairs1.Count.ShouldBe(3 * 4);
             pairs2.Count.ShouldBe(4 * 3);
@@ -372,9 +433,8 @@ namespace Jerrycurl.Relations.Test
             {
                 IntList = new List<int>() { 1, 2, 3, 4, 5 },
             };
-            Relation rel = DatabaseHelper.Default.Relation(model, "IntList.Item");
-
-            IEnumerable<int> ints = rel.Column().Select(f => (int)f.Value);
+            IRelation2 rel = DatabaseHelper.Default.Relation2(model, "IntList.Item");
+            IEnumerable<int> ints = rel.Column().Select(f => (int)f.Snapshot);
 
             ints.ShouldBe(new[] { 1, 2, 3, 4, 5 });
         }
@@ -386,11 +446,10 @@ namespace Jerrycurl.Relations.Test
                 IntValue = 100,
                 IntList = new List<int>(),
             };
-            Relation rel1 = DatabaseHelper.Default.Relation(model, "IntValue");
-
-            IField intValue = rel1.Scalar();
-
-            Relation rel2 = Should.NotThrow(() => new Relation(intValue, "IntList"));
+            IRelation2 rel1 = DatabaseHelper.Default.Relation2(model, "IntValue");
+            IField2 nonParent = rel1.Scalar();
+            
+            IRelation2 rel2 = Should.NotThrow(() => nonParent.Select("IntList"));
             Should.Throw<RelationException>(() => rel2.Scalar());
         }
 

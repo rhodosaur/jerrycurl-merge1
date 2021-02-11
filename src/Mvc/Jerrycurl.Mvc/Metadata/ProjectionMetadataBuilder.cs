@@ -28,10 +28,7 @@ namespace Jerrycurl.Mvc.Metadata
 
         public void Initialize(IMetadataBuilderContext context)
         {
-            IRelationMetadata relation = context.Identity.GetMetadata<IRelationMetadata>();
-
-            if (relation == null)
-                throw MetadataNotFoundException.FromMetadata<IRelationMetadata>(context.Identity);
+            IRelationMetadata relation = context.Identity.Require<IRelationMetadata>();
 
             this.CreateAndAddMetadata(context, relation);
         }
@@ -86,7 +83,7 @@ namespace Jerrycurl.Mvc.Metadata
             OutAttribute out0 = metadata.Relation.Annotations?.OfType<OutAttribute>().FirstOrDefault();
             InAttribute in0 = metadata.Relation.Annotations?.OfType<InAttribute>().FirstOrDefault();
 
-            IReferenceMetadata reference = metadata.Identity.GetMetadata<IReferenceMetadata>();
+            IReferenceMetadata reference = metadata.Identity.Lookup<IReferenceMetadata>();
             ProjectionMetadataFlags flags = ProjectionMetadataFlags.None;
 
             if (id != null)

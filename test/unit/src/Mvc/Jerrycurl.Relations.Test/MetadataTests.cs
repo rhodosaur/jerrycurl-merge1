@@ -19,7 +19,7 @@ namespace Jerrycurl.Relations.Test
 
             schema.ShouldNotBeNull();
 
-            Should.Throw<MetadataBuilderException>(() => schema.GetMetadata<CustomMetadata>("Item.Value"));
+            Should.Throw<MetadataBuilderException>(() => schema.Lookup<CustomMetadata>("Item.Value"));
         }
 
         public void Test_MetadataNotation_StringComparison()
@@ -27,11 +27,11 @@ namespace Jerrycurl.Relations.Test
             SchemaStore sensitive = new SchemaStore(new DotNotation(StringComparer.Ordinal)) { new RelationMetadataBuilder() };
             SchemaStore insensitive = new SchemaStore(new DotNotation()) { new RelationMetadataBuilder() };
 
-            IRelationMetadata sensitive1 = sensitive.GetSchema(typeof(TupleModel)).GetMetadata<IRelationMetadata>("List.Item.Name");
-            IRelationMetadata sensitive2 = sensitive.GetSchema(typeof(TupleModel)).GetMetadata<IRelationMetadata>("list.item.name");
+            IRelationMetadata sensitive1 = sensitive.GetSchema(typeof(TupleModel)).Lookup<IRelationMetadata>("List.Item.Name");
+            IRelationMetadata sensitive2 = sensitive.GetSchema(typeof(TupleModel)).Lookup<IRelationMetadata>("list.item.name");
 
-            IRelationMetadata insensitive1 = insensitive.GetSchema(typeof(TupleModel)).GetMetadata<IRelationMetadata>("List.Item.Name");
-            IRelationMetadata insensitive2 = insensitive.GetSchema(typeof(TupleModel)).GetMetadata<IRelationMetadata>("list.item.name");
+            IRelationMetadata insensitive1 = insensitive.GetSchema(typeof(TupleModel)).Lookup<IRelationMetadata>("List.Item.Name");
+            IRelationMetadata insensitive2 = insensitive.GetSchema(typeof(TupleModel)).Lookup<IRelationMetadata>("list.item.name");
 
             sensitive1.ShouldNotBeNull();
             sensitive2.ShouldBeNull();
@@ -48,8 +48,8 @@ namespace Jerrycurl.Relations.Test
             ISchema schema1 = DatabaseHelper.Default.Schemas.GetSchema(typeof(CustomModel));
             ISchema schema2 = customStore.GetSchema(typeof(CustomModel));
 
-            IRelationMetadata notFound = schema1.GetMetadata<IRelationMetadata>("Values.Item");
-            IRelationMetadata found = schema2.GetMetadata<IRelationMetadata>("Values.Item");
+            IRelationMetadata notFound = schema1.Lookup<IRelationMetadata>("Values.Item");
+            IRelationMetadata found = schema2.Lookup<IRelationMetadata>("Values.Item");
 
             notFound.ShouldBeNull();
             found.ShouldNotBeNull();
@@ -64,7 +64,7 @@ namespace Jerrycurl.Relations.Test
 
             ISchema schema = customStore.GetSchema(typeof(CustomModel));
 
-            Should.Throw<MetadataBuilderException>(() => schema.GetMetadata<IRelationMetadata>("List1"));
+            Should.Throw<MetadataBuilderException>(() => schema.Lookup<IRelationMetadata>("List1"));
         }
     }
 }

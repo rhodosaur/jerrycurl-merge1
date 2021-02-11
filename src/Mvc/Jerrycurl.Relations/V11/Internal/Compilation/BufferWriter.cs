@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using Jerrycurl.Relations.V11.Internal.Caching;
 
 namespace Jerrycurl.Relations.V11.Internal.Compilation
 {

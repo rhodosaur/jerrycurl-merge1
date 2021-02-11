@@ -37,9 +37,9 @@ namespace Jerrycurl.Relations.Metadata
                 throw new InvalidOperationException("Metadata already added.");
         }
 
-        public TMetadata Get<TMetadata>()
+        public TMetadata Lookup<TMetadata>()
             where TMetadata : IMetadata
-            => this.Get<TMetadata>(this.Notation.Model());
+            => this.Lookup<TMetadata>(this.Notation.Model());
 
         internal TMetadata GetMetadataFromCache<TMetadata>(string name)
             where TMetadata : IMetadata
@@ -55,7 +55,7 @@ namespace Jerrycurl.Relations.Metadata
         private ReaderWriterLockSlim GetLock<TMetadata>() => this.locks.GetOrAdd(typeof(TMetadata), _ => new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion));
         private void RemoveLock<TMetadata>() => this.locks.TryRemove(typeof(TMetadata), out _);
 
-        public TMetadata Get<TMetadata>(string name)
+        public TMetadata Lookup<TMetadata>(string name)
             where TMetadata : IMetadata
         {
             MetadataKey key = new MetadataKey(typeof(TMetadata), name, this.Notation.Comparer);
@@ -113,7 +113,7 @@ namespace Jerrycurl.Relations.Metadata
         public TMetadata Require<TMetadata>(string name)
             where TMetadata : IMetadata
         {
-            return this.Get<TMetadata>(name) ?? throw new MetadataException($"Metadata of type {typeof(TMetadata).Name} was not found for attribute '{name}'.");
+            return this.Lookup<TMetadata>(name) ?? throw new MetadataException($"Metadata of type {typeof(TMetadata).Name} was not found for attribute '{name}'.");
         }
 
         public TMetadata Require<TMetadata>() where TMetadata : IMetadata

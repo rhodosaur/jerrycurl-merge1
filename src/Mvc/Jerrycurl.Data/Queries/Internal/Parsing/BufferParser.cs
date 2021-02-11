@@ -226,7 +226,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         private void AddParentKeys(BufferTree tree, NewBinder binder)
         {
-            IReferenceMetadata newMetadata = binder.Metadata.Identity.GetMetadata<IReferenceMetadata>();
+            IReferenceMetadata newMetadata = binder.Metadata.Identity.Lookup<IReferenceMetadata>();
 
             foreach (IReference reference in newMetadata.References.Where(r => r.HasFlag(ReferenceFlags.Parent) && this.IsValidReference(r)))
             {

@@ -20,7 +20,7 @@ namespace Jerrycurl.Relations.V11.Internal.Caching
     {
         private readonly static ConcurrentDictionary<RelationCacheKey, BufferWriter> cache = new ConcurrentDictionary<RelationCacheKey, BufferWriter>();
 
-        public static RelationBuffer CreateBuffer2(IRelation2 relation)
+        public static RelationBuffer CreateBuffer(IRelation2 relation)
         {
             BufferWriter writer = GetWriter(relation.Source.Identity.Metadata, relation.Header);
 

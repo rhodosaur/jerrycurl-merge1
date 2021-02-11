@@ -9,7 +9,7 @@ namespace Jerrycurl.Relations.Test.Metadata
             MetadataIdentity parentIdentity = context.Identity.Pop();
 
             if (parentIdentity != null)
-                return context.Schema.GetMetadata<CustomMetadata>(parentIdentity.Name);
+                return context.Schema.Lookup<CustomMetadata>(parentIdentity.Name);
 
             return null;
         }

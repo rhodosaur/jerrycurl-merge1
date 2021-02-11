@@ -61,8 +61,8 @@ namespace Jerrycurl.Vendors.SqlServer
 
             for (int i = 0; i < heading.Count; i++)
             {
-                IBindingMetadata bindingEntry = heading[i].GetMetadata<IBindingMetadata>();
-                ITableMetadata tableEntry = heading[i].GetMetadata<ITableMetadata>();
+                IBindingMetadata bindingEntry = heading[i].Lookup<IBindingMetadata>();
+                ITableMetadata tableEntry = heading[i].Lookup<ITableMetadata>();
 
                 bindingMetadata[i] = bindingEntry ?? throw new InvalidOperationException($"IBindingMetadata not found for property '{heading[i].Name}'.");
                 columnMetadata[i] = tableEntry ?? throw new InvalidOperationException($"ITableMetadata not found for property '{heading[i].Name}'.");

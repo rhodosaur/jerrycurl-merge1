@@ -45,9 +45,6 @@ namespace Jerrycurl.Relations.V11
             if (!this.HasChanged)
                 return;
 
-            //if (this.writer == null)
-            //    throw BindingException.FromField(this, "Field is not bindable.");
-
             try
             {
                 TValue typedValue = (TValue)this.Snapshot;
@@ -57,18 +54,15 @@ namespace Jerrycurl.Relations.V11
             }
             catch (NotIndexableException)
             {
-                throw;
-                //throw BindingException.FromField(this, "Property has no indexer.");
+                throw BindingException.FromField(this, "Property has no indexer.");
             }
             catch (NotWritableException)
             {
-                throw;
-                //throw BindingException.FromField(this, "Property has no setter.");
+                throw BindingException.FromField(this, "Property has no setter.");
             }
             catch (Exception ex)
             {
-                throw;
-                //throw BindingException.FromField(this, innerException: ex);
+                throw BindingException.FromField(this, innerException: ex);
             }
         }
 

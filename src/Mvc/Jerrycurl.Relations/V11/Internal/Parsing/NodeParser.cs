@@ -26,7 +26,7 @@ namespace Jerrycurl.Relations.V11.Internal.Parsing
 
         private static IRelationMetadata GetMetadata(MetadataIdentity identity)
         {
-            IRelationMetadata metadata = identity.GetMetadata<IRelationMetadata>();
+            IRelationMetadata metadata = identity.Lookup<IRelationMetadata>();
 
             if (metadata == null)
                 throw new InvalidOperationException(identity.Name + " not found");

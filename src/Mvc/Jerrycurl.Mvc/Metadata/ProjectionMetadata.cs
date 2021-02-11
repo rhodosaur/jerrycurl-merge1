@@ -24,8 +24,8 @@ namespace Jerrycurl.Mvc.Metadata
         public ProjectionMetadata(IRelationMetadata relation)
         {
             this.Relation = relation ?? throw new ArgumentNullException(nameof(relation));
-            this.Table = relation.Identity.GetMetadata<ITableMetadata>();
-            this.Reference = relation.Identity.GetMetadata<IReferenceMetadata>();
+            this.Table = relation.Identity.Lookup<ITableMetadata>();
+            this.Reference = relation.Identity.Lookup<IReferenceMetadata>();
         }
 
         public override string ToString() => $"IProjectionMetadata: {this.Identity}";

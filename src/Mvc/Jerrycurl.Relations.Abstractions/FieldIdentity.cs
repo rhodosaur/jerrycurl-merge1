@@ -21,7 +21,7 @@ namespace Jerrycurl.Relations
 
         public TMetadata GetMetadata<TMetadata>()
             where TMetadata : IMetadata
-            => this.Metadata.GetMetadata<TMetadata>();
+            => this.Metadata.Lookup<TMetadata>();
 
         public bool Equals(FieldIdentity other) => Equality.Combine(this, other, m => m.Metadata, m => m.Name);
         public override bool Equals(object obj) => (obj is FieldIdentity other && this.Equals(other));

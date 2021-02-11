@@ -20,7 +20,7 @@ namespace Jerrycurl.Data.Commands.Internal.Compilation
 
         public BufferConverter Compile(MetadataIdentity metadata, ColumnMetadata columnInfo)
         {
-            IBindingMetadata binding = metadata.GetMetadata<IBindingMetadata>();
+            IBindingMetadata binding = metadata.Lookup<IBindingMetadata>();
 
             ParameterExpression inputParam = Expression.Parameter(typeof(object));
             Expression value = inputParam;
@@ -67,7 +67,7 @@ namespace Jerrycurl.Data.Commands.Internal.Compilation
 
             foreach (ColumnName columnName in columnNames)
             {
-                IBindingMetadata metadata = columnName.Metadata.GetMetadata<IBindingMetadata>();
+                IBindingMetadata metadata = columnName.Metadata.Lookup<IBindingMetadata>();
 
                 Expression value = this.GetValueExpression(metadata, columnName.Column);
                 Expression writer = this.GetWriterExpression(index++, value);

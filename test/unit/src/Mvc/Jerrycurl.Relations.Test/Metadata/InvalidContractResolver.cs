@@ -10,9 +10,9 @@ namespace Jerrycurl.Relations.Test.Metadata
 {
     public class InvalidContractResolver : IRelationContractResolver
     {
-        public IEnumerable<Attribute> GetAnnotationContract(IRelationMetadata metadata) => Array.Empty<Attribute>();
+        public IEnumerable<Attribute> GetAnnotations(IRelationMetadata metadata) => Array.Empty<Attribute>();
 
-        public IRelationListContract GetListContract(IRelationMetadata metadata)
+        public IRelationContract GetContract(IRelationMetadata metadata)
         {
             if (metadata.Member == typeof(CustomModel).GetProperty(nameof(CustomModel.List1)))
             {

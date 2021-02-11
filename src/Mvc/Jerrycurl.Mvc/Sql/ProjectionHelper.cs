@@ -48,7 +48,7 @@ namespace Jerrycurl.Mvc.Sql
             string name = projection.Metadata.Identity.Notation.Lambda(expression);
             string fullName = projection.Metadata.Identity.Notation.Combine(projection.Metadata.Identity.Name, name);
 
-            return projection.Metadata.Identity.Schema.GetMetadata<IProjectionMetadata>(fullName) ?? throw ProjectionException.FromProjection(projection, "Metadata not found.");
+            return projection.Metadata.Identity.Schema.Require<IProjectionMetadata>(fullName);
         }
 
         public static IField GetFieldValue(IProjectionAttribute attribute)

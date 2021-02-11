@@ -31,7 +31,7 @@ namespace Jerrycurl.Relations.V11
 
         public void Commit() { }
         public void Rollback() { }
-        public void Update(object model) { }
+        public void Update(object model) => throw BindingException.FromField(this, "Cannot update model field.");
 
         public bool Equals(IField2 other) => Equality.Combine(this, other, m => m.Identity, m => m.Snapshot);
         public override bool Equals(object obj) => (obj is IField2 other && this.Equals(other));

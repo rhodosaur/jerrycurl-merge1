@@ -10,7 +10,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
         public Node(MetadataIdentity identity)
         {
             this.Identity = identity ?? throw new ArgumentNullException(nameof(identity));
-            this.Metadata = identity.GetMetadata<IBindingMetadata>() ?? throw new InvalidOperationException("Metadata not found.");
+            this.Metadata = identity.Lookup<IBindingMetadata>() ?? throw new InvalidOperationException("Metadata not found.");
         }
 
         public Node(IBindingMetadata metadata)

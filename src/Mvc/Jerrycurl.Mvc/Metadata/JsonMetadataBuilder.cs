@@ -16,7 +16,7 @@ namespace Jerrycurl.Mvc.Metadata
         {
             MetadataIdentity parentIdentity = identity.Pop();
             IJsonMetadata parent = context.GetMetadata<IJsonMetadata>(parentIdentity.Name) ?? this.GetMetadata(context, parentIdentity);
-            IRelationMetadata relation = identity.GetMetadata<IRelationMetadata>();
+            IRelationMetadata relation = identity.Lookup<IRelationMetadata>();
 
             if (parent == null || relation == null)
                 return null;
@@ -43,10 +43,7 @@ namespace Jerrycurl.Mvc.Metadata
 
         public void Initialize(IMetadataBuilderContext context)
         {
-            IRelationMetadata relation = context.Identity.GetMetadata<IRelationMetadata>();
-
-            if (relation == null)
-                throw MetadataNotFoundException.FromMetadata<IRelationMetadata>(context.Identity);
+            IRelationMetadata relation = context.Identity.Require<IRelationMetadata>();
 
             JsonMetadata metadata = new JsonMetadata(relation);
 

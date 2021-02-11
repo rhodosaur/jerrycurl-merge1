@@ -17,7 +17,7 @@ namespace Jerrycurl.Mvc.Sql.MySql
             IJsonMetadata json = ProjectionHelper.GetJsonMetadata(attribute);
 
             IProjectionMetadata metadata = attribute.Metadata;
-            IProjectionMetadata rootMetadata = json.MemberOf.Identity.GetMetadata<IProjectionMetadata>();
+            IProjectionMetadata rootMetadata = json.MemberOf.Identity.Lookup<IProjectionMetadata>();
 
             attribute = attribute.Append("JSON_EXTRACT(");
             try

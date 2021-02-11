@@ -35,7 +35,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         public static void AddPrimaryKey(NewBinder binder)
         {
-            IReferenceKey primaryKey = binder.Metadata.Identity.GetMetadata<IReferenceMetadata>()?.Keys.FirstOrDefault(k => k.IsPrimaryKey);
+            IReferenceKey primaryKey = binder.Metadata.Identity.Lookup<IReferenceMetadata>()?.Keys.FirstOrDefault(k => k.IsPrimaryKey);
 
             binder.PrimaryKey = FindPrimaryKey(binder, primaryKey);
         }

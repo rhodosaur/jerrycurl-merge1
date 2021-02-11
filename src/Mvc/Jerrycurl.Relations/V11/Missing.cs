@@ -17,8 +17,6 @@ namespace Jerrycurl.Relations.V11
         public IFieldData Data => null;
         public object Snapshot => default(TValue);
 
-        public void Update(object value) => throw new InvalidOperationException();
-
         public Missing2(string name, IRelationMetadata metadata, IField2 model)
         {
             if (name == null)
@@ -32,8 +30,9 @@ namespace Jerrycurl.Relations.V11
             this.Model = model ?? throw new ArgumentNullException(nameof(model));
         }
 
-        public void Commit() => throw new InvalidOperationException();
-        public void Rollback() => throw new InvalidOperationException();
+        public void Commit() { }
+        public void Rollback() { }
+        public void Update(object value) => throw BindingException.FromField(this, "Cannot update missing field.");
 
         public bool Equals(IField2 other) => Equality.Combine(this, other, m => m.Model, m => m.Identity);
         public override bool Equals(object obj) => (obj is IField2 other && this.Equals(other));

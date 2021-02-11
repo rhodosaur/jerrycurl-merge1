@@ -24,9 +24,13 @@ namespace Jerrycurl.Relations.Metadata
 
         }
 
-        public TMetadata GetMetadata<TMetadata>()
+        public TMetadata Lookup<TMetadata>()
             where TMetadata : IMetadata
-            => this.Schema.Get<TMetadata>(this.Name);
+            => this.Schema.Lookup<TMetadata>(this.Name);
+
+        public TMetadata Require<TMetadata>()
+            where TMetadata : IMetadata
+            => this.Schema.Require<TMetadata>(this.Name);
 
         public bool Equals(MetadataIdentity other)
         {

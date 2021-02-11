@@ -10,13 +10,13 @@ namespace Jerrycurl.Relations.Test.Metadata
 {
     public class CustomListContractResolver : IRelationContractResolver
     {
-        public IEnumerable<Attribute> GetAnnotationContract(IRelationMetadata metadata)
+        public IEnumerable<Attribute> GetAnnotations(IRelationMetadata metadata)
         {
             if (metadata.Parent != null && metadata.Parent.Type.IsOpenGeneric(typeof(CustomList<>), out Type _))
                 yield return new CustomAttribute();
         }
 
-        public IRelationListContract GetListContract(IRelationMetadata metadata)
+        public IRelationContract GetContract(IRelationMetadata metadata)
         {
             if (metadata.Type.IsOpenGeneric(typeof(CustomList<>), out Type itemType))
             {

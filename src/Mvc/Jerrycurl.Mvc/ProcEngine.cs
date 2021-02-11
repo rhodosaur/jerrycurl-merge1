@@ -211,8 +211,8 @@ namespace Jerrycurl.Mvc
             ISchema pageSchema = options.Schemas.GetSchema(pageType);
             ISchema argsSchema = options.Schemas.GetSchema(argsType);
 
-            IProjectionMetadata pageMetadata = pageSchema.GetMetadata<IProjectionMetadata>() ?? throw new InvalidOperationException($"Metadata not found for type '{pageType.Name}'");
-            IProjectionMetadata argsMetadata = argsSchema.GetMetadata<IProjectionMetadata>() ?? throw new InvalidOperationException($"Metadata not found for type '{argsType.Name}'");
+            IProjectionMetadata pageMetadata = pageSchema.Require<IProjectionMetadata>();
+            IProjectionMetadata argsMetadata = argsSchema.Require<IProjectionMetadata>();
 
             if (pageMetadata.Item != null && argsMetadata.Item != null && pageMetadata.Item.Type.IsAssignableFrom(argsMetadata.Item.Type))
                 return argsMetadata.Item;
@@ -238,8 +238,8 @@ namespace Jerrycurl.Mvc
             ISchema pageSchema = options.Schemas.GetSchema(pageType);
             ISchema argsSchema = options.Schemas.GetSchema(argsType);
 
-            IProjectionMetadata pageMetadata = pageSchema.GetMetadata<IProjectionMetadata>() ?? throw new InvalidOperationException($"Metadata not found for type '{pageType.Name}'");
-            IProjectionMetadata argsMetadata = argsSchema.GetMetadata<IProjectionMetadata>() ?? throw new InvalidOperationException($"Metadata not found for type '{argsType.Name}'");
+            IProjectionMetadata pageMetadata = pageSchema.Require<IProjectionMetadata>();
+            IProjectionMetadata argsMetadata = argsSchema.Require<IProjectionMetadata>();
 
             if (argsMetadata.Item != null && pageMetadata.Type.IsAssignableFrom(argsMetadata.Item.Type))
                 return argsMetadata.Item;

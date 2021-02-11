@@ -93,7 +93,7 @@ namespace Jerrycurl.Relations.V11
         private bool ReadEnd() => false;
         private bool ReadFirst()
         {
-            this.Buffer = RelationCache.CreateBuffer2(this.Relation);
+            this.Buffer = RelationCache.CreateBuffer(this.Relation);
             this.Buffer.Writer.Initializer(this.Buffer);
 
             this.currentIndex = 0;

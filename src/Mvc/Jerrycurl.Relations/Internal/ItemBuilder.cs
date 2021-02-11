@@ -15,8 +15,8 @@ namespace Jerrycurl.Relations.Internal
         public ItemBuilder(RelationIdentity relation, MetadataIdentity source)
         {
             this.relation = relation ?? throw new ArgumentNullException(nameof(relation));
-            this.sourceMetadata = source.GetMetadata<IRelationMetadata>();
-            this.headingMetadata = relation.Heading.Select(m => m.GetMetadata<IRelationMetadata>()).ToArray();
+            this.sourceMetadata = source.Lookup<IRelationMetadata>();
+            this.headingMetadata = relation.Heading.Select(m => m.Lookup<IRelationMetadata>()).ToArray();
 
             this.Validate();
         }

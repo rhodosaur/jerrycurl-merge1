@@ -21,10 +21,7 @@ namespace Jerrycurl.Mvc
                 throw new ArgumentNullException(nameof(context));
 
             ISchema schema = context.Domain.Schemas.GetSchema(typeof(IList<TModel>));
-            IProjectionMetadata metadata = schema.GetMetadata<IProjectionMetadata>();
-
-            if (metadata == null)
-                throw new ProjectionException("Unable to locate projection metadata for model.");
+            IProjectionMetadata metadata = schema.Require<IProjectionMetadata>();
 
             ProjectionIdentity identity = new ProjectionIdentity(schema);
 

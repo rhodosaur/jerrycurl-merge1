@@ -26,9 +26,9 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Metadata.Builders
             this.entities = dbContext.Model.GetEntityTypes().ToArray();
         }
 
-        public IRelationListContract GetListContract(IRelationMetadata metadata) => null;
+        public IRelationContract GetContract(IRelationMetadata metadata) => null;
 
-        public IEnumerable<Attribute> GetAnnotationContract(IRelationMetadata metadata)
+        public IEnumerable<Attribute> GetAnnotations(IRelationMetadata metadata)
         {
             IEntityType entity = this.entities.FirstOrDefault(e => e.ClrType == metadata.Type);
             IEntityType parentEntity = this.entities.FirstOrDefault(e => e.ClrType == metadata.Parent?.Type);

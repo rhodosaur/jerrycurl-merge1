@@ -4,6 +4,8 @@ using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Queries;
 using Jerrycurl.Relations;
 using Jerrycurl.Relations.Metadata;
+using Jerrycurl.Relations.V11;
+using Jerrycurl.Relations.V11.Language;
 using Jerrycurl.Test.Profiling;
 using Jerrycurl.Vendors.Sqlite.Metadata;
 using Microsoft.Data.Sqlite;
@@ -97,6 +99,9 @@ namespace Jerrycurl.Test
 
             return new Relation(model, schema, heading.Select(n => new MetadataIdentity(schema, n)));
         }
+
+        public IRelation2 Relation2<T>(T model = default, params string[] header)
+            => this.Schemas.From(model).Select(header);
 
         public IField Field<T>(T value = default)
         {
