@@ -290,7 +290,7 @@ namespace Jerrycurl.Data.Metadata
                 Expression isNull = this.GetIsNullExpression(valueInfo);
                 Expression defaultValue = Expression.Default(valueInfo.Metadata.Type);
 
-                if (valueInfo.Metadata.Type.IsValueType && Nullable.GetUnderlyingType(valueInfo.Metadata.Type) == null)
+                if (valueInfo.Metadata.Type.IsValueType)
                     defaultValue = this.GetConvertExpression(valueInfo.Metadata, defaultValue, typeof(object));
 
                 value = Expression.Condition(isNull, defaultValue, value, typeof(object));

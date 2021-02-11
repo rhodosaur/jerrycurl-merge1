@@ -1,5 +1,6 @@
 ﻿using Jerrycurl.Mvc.Metadata;
 using Jerrycurl.Reflection;
+using Jerrycurl.Relations;
 using System;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
@@ -48,11 +49,17 @@ namespace Jerrycurl.Mvc.Projections
                 return new ProjectionException($"Cannot create projection: {message}");
         }
 
+        internal static ProjectionException IdentityNotFound(IProjectionMetadata metadata)
+            => new ProjectionException($"No identity attribute found for {metadata.Identity}.");
+
         internal static ProjectionException AttributesNotFound(IProjectionMetadata metadata)
             => new ProjectionException($"No attributes found for {metadata.Identity}.");
 
         internal static ProjectionException ValueNotFound(IProjectionMetadata metadata)
             => new ProjectionException($"No value information found for {metadata.Identity}.");
+
+        internal static ProjectionException ValueNotFound(IField field)
+            => new ProjectionException($"No value found for {field.Identity.Schema}({field.Identity}).");
 
         internal static ProjectionException TableNotFound(IProjectionMetadata metadata)
             => new ProjectionException($"No table information found for {metadata.Identity}.");

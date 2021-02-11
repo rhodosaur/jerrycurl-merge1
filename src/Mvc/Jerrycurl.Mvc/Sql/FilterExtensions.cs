@@ -52,9 +52,14 @@ namespace Jerrycurl.Mvc.Sql
         /// Returns the identity attribute of the current projection.
         /// </summary>
         /// <param name="projection">The current projection</param>
-        /// <returns>The identity attribute, or <see langword="null"/> if none are found.</returns>
-        public static IProjectionAttribute Id(this IProjection projection) => projection.Header.FirstOrDefault(a => a.Metadata.HasFlag(ProjectionMetadataFlags.Identity));
+        /// <returns>The identity attribute, or throw a <see cref="ProjectionException">ProjectionException</see> if none are found.</returns>
+        public static IProjectionAttribute Id(this IProjection projection)
+        {
+            IProjectionAttribute identity = projection.Header.FirstOrDefault(a => a.Metadata.HasFlag(ProjectionMetadataFlags.Identity));
 
+            return identity ?? throw ProjectionException.IdentityNotFound(projection.Metadata);
+        }
+            
         /// <summary>
         /// Returns the identity attribute of the selected projection.
         /// </summary>
@@ -92,12 +97,5 @@ namespace Jerrycurl.Mvc.Sql
         /// <param name="expression">Expression selecting a projection target.</param>
         /// <returns>A new projection containing the filtered attributes.</returns>
         public static IProjection NonKey<TModel, TProperty>(this IProjection<TModel> projection, Expression<Func<TModel, TProperty>> expression) => projection.For(expression).NonKey();
-
-        /// <summary>
-        /// Determines whether or not the current projection contains any attributes.
-        /// </summary>
-        /// <param name="projection">The current projection</param>
-        /// <returns><see langword="true"/> if the projection contains attributes; otherwise <see langword="false"/>.</returns>
-        public static bool Any(this IProjection projection) => projection.Header.Any();
     }
 }

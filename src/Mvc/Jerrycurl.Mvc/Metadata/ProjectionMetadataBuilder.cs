@@ -76,7 +76,7 @@ namespace Jerrycurl.Mvc.Metadata
                 {
                     int valueIndex = reference.Key.Properties.IndexOf(m => m.Identity.Equals(metadata.Identity));
 
-                    if (valueIndex > -1)
+                    if (valueIndex > -1 && !reference.Other.Metadata.Relation.HasFlag(RelationMetadataFlags.Recursive))
                     {
                         IReferenceMetadata valueMetadata = reference.Other.Key.Properties[valueIndex];
 
