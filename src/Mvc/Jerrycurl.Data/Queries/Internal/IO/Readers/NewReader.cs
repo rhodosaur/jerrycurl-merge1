@@ -9,7 +9,6 @@ namespace Jerrycurl.Data.Queries.Internal.IO.Readers
     {
         public KeyReader PrimaryKey { get; set; }
         public IList<JoinTarget> Joins { get; } = new List<JoinTarget>();
-        public IList<JoinTarget> Joins2 { get; } = new List<JoinTarget>();
         public IList<BaseReader> Properties { get; set; } = new List<BaseReader>();
 
         public NewReader(IBindingMetadata metadata)

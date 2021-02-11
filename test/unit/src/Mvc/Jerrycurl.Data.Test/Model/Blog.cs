@@ -12,7 +12,7 @@ namespace Jerrycurl.Data.Test.Model
         public int Id2 { get; set; }
         public string Title { get; set; }
         [Key("PK_Blog_3")]
-        public int? Id3 { get; set; }
+        public int Id3 { get; set; }
 
         public IList<BlogTag> Tags { get; set; }
         public IList<BlogPost> Posts { get; set; }

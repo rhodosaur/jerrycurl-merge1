@@ -189,14 +189,26 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 return null;
 
             ListTarget list = this.GetListTarget(result, source, joinKey);
-
-            return new JoinTarget()
+            JoinTarget target = new JoinTarget()
             {
                 Key = joinKey,
                 Buffer = Expression.Variable(typeof(ElasticArray)),
                 Index = this.Buffer.GetChildIndex(joinKey.Reference),
                 List = list,
             };
+
+            if (source.Metadata.HasFlag(BindingMetadataFlags.Item))
+            {
+                target.NewList = source.Metadata.Parent.Composition.Construct;
+                target.AddMethod = source.Metadata.Parent.Composition.Add;
+            }
+            else if (source.Metadata.HasFlag(BindingMetadataFlags.List))
+            {
+                target.NewList = source.Metadata.Composition.Construct;
+                target.AddMethod = source.Metadata.Composition.Add;
+            }
+
+            return target;
         }
 
         private void AddParentKeys(ListResult result, NewReader reader)
@@ -213,7 +225,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
                     join.Target = this.GetJoinTarget(result, join, joinKey);
 
-                    reader.Joins2.Add(join.Target);
+                    reader.Joins.Add(join.Target);
                     reader.Properties.Add(join);
                 }
             }

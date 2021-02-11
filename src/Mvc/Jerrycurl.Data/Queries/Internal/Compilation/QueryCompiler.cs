@@ -136,6 +136,13 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             if (result.List != null)
                 body.Add(this.GetReaderExpression(result.List));
 
+            if (!body.Any())
+            {
+                IBindingMetadata metadata = result.Schema.Lookup<IBindingMetadata>();
+
+                body.Add(Expression.Default(metadata.Type));
+            }
+
             ParameterExpression[] arguments = new[] { Arguments.Lists, Arguments.Aggregates, Arguments.Schema };
             AggregateInternalReader reader = this.Compile<AggregateInternalReader>(body, arguments);
 
@@ -203,7 +210,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             Expression body;
             List<KeyReader> primaryKeys = new List<KeyReader>() { writer.PrimaryKey };
 
-            if (writer.List.NewList == null)
+            if (writer.Join.NewList == null)
             {
                 Expression convertValue = this.GetConvertOrExpression(value, typeof(object));
 
@@ -216,8 +223,8 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 body = Expression.Call(writer.List.Variable, writer.List.AddMethod, value);
             else
             {
-                Expression listValue = this.GetGetOrSetDefaultExpression(bufferIndex, writer.List.NewList);
-                Expression addValue = Expression.Call(listValue, writer.List.AddMethod, value);
+                Expression listValue = this.GetGetOrSetDefaultExpression(bufferIndex, writer.Join.NewList);
+                Expression addValue = Expression.Call(listValue, writer.Join.AddMethod, value);
 
                 body = Expression.IfThen(bufferNotNull, addValue);
 
@@ -358,7 +365,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             Expression bufferIndex = this.GetElasticIndexExpression(reader.Target.Buffer, reader.Target.Index);
             Expression bufferNotNull = this.GetIsNotNullExpression(reader.Target.Buffer);
 
-            if (reader.Target.List.NewList == null)
+            if (reader.Target.NewList == null)
             {
                 Expression convertedValue = this.GetConvertOrExpression(bufferIndex, reader.Metadata.Type);
                 Expression ifThen = Expression.Condition(bufferNotNull, convertedValue, Expression.Default(convertedValue.Type));
@@ -367,7 +374,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             }
             else
             {
-                Expression list = this.GetGetOrSetDefaultExpression(bufferIndex, reader.Target.List.NewList);
+                Expression list = this.GetGetOrSetDefaultExpression(bufferIndex, reader.Target.NewList);
 
                 return Expression.Condition(bufferNotNull, list, Expression.Default(list.Type));
             }
@@ -405,7 +412,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 return Expression.Bind(r.Metadata.Member, value);
             }));
 
-            return this.GetKeyBlockExpression(new[] { reader.PrimaryKey }, reader.Joins2, memberInit);
+            return this.GetKeyBlockExpression(new[] { reader.PrimaryKey }, reader.Joins, memberInit);
         }
 
         private Expression GetReaderExpression(DynamicReader reader)

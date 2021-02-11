@@ -354,7 +354,7 @@ namespace Jerrycurl.Data.Test
             buffer2.Insert(50, ("", "Item.Bar"));
 
             var result1 = buffer1.Commit();
-            var result2 = buffer1.Commit();
+            var result2 = buffer2.Commit();
 
             result1.ShouldBeNull();
             result2.ShouldBeNull();
@@ -395,6 +395,7 @@ namespace Jerrycurl.Data.Test
             result4[0].Id.ShouldBe(50);
         }
 
+
         public void Test_Insert_Invalid_Constructor()
         {
             throw new NotImplementedException();
@@ -402,11 +403,44 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Insert_Invalid_ParentKey()
         {
-            throw new NotImplementedException();
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(Blog));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            Should.NotThrow(() =>
+            {
+                buffer.Insert(10, ("", "Id3"));
+            });
+
+            var result = buffer.Commit<Blog>();
+
+            result.ShouldNotBeNull();
+            result.Id3.ShouldBe(10);
+            result.Posts.ShouldBeNull();
         }
+
+        public void Test_Insert_Missing_ChildKey()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(Blog));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            Should.Throw<BindingException>(() =>
+            {
+                buffer.Insert("Hello World!", ("", "Posts.Item.Headline"));
+            });
+        }
+
         public void Test_Insert_Invalid_ChildKey()
         {
-            throw new NotImplementedException();
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(Blog));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            Should.Throw<BindingException>(() =>
+            {
+                buffer.Insert(10, ("", "Posts.Item.BlogId3"));
+            });
         }
 
         public void Test_Insert_CaseInsensitive()
@@ -425,15 +459,18 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Insert_CaseSensitive()
         {
-            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false, new DotNotation(StringComparer.OrdinalIgnoreCase));
+            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false, new DotNotation(StringComparer.Ordinal));
             var schema = store.GetSchema(typeof(IList<Blog>));
             var buffer = new QueryBuffer(schema, QueryType.List);
 
             buffer.Insert(50, ("", "ITEM.id"));
+            buffer.Insert(60, ("", "Item.Id"));
 
             var result = buffer.Commit<IList<Blog>>();
 
-            result.ShouldBeNull();
+            result.ShouldNotBeNull();
+            result.Count.ShouldBe(1);
+            result[0].Id.ShouldBe(60);
         }
 
         public async Task Test_Insert_OneToMany_NonPrimary_Async()

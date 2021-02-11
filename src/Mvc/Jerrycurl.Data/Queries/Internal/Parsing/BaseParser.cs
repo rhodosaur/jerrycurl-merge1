@@ -63,6 +63,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 return new AggregateReader(node)
                 {
                     Attribute = aggregate,
+                    CanBeDbNull = true,
                 };
             }
 
