@@ -17,7 +17,7 @@ namespace Jerrycurl.Mvc.Projections
 
         IProjectionMetadata Metadata { get; }
         IProjectionOptions Options { get; }
-        IField Source { get; }
+        IField2 Source { get; }
         IEnumerable<IProjectionAttribute> Attributes { get; }
 
         IProjection Append(IEnumerable<IParameter> parameters);
@@ -30,7 +30,7 @@ namespace Jerrycurl.Mvc.Projections
 
         IProjection With(IProjectionMetadata metadata = null,
                          IEnumerable<IProjectionAttribute> attributes = null,
-                         IField field = null,
+                         IField2 field = null,
                          IProjectionOptions options = null);
     }
 }

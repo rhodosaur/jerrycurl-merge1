@@ -10,7 +10,7 @@ namespace Jerrycurl.Mvc.Projections
         new IProjection<TModel> Map(Func<IProjectionAttribute, IProjectionAttribute> m);
         new IProjection<TModel> With(IProjectionMetadata metadata = null,
                                      IEnumerable<IProjectionAttribute> attributes = null,
-                                     IField field = null,
+                                     IField2 field = null,
                                      IProjectionOptions options = null);
     }
 }

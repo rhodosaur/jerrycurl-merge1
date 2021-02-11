@@ -51,7 +51,7 @@ namespace Jerrycurl.Mvc.Sql
             return projection.Metadata.Identity.Schema.Require<IProjectionMetadata>(fullName);
         }
 
-        public static IField GetFieldValue(IProjectionAttribute attribute)
+        public static IField2 GetFieldValue(IProjectionAttribute attribute)
         {
             if (attribute.Field == null)
                 throw ProjectionException.ValueNotFound(attribute);

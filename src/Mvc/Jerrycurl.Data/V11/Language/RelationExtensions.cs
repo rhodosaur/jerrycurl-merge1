@@ -5,8 +5,7 @@ using Jerrycurl.Data.Commands;
 using Jerrycurl.Data.Queries;
 using Jerrycurl.Data.Sessions;
 using Jerrycurl.Data.V11;
-using Jerrycurl.Relations.V11;
-using Jerrycurl.Relations.V11.Internal;
+using Jerrycurl.Relations;
 
 namespace Jerrycurl.Data.V11.Language
 {

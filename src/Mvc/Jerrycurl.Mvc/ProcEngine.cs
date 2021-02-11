@@ -155,7 +155,7 @@ namespace Jerrycurl.Mvc
             {
                 ProcContext context = this.CreateContext(descriptor);
 
-                IProjectionIdentity modelIdentity = new ProjectionIdentity(modelSchema, new Relation(model, modelSchema));
+                IProjectionIdentity modelIdentity = new ProjectionIdentity(new Model2(modelSchema, model));
                 IProjectionIdentity resultIdentity = new ProjectionIdentity(resultSchema);
 
                 IProjection modelProjection = new Projection(modelIdentity, context, modelMetadata);

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using Jerrycurl.Relations.V11.Internal;
-using Jerrycurl.Relations.V11.Language;
+using Jerrycurl.Relations.Internal;
+using Jerrycurl.Relations.Language;
 
 namespace Jerrycurl.Relations
 {

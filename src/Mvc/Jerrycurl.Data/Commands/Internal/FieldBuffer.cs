@@ -13,7 +13,7 @@ namespace Jerrycurl.Data.Commands.Internal
 {
     internal class FieldBuffer
     {
-        public IField Target { get; set; }
+        public IField2 Target { get; set; }
         public ParameterSource Parameter { get; set; }
         public ColumnSource Column { get; set; }
         public CascadeSource Cascade { get; set; }
@@ -52,7 +52,8 @@ namespace Jerrycurl.Data.Commands.Internal
                 ColumnMetadata columnInfo = this.Column?.Info;
                 BufferConverter converter = CommandCache.GetConverter(metadata, columnInfo);
 
-                this.Target.Bind(converter(value));
+                this.Target.Update(converter(value));
+                this.Target.Commit();
             }
         }
     }

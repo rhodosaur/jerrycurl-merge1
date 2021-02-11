@@ -9,14 +9,15 @@ namespace Jerrycurl.Data.Sessions
     public class Parameter : IParameter
     {
         public string Name { get; }
-        public IField Field { get; }
+        public IField2 Field { get; }
 
-        public Parameter(string name, IField field = null)
+        public Parameter(string name, IField2 field = null)
         {
             this.Name = name ?? throw new ArgumentNullException(nameof(name));
             this.Field = field;
         }
 
+        [Obsolete("Should we use Snapshot or Data.Value?")]
         public void Build(IDbDataParameter adoParameter)
         {
             IBindingMetadata metadata = this.Field?.Identity.Metadata.Lookup<IBindingMetadata>();
@@ -25,9 +26,9 @@ namespace Jerrycurl.Data.Sessions
             adoParameter.ParameterName = this.Name;
 
             if (contract?.Convert != null)
-                adoParameter.Value = contract.Convert(this.Field?.Value);
+                adoParameter.Value = contract.Convert(this.Field?.Snapshot);
             else if (this.Field != null)
-                adoParameter.Value = this.Field.Value;
+                adoParameter.Value = this.Field.Snapshot;
             else
                 adoParameter.Value = DBNull.Value;
 

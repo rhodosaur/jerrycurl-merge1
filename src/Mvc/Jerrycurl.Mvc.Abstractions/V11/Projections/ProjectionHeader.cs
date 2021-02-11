@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Jerrycurl.Relations.V11;
+using Jerrycurl.Relations;
 
 namespace Jerrycurl.Mvc.V11.Projections
 {

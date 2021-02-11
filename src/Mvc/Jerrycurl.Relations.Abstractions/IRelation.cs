@@ -1,10 +1,15 @@
 ﻿using System.Collections.Generic;
+using System.Data;
 
 namespace Jerrycurl.Relations
 {
-    public interface IRelation : IEnumerable<ITuple>, IField
+    public interface IRelation2
     {
-        new RelationIdentity Identity { get; }
-        IField Source { get; }
+        RelationHeader Header { get; }
+        IField2 Source { get; }
+        IRelationReader GetReader();
+        IDataReader GetDataReader();
+
+        IEnumerable<ITuple2> Body { get; }
     }
 }

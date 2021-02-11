@@ -1,6 +1,6 @@
 ﻿using Jerrycurl.Reflection;
+using Jerrycurl.Relations.Internal.Queues;
 using Jerrycurl.Relations.Metadata;
-using Jerrycurl.Relations.V11;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,63 +9,54 @@ using System.Runtime.Serialization;
 namespace Jerrycurl.Relations
 {
     [Serializable]
-    public class RelationException : Exception
+    public class RelationException2 : Exception
     {
-        public RelationException()
+        public RelationException2()
         {
 
         }
 
-        public RelationException(string message)
+        public RelationException2(string message)
             : base(message)
         {
 
         }
 
-        public RelationException(string message, Exception innerException)
+        public RelationException2(string message, Exception innerException)
             : base(message, innerException)
         {
 
         }
 
-        protected RelationException(SerializationInfo info, StreamingContext context)
+        protected RelationException2(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
 
         }
 
-        #region " Exception helpers 1.1 "
-
-        public static RelationException FromRelation(IRelation2 relation, string errorMessage, Exception innerException)
-        {
-            return new RelationException();
-        }
-        #endregion
-
         #region " Exception helpers "
 
-        private static string GetAttributeName(MetadataIdentity identity)
+        public static RelationException2 From(RelationHeader header, string message = null, Exception innerException = null)
         {
-            if (identity == null)
-                return "<missing>";
-            else if (identity.Schema.Notation.Comparer.Equals(identity.Name, identity.Schema.Notation.Model()))
-                return "<model>";
-            else
-                return identity.Name;
-        }
-
-        public static RelationException FromRelation(Type relationType, IReadOnlyList<MetadataIdentity> heading, string message = null, Exception innerException = null)
-        {
-            string attributeList = string.Join(", ", heading.Select(GetAttributeName));
-            string fullMessage = $"An error occurred in relation of type {relationType.GetSanitizedFullName()}({attributeList}).";
+            string attributeList = string.Join(", ", header.Attributes.Select(a => a.Metadata.Identity));
+            string fullMessage = $"Error in relation {header.Schema}({attributeList}).";
 
             if (message != null || innerException != null)
                 fullMessage += $" {message ?? innerException.Message}";
 
-            return new RelationException(fullMessage, innerException);
+            return new RelationException2(fullMessage, innerException);
         }
 
-        public static RelationException FromRelation(RelationIdentity relation, string message = null, Exception innerException = null) => FromRelation(relation.Schema.Model, relation.Heading, message, innerException);
+        internal static RelationException2 CannotForwardQueue(IRelation2 relation2, IRelationQueue queue, Exception innerException)
+            => From(relation2.Header, $"Cannot move cursor for '{queue.Metadata.Identity}'.", innerException);
+
+        internal static RelationException2 Unreachable(MetadataIdentity source, RelationHeader header, IEnumerable<IRelationMetadata> attributes)
+        {
+            string attributeNames = string.Join(", ", attributes.Select(a => a.Identity));
+
+            return From(header, $"Following attributes are unreachable from {source}: {attributeNames}");
+        }
+            
         #endregion
     }
 }

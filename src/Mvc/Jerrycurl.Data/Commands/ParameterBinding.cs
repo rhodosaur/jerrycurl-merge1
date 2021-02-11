@@ -7,9 +7,9 @@ namespace Jerrycurl.Data.Commands
     public class ParameterBinding : IUpdateBinding
     {
         public string ParameterName { get; }
-        public IField Target { get; }
+        public IField2 Target { get; }
 
-        public ParameterBinding(string parameterName, IField target)
+        public ParameterBinding(string parameterName, IField2 target)
         {
             this.ParameterName = parameterName ?? throw new ArgumentNullException(nameof(parameterName));
             this.Target = target ?? throw new ArgumentNullException(nameof(target));

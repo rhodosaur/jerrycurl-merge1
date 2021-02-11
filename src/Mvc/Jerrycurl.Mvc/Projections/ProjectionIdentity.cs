@@ -6,19 +6,18 @@ namespace Jerrycurl.Mvc.Projections
 {
     public class ProjectionIdentity : IProjectionIdentity
     {
-        public IField Field { get; }
+        public IField2 Field { get; }
         public ISchema Schema { get; }
 
         public ProjectionIdentity(ISchema schema)
-            : this(schema, null)
-        {
-
-        }
-
-        public ProjectionIdentity(ISchema schema, IField field)
         {
             this.Schema = schema ?? throw new ArgumentNullException(nameof(schema));
-            this.Field = field;
+        }
+
+        public ProjectionIdentity(IField2 field)
+        {
+            this.Field = field ?? throw new ArgumentNullException(nameof(field));
+            this.Schema = field.Metadata.Identity.Schema;
 
             ProjectionValidator.ValidateIdentity(this);
         }

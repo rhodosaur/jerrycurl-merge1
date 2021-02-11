@@ -1,32 +1,32 @@
 ﻿using Jerrycurl.Reflection;
-using Jerrycurl.Relations.V11;
-using Jerrycurl.Relations.V11.Internal;
+using Jerrycurl.Relations;
+using Jerrycurl.Relations.Internal;
 using System;
 using System.Runtime.Serialization;
 
 namespace Jerrycurl.Relations
 {
     [Serializable]
-    public class BindingException : Exception
+    public class BindingException2 : Exception
     {
-        public BindingException()
+        public BindingException2()
         {
 
         }
 
-        public BindingException(string message)
+        public BindingException2(string message)
             : base(message)
         {
 
         }
 
-        public BindingException(string message, Exception innerException)
+        public BindingException2(string message, Exception innerException)
             : base(message, innerException)
         {
 
         }
 
-        protected BindingException(SerializationInfo info, StreamingContext context)
+        protected BindingException2(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
 
@@ -34,28 +34,14 @@ namespace Jerrycurl.Relations
 
         #region " Exception helpers "
 
-        public static BindingException FromField(IField field, string message = null, Exception innerException = null)
+        public static BindingException2 From(IField2 field, string message = null, Exception innerException = null)
         {
-            message = message ?? innerException?.Message;
+            string fullMessage = $"Error binding to {field.Identity} in {field.Metadata.Identity.Schema}.";
 
-            if (message != null)
-                message = $"Binding to field '{field.Identity.Name}' in schema '{field.Identity.Schema.Model.GetSanitizedName()}' failed. {message}";
-            else
-                message = $"Binding to field '{field.Identity.Name}' in schema '{field.Identity.Schema.Model.GetSanitizedName()}' failed.";
+            if (message != null || innerException != null)
+                fullMessage += $" {message ?? innerException.Message}";
 
-            return new BindingException(message, innerException);
-        }
-
-        public static BindingException FromField(IField2 field, string message = null, Exception innerException = null)
-        {
-            message = message ?? innerException?.Message;
-
-            if (message != null)
-                message = $"Binding to field '{field.Identity.Name}' in schema '{field.Identity.Schema.Model.GetSanitizedName()}' failed. {message}";
-            else
-                message = $"Binding to field '{field.Identity.Name}' in schema '{field.Identity.Schema.Model.GetSanitizedName()}' failed.";
-
-            return new BindingException(message, innerException);
+            return new BindingException2(fullMessage, innerException);
         }
 
         #endregion

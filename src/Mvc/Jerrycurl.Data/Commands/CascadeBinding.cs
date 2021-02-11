@@ -5,10 +5,10 @@ namespace Jerrycurl.Data.Commands
 {
     public class CascadeBinding : IUpdateBinding
     {
-        public IField Source { get; }
-        public IField Target { get; }
+        public IField2 Source { get; }
+        public IField2 Target { get; }
 
-        public CascadeBinding(IField source, IField target)
+        public CascadeBinding(IField2 source, IField2 target)
         {
             this.Source = source ?? throw new ArgumentNullException(nameof(source));
             this.Target = target ?? throw new ArgumentNullException(nameof(target));

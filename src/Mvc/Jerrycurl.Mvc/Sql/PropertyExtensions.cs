@@ -24,7 +24,7 @@ namespace Jerrycurl.Mvc.Sql
 
             if (attribute.Field != null)
             {
-                IField field = attribute.Field();
+                IField2 field = attribute.Field();
                 
                 ColumnBinding binding = new ColumnBinding(field);
 

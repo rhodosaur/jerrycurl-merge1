@@ -14,7 +14,7 @@ namespace Jerrycurl.Mvc.Sql
         /// <returns>A new attribute containing the appended buffer.</returns>
         public static IProjectionAttribute Var(this IProjectionAttribute attribute)
         {
-            IField field = ProjectionHelper.GetFieldValue(attribute);
+            IField2 field = ProjectionHelper.GetFieldValue(attribute);
 
             string variableName = attribute.Context.Lookup.Variable(attribute.Identity, field);
             string dialectName = attribute.Context.Domain.Dialect.Variable(variableName);

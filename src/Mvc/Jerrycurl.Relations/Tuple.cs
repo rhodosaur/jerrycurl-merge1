@@ -1,28 +1,31 @@
 ﻿using Jerrycurl.Diagnostics;
+using Jerrycurl.Relations.Language;
+using Jerrycurl.Text;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using HashCode = Jerrycurl.Diagnostics.HashCode;
 
 namespace Jerrycurl.Relations
 {
     [DebuggerDisplay("{ToString(),nq}")]
-    internal class Tuple : ITuple
+    internal class Tuple2 : ITuple2
     {
-        private readonly IField[] fields;
+        private readonly IField2[] buffer;
 
         public int Degree { get; }
         public int Count => this.Degree;
 
-        public Tuple(IField[] fields, int degree)
+        public Tuple2(IField2[] buffer)
         {
-            this.fields = fields;
-            this.Degree = degree;
+            this.buffer = buffer ?? throw new ArgumentNullException(nameof(buffer));
+            this.Degree = buffer.Length;
         }
 
-        public IField this[int index]
+        public IField2 this[int index]
         {
             get
             {
@@ -31,11 +34,13 @@ namespace Jerrycurl.Relations
                 else if (index >= this.Degree)
                     throw new IndexOutOfRangeException("Index must be within the degree of the tuple.");
 
-                return this.fields[index];
+                return this.buffer[index];
             }
         }
 
-        public IEnumerator<IField> GetEnumerator()
+        public bool Equals(ITuple2 other) => Equality.CombineAll(this, other);
+
+        public IEnumerator<IField2> GetEnumerator()
         {
             for (int i = 0; i < this.Degree; i++)
                 yield return this[i];
@@ -43,25 +48,21 @@ namespace Jerrycurl.Relations
 
         IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 
-        public bool Equals(ITuple other) => Equality.CombineAll(this, other);
-        public override bool Equals(object obj) => (obj is ITuple other && this.Equals(other));
-        public override int GetHashCode() => HashCode.CombineAll(this.fields);
+        public override bool Equals(object obj) => (obj is ITuple2 tup && this.Equals(tup));
 
-        public override string ToString()
+        public override int GetHashCode() => HashCode.CombineAll(this.buffer);
+
+        internal static string Format(IEnumerable<IField2> fields)
         {
             StringBuilder s = new StringBuilder();
 
             s.Append('(');
-
-#if NETSTANDARD2_0
-            s.Append(string.Join(", ", this));
-#else
-            s.AppendJoin(", ", this);
-#endif
-
+            s.AppendJoin(", ", fields);
             s.Append(')');
 
             return s.ToString();
         }
+
+        public override string ToString() => Format(this);
     }
 }

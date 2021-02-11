@@ -23,7 +23,7 @@ namespace Jerrycurl.Data.Commands
 {
     public sealed class CommandBuffer
     {
-        private readonly Dictionary<IField, FieldBuffer> fieldBuffers = new Dictionary<IField, FieldBuffer>();
+        private readonly Dictionary<IField2, FieldBuffer> fieldBuffers = new Dictionary<IField2, FieldBuffer>();
         private readonly Dictionary<string, FieldBuffer> columnHeader = new Dictionary<string, FieldBuffer>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, FieldBuffer> paramHeader = new Dictionary<string, FieldBuffer>(StringComparer.OrdinalIgnoreCase);
 
@@ -93,7 +93,7 @@ namespace Jerrycurl.Data.Commands
             }
         }
 
-        private bool TryReadValue(IField field, out object value)
+        private bool TryReadValue(IField2 field, out object value)
         {
             value = null;
 
@@ -105,9 +105,9 @@ namespace Jerrycurl.Data.Commands
             return false;
         }
 
-        internal FieldBuffer GetBuffer(IField target) => this.fieldBuffers.GetValueOrDefault(target);
-        internal IEnumerable<IFieldSource> GetSources(IField target) => this.GetBuffer(target)?.GetSources() ?? Array.Empty<IFieldSource>();
-        internal IEnumerable<IFieldSource> GetChanges(IField target) => this.GetBuffer(target)?.GetChanges() ?? Array.Empty<IFieldSource>();
+        internal FieldBuffer GetBuffer(IField2 target) => this.fieldBuffers.GetValueOrDefault(target);
+        internal IEnumerable<IFieldSource> GetSources(IField2 target) => this.GetBuffer(target)?.GetSources() ?? Array.Empty<IFieldSource>();
+        internal IEnumerable<IFieldSource> GetChanges(IField2 target) => this.GetBuffer(target)?.GetChanges() ?? Array.Empty<IFieldSource>();
 
         public void Flush()
         {

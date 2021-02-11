@@ -7,6 +7,6 @@ namespace Jerrycurl.Data.Metadata
     {
         IBindingMetadata Metadata { get; }
         IDbDataParameter Parameter { get; }
-        IField Field { get; }
+        IField2 Field { get; }
     }
 }

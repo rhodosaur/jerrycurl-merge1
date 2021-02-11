@@ -16,7 +16,7 @@ namespace Jerrycurl.Data.Commands.Internal.Compilation
     internal class CommandCompiler
     {
         private delegate void BufferInternalWriter(IDataReader dataReader, FieldBuffer[] buffers, ElasticArray helpers, Type schemaType);
-        private delegate void BufferInternalConverter(IField field, object value, ElasticArray helpers, Type schemaType);
+        private delegate void BufferInternalConverter(IField2 field, object value, ElasticArray helpers, Type schemaType);
 
         public BufferConverter Compile(MetadataIdentity metadata, ColumnMetadata columnInfo)
         {

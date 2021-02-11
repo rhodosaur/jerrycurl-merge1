@@ -5,8 +5,6 @@ using System.Linq;
 using Jerrycurl.Data.Commands;
 using Jerrycurl.Data.Sessions;
 using Jerrycurl.Relations;
-using Jerrycurl.Relations.V11;
-using Jerrycurl.Relations.V11.Internal;
 
 namespace Jerrycurl.Data.V11.Language
 {

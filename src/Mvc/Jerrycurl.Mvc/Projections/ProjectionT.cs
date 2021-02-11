@@ -29,7 +29,7 @@ namespace Jerrycurl.Mvc.Projections
 
         public new IProjection<TModel> With(IProjectionMetadata metadata = null,
                                             IEnumerable<IProjectionAttribute> attributes = null,
-                                            IField field = null,
+                                            IField2 field = null,
                                             IProjectionOptions options = null) => new Projection<TModel>(base.With(metadata, attributes, field, options));
     }
 }
