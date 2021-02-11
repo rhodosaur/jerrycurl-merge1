@@ -6,7 +6,7 @@ namespace Jerrycurl.Data.Test.Models.Views
 {
     public class BlogDatabaseView : Blog
     {
-        public One<BlogAuthor> Author { get; set; }
+        public BlogAuthor Author { get; set; }
         public One<BlogCategory> Category { get; set; }
         public List<BlogPost> Posts { get; set; }
     }

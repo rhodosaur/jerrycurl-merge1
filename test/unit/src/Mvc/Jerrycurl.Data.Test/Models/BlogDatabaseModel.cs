@@ -5,9 +5,13 @@ namespace Jerrycurl.Data.Test.Models
 {
     public class BlogDatabaseModel
     {
-        public List<Blog> Blogs { get; set; }
+        public List<BlogView> Blogs { get; set; }
         public List<BlogPost> Posts { get; set; }
-        public List<BlogAuthor> Authors { get; set; }
         public List<BlogCategory> Categories { get; set; }
+
+        public class BlogView : Blog
+        {
+            public BlogAuthor Author { get; set; }
+        }
     }
 }

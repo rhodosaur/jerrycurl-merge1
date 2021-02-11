@@ -312,34 +312,31 @@ namespace Jerrycurl.Data.Test
                         Name = "Birds",
                     }
                 },
-                Blogs = new List<Blog>()
+                Blogs = new List<BlogDatabaseModel.BlogView>()
                 {
-                    new Blog()
+                    new BlogDatabaseModel.BlogView()
                     {
                         Id = 1,
                         Title = "Blog #1",
                         CategoryId = 2,
                     },
-                    new Blog()
+                    new BlogDatabaseModel.BlogView()
                     {
                         Id = 2,
                         Title = "Blog #2",
                         CategoryId = 2,
+                        Author = new BlogAuthor()
+                        {
+                            BlogId = 2,
+                            Name = "Blogger #2",
+                        }
                     },
-                    new Blog()
+                    new BlogDatabaseModel.BlogView()
                     {
                         Id = 3,
                         Title = "Blog #3",
                         CategoryId = 1,
                     }
-                },
-                Authors = new List<BlogAuthor>()
-                {
-                    new BlogAuthor()
-                    {
-                        BlogId = 2,
-                        Name = "Blogger #2",
-                    },
                 },
                 Posts = new List<BlogPost>()
                 {
@@ -379,14 +376,12 @@ namespace Jerrycurl.Data.Test
                 .SelectAll()
                 .From(data);
 
-            var authors = store.For<BlogDatabaseModel>()
-                .Join(m => m.Authors)
-                .SelectAll()
-                .From(data);
-
             var blogs = store.For<BlogDatabaseModel>()
                 .Join(m => m.Blogs)
-                .SelectAll()
+                .Select(m => m.Id)
+                .Select(m => m.Title)
+                .Select(m => m.CategoryId)
+                .SelectAll(m => m.Author)
                 .From(data);
 
             var posts = store.For<BlogDatabaseModel>()
@@ -397,12 +392,14 @@ namespace Jerrycurl.Data.Test
             buffer1.Insert(categories, "Item.Category.Item.Id",
                                        "Item.Category.Item.ParentId",
                                        "Item.Category.Item.Name");
-            buffer1.Insert(authors, "Item.Author.Item.BlogId",
-                                    "Item.Author.Item.Name",
-                                    "Item.Author.Item.TwitterUrl");
+
             buffer1.Insert(blogs, "Item.Id",
                                   "Item.Title",
-                                  "Item.CategoryId");
+                                  "Item.CategoryId",
+                                  "Item.Author.BlogId",
+                                  "Item.Author.Name",
+                                  "Item.Author.TwitterUrl");
+
             buffer1.Insert(posts, "Item.Posts.Item.Id",
                                   "Item.Posts.Item.BlogId",
                                   "Item.Posts.Item.CreatedOn",
@@ -410,18 +407,28 @@ namespace Jerrycurl.Data.Test
                                   "Item.Posts.Item.Content");
 
             buffer2.Insert(categories);
-            buffer2.Insert(authors);
             buffer2.Insert(blogs);
             buffer2.Insert(posts);
 
             var result1 = buffer1.Commit<List<BlogDatabaseView>>();
             var result2 = buffer2.Commit<BlogDatabaseModel>();
 
-            result1.Cast<Blog>().OrderBy(b => b.Id).ToList().ShouldBeSameAsJson(data.Blogs);
-            result1.Select(b => b.Author.ValueOrDefault).NotNull().Distinct().OrderBy(p => p.BlogId).ToList().ShouldBeSameAsJson(data.Authors);
-            result1.Select(b => b.Category.ValueOrDefault).NotNull().Distinct().OrderBy(p => p.Id).ToList().ShouldBeSameAsJson(data.Categories);
-            result1.SelectMany(b => b.Posts).Cast<BlogPost>().OrderBy(p => p.Id).ToList().ShouldBeSameAsJson(data.Posts);
-            result2.ShouldBeSameAsJson(data);
+            var blogsLeft = result1.Cast<Blog>();
+            var blogsRight = data.Blogs.Cast<Blog>();
+
+            var authorsLeft = result1.Select(b => b.Author);
+            var authorsRight = data.Blogs.Select(b => b.Author);
+
+            var postsLeft = result1.SelectMany(b => b.Posts);
+            var postsRight = data.Posts;
+
+            var categoriesLeft = result1.Where(b => b.Category.HasValue).Select(b => b.Category.Value).OrderBy(c => c.Id).Distinct();
+            var categoriesRight = data.Categories;
+
+            blogsLeft.ShouldBeSameAsJson(blogsRight);
+            authorsLeft.ShouldBeSameAsJson(authorsRight);
+            postsLeft.ShouldBeSameAsJson(postsRight);
+            categoriesLeft.ShouldBeSameAsJson(categoriesRight);
         }
 
         public void Test_Insert_DualRecursiveTree()
