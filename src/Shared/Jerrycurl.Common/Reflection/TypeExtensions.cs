@@ -54,10 +54,17 @@ namespace Jerrycurl.Reflection
             return (underlyingType != null);
         }
 
+
         public static bool HasParameters(this MethodInfo methodInfo, params Type[] parameterTypes)
         {
             return methodInfo.GetParameters().Select(pi => pi.ParameterType).SequenceEqual(parameterTypes);
         }
+
+        public static bool HasSignature(this ConstructorInfo constructorInfo, params Type[] parameterTypes)
+        {
+            return constructorInfo.GetParameters().Select(pi => pi.ParameterType).SequenceEqual(parameterTypes);
+        }
+
 
         public static bool HasSignature(this MethodInfo methodInfo, Type returnType, params Type[] parameterTypes)
         {

@@ -24,10 +24,10 @@ namespace Jerrycurl.Relations
             if (schema == null)
                 throw new ArgumentNullException(nameof(schema));
 
-            this.Identity = new FieldIdentity(new MetadataIdentity(schema, schema.Notation.Model()), schema.Notation.Model());
-            this.Snapshot = value;
             this.Metadata = schema.Require<IRelationMetadata>();
-            this.Data = new ModelData(value);
+            this.Identity = new FieldIdentity(this.Metadata.Identity, this.Metadata.Identity.Name);
+            this.Snapshot = value;
+            this.Data = new FieldData(value);
         }
 
         public void Commit() { }

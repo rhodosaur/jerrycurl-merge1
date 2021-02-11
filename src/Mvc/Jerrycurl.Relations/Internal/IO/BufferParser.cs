@@ -119,7 +119,9 @@ namespace Jerrycurl.Relations.Internal.IO
                     Next = nextQueue,
                 };
 
-                if (prevQueue != null && !prevQueue.List.Identity.Equals(nextQueue.List.MemberOf.Parent?.Identity))
+                if ((node.Item ?? node).Metadata.HasFlag(RelationMetadataFlags.Recursive))
+                    nextQueue.Type = RelationQueueType.Recursive;
+                else if (prevQueue != null && !prevQueue.List.Identity.Equals(nextQueue.List.MemberOf.Parent?.Identity))
                     nextQueue.Type = RelationQueueType.Cartesian;
 
                 reader.Writers.Add(writer);

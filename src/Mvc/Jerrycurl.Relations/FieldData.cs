@@ -1,34 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Jerrycurl.Relations.Internal.Compilation;
 
 namespace Jerrycurl.Relations
 {
-    internal class FieldData<TValue, TParent> : IFieldData
+    internal class FieldData : IFieldData
     {
-        public TParent Parent { get; }
-        public TValue Value { get; set; }
-        public int Index { get; }
         public object Relation { get; }
-        public FieldBinder<TParent, TValue> Binder { get; }
+        public int Index { get; }
+        public int Depth { get; }
+        public object Parent => null;
+        public object Value { get; }
 
-        public FieldData(object relation, int index, TParent parent, TValue value, Delegate binder)
+        public FieldData(object relation, int index, int depth)
         {
             this.Relation = relation;
             this.Index = index;
-            this.Parent = parent;
-            this.Value = value;
-            this.Binder = (FieldBinder<TParent, TValue>)binder;
+            this.Depth = depth;
         }
 
-        public void Bind(TValue newValue)
+        public FieldData(object value)
         {
-            this.Binder(this.Parent, this.Index, newValue);
-            this.Value = newValue;
+            this.Relation = this.Value = value;
         }
-
-        object IFieldData.Parent => this.Parent;
-        object IFieldData.Value => this.Value;
     }
 }

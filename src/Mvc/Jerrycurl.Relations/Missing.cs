@@ -14,11 +14,11 @@ namespace Jerrycurl.Relations
         public FieldType2 Type { get; } = FieldType2.Missing;
         public IRelationMetadata Metadata { get; }
         public bool HasChanged => false;
-        public IFieldData Data => null;
-        public object Snapshot => default(TValue);
+        public IFieldData Data { get; }
+        public object Snapshot => null;
         public bool IsReadOnly => true;
 
-        public Missing2(string name, IRelationMetadata metadata, IField2 model)
+        public Missing2(string name, IRelationMetadata metadata, FieldData data, IField2 model)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
@@ -29,6 +29,7 @@ namespace Jerrycurl.Relations
             this.Metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
             this.Identity = new FieldIdentity(metadata.Identity, name);
             this.Model = model ?? throw new ArgumentNullException(nameof(model));
+            this.Data = data ?? throw new ArgumentNullException(nameof(data));
         }
 
         public void Commit() { }

@@ -170,7 +170,7 @@ namespace Jerrycurl.Relations.Metadata
             return metadata;
         }
 
-        private IRelationMetadata GetRecursiveParent(IMetadataBuilderContext context, RelationMetadata metadata)
+        private IRelationMetadata GetRecursiveParent(RelationMetadata metadata)
         {
             IRelationMetadata current = metadata.Parent;
             IRelationMetadata stop = current.MemberOf.Parent ?? current.MemberOf;
@@ -179,6 +179,8 @@ namespace Jerrycurl.Relations.Metadata
             {
                 if (current.Type == metadata.Type)
                     return current;
+
+                current = current.Parent;
             }
 
             return null;
@@ -188,7 +190,7 @@ namespace Jerrycurl.Relations.Metadata
         {
             if (metadata.HasFlag(RelationMetadataFlags.Item))
             {
-                IRelationMetadata recursiveParent = this.GetRecursiveParent(context, metadata);
+                IRelationMetadata recursiveParent = this.GetRecursiveParent(metadata);
 
                 if (recursiveParent != null)
                 {

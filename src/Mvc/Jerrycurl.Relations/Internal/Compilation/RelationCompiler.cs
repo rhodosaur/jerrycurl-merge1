@@ -16,6 +16,7 @@ using Jerrycurl.Relations.Internal.Queues;
 using Jerrycurl.Relations.Internal.IO;
 using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Relations.Internal;
+using Jerrycurl.Reflection;
 
 namespace Jerrycurl.Relations.Internal.Compilation
 {
@@ -282,6 +283,13 @@ namespace Jerrycurl.Relations.Internal.Compilation
         private Expression GetSourceNameExpression()
             => Expression.Property(Expression.Property(Arguments.Source, nameof(IField2.Identity)), nameof(FieldIdentity.Name));
 
+        private Expression GetSourceValueExpression()
+        {
+            Expression data = Expression.Property(Arguments.Source, nameof(IField2.Data));
+
+            return Expression.Property(data, nameof(IFieldData.Value));
+        }
+
         private Expression GetMetadataExpression(FieldWriter writer)
             => Expression.ArrayAccess(Arguments.Metadata, Expression.Constant(writer.BufferIndex));
 
@@ -313,6 +321,18 @@ namespace Jerrycurl.Relations.Internal.Compilation
             }
         }
 
+        private Expression GetFieldDataExpression(FieldWriter writer, string queueProperty, string dataProperty)
+        {
+            if (writer.Queue != null)
+                return this.GetQueuePropertyExpression(writer.Queue, queueProperty);
+            else
+            {
+                Expression data = Expression.Property(Arguments.Source, nameof(IField2.Data));
+
+                return Expression.Property(data, dataProperty);
+            }
+        }
+
         private Expression GetNewFieldExpression(FieldWriter writer, Expression parentValue, Expression value)
         {
             if (parentValue == null)
@@ -321,30 +341,39 @@ namespace Jerrycurl.Relations.Internal.Compilation
             Type fieldType = typeof(Field2<,>).MakeGenericType(value.Type, parentValue.Type);
             Type dataType = typeof(FieldData<,>).MakeGenericType(value.Type, parentValue.Type);
 
-            ConstructorInfo newFieldInfo = fieldType.GetConstructors()[0];
-            ConstructorInfo newDataInfo = dataType.GetConstructors()[0];
+            ConstructorInfo newField = fieldType.GetConstructors()[0];
+            ConstructorInfo newData = dataType.GetConstructors()[0];
 
-            Expression relation = writer.Queue != null ? this.GetQueuePropertyExpression(writer.Queue, "List") : Expression.Constant(null);
-            Expression index = writer.Queue != null ? this.GetQueuePropertyExpression(writer.Queue, "Index") : Expression.Constant(0);
+            Expression relation = this.GetFieldDataExpression(writer, "List", nameof(IFieldData.Relation));
+            Expression index = this.GetFieldDataExpression(writer, "Index", nameof(IFieldData.Index));
+            Expression depth = this.GetFieldDataExpression(writer, "Depth", nameof(IFieldData.Depth));
             Expression binder = this.GetBinderExpression(writer);
             Expression isReadOnly = this.GetFieldIsReadOnlyExpression(writer);
             
             Expression name = this.GetFieldNameExpression(writer);
             Expression metadata = this.GetMetadataExpression(writer);
-            Expression data = Expression.New(newDataInfo, relation, index, parentValue, value, binder);
+            Expression data = Expression.New(newData, relation, index, depth, parentValue, value, binder);
 
-            return Expression.New(newFieldInfo, name, metadata, data, Arguments.Model, isReadOnly);
+            return Expression.New(newField, name, metadata, data, Arguments.Model, isReadOnly);
         }
 
         private Expression GetNewMissingExpression(FieldWriter writer)
         {
             Type fieldType = typeof(Missing2<>).MakeGenericType(writer.Metadata.Type);
-            ConstructorInfo ctor = fieldType.GetConstructors()[0];
+            Type dataType = typeof(FieldData);
+
+            ConstructorInfo newField = fieldType.GetConstructors()[0];
+            ConstructorInfo newData = dataType.GetConstructors().First(c => c.HasSignature(typeof(object), typeof(int), typeof(int)));
+
+            Expression relation = this.GetFieldDataExpression(writer, "List", nameof(IFieldData.Relation));
+            Expression index = this.GetFieldDataExpression(writer, "Index", nameof(IFieldData.Index));
+            Expression depth = this.GetFieldDataExpression(writer, "Depth", nameof(IFieldData.Depth));
 
             Expression name = this.GetFieldNameExpression(writer);
             Expression metadata = this.GetMetadataExpression(writer);
+            Expression data = Expression.New(newData, relation, index, depth);
 
-            return Expression.New(ctor, name, metadata, Arguments.Model);
+            return Expression.New(newField, name, metadata, data, Arguments.Model);
         }
 
         private Expression GetFieldIsReadOnlyExpression(FieldWriter writer)
