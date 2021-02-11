@@ -9,7 +9,7 @@ namespace Jerrycurl.Vendors.SqlServer.Test
 {
     public class TypeTests
     {
-        public void Test_Binding_OfCommonTypes()
+        public void Test_Type_Insert_Select()
         {
             Runnable table = new Runnable();
 
@@ -22,6 +22,7 @@ CREATE TABLE jerry_types(
         [Real] real NOT NULL,
         [Int] int NOT NULL,
         [Float] float NOT NULL,
+        [Decimal] decimal(20, 9),
         [DateTimeOffset] datetimeoffset NOT NULL,
         [Date] date NOT NULL,
         [DateTime] datetime NOT NULL,

@@ -9,7 +9,7 @@ namespace Jerrycurl.Vendors.Oracle.Test
 {
     public class TypeTests
     {
-        public void Test_Binding_OfCommonTypes()
+        public void Test_Type_Insert_Select()
         {
             Runnable drop1 = new Runnable();
             Runnable drop2 = new Runnable();

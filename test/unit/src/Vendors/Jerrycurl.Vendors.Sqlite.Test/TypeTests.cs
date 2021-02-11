@@ -9,7 +9,7 @@ namespace Jerrycurl.Vendors.Sqlite.Test
 {
     public class TypeTests
     {
-        public void Test_Binding_OfCommonTypes()
+        public void Test_Type_Insert_Select()
         {
             Runnable table = new Runnable();
 

@@ -42,7 +42,7 @@ namespace Jerrycurl.Vendors.SqlServer.Test.Models
                 Real = 100.0f,
                 Int = 100000,
                 Float = 100.0d,
-                Decimal = 343.345432m,
+                Decimal = 343.345432745m,
                 DateTimeOffset = new DateTimeOffset(1819, 5, 4, 3, 2, 1, TimeSpan.FromHours(3)),
                 Date = new DateTime(1819, 5, 4),
                 DateTime = new DateTime(1819, 5, 4, 3, 2, 1),
