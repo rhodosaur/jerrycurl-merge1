@@ -1,7 +1,7 @@
 ﻿using Jerrycurl.Mvc.Metadata.Annotations;
 using Jerrycurl.Mvc.Projections;
 
-namespace Jerrycurl.Mvc.Test.Conventions.Queries.Misc
+namespace Jerrycurl.Mvc.Test.Project.Queries.Misc
 {
     [Template("TemplateQuery2.cssql")]
     public class TemplatedQuery_cssql : ProcPage<object, object>

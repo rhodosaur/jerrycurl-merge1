@@ -1,6 +1,6 @@
 ﻿using Jerrycurl.Mvc.Projections;
 
-namespace Jerrycurl.Mvc.Test.Conventions.Queries.Crud
+namespace Jerrycurl.Mvc.Test.Project.Queries.Crud
 {
     public class Sql_cssql : ProcPage<string, object>
     {

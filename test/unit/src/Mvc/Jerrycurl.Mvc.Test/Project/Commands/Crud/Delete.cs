@@ -1,7 +1,7 @@
 ﻿using Jerrycurl.Mvc.Projections;
 using Jerrycurl.Mvc.Sql;
 
-namespace Jerrycurl.Mvc.Test.Conventions.Queries.Crud
+namespace Jerrycurl.Mvc.Test.Project.Queries.Crud
 {
     public class Delete_cssql : ProcPage<dynamic, object>
     {

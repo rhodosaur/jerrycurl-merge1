@@ -1,4 +1,4 @@
-﻿namespace Jerrycurl.Mvc.Test.Conventions.DependencyInjection.Services
+﻿namespace Jerrycurl.Mvc.Test.Project.DependencyInjection.Services
 {
     public class MyService
     {

@@ -1,4 +1,4 @@
-﻿namespace Jerrycurl.Mvc.Test.Conventions
+﻿namespace Jerrycurl.Mvc.Test.Project
 {
     public class TestDomain : IDomain
     {

@@ -1,6 +1,6 @@
 ﻿using Jerrycurl.Mvc.Projections;
 
-namespace Jerrycurl.Mvc.Test.Conventions.Queries.Shared
+namespace Jerrycurl.Mvc.Test.Project.Queries.Shared
 {
     public class TemplateQuery1_cssql : ProcPage<object, object>
     {

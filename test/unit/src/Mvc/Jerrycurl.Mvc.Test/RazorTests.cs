@@ -1,4 +1,4 @@
-﻿using Jerrycurl.Mvc.Test.Conventions.Models;
+﻿using Jerrycurl.Mvc.Test.Project.Models;
 using Jerrycurl.Test.Project.Models;
 using Shouldly;
 using System;

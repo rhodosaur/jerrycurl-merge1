@@ -1,8 +1,8 @@
 ﻿using Jerrycurl.Mvc.Metadata.Annotations;
 using Jerrycurl.Mvc.Projections;
-using Jerrycurl.Mvc.Test.Conventions.DependencyInjection.Services;
+using Jerrycurl.Mvc.Test.Project.DependencyInjection.Services;
 
-namespace Jerrycurl.Mvc.Test.Conventions.DependencyInjection.Queries
+namespace Jerrycurl.Mvc.Test.Project.DependencyInjection.Queries
 {
     public class DiQuery_cssql : ProcPage<object, object>
     {

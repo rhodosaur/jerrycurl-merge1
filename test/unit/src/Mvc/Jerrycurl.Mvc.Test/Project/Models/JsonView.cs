@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Jerrycurl.Data.Metadata.Annotations;
 
-namespace Jerrycurl.Mvc.Test.Conventions.Models
+namespace Jerrycurl.Mvc.Test.Project.Models
 {
     public class JsonView
     {

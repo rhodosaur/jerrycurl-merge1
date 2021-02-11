@@ -1,6 +1,6 @@
 ﻿using Jerrycurl.Mvc.Projections;
 
-namespace Jerrycurl.Mvc.Test.Conventions.Commands.Batching
+namespace Jerrycurl.Mvc.Test.Project.Commands.Batching
 {
     public class BatchedCommand_cssql : ProcPage<object, object>
     {

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Jerrycurl.Mvc.Test.Conventions.Accessors
+namespace Jerrycurl.Mvc.Test.Project.Accessors
 {
     public class MiscAccessor : Accessor
     {

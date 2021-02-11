@@ -1,4 +1,4 @@
-﻿namespace Jerrycurl.Mvc.Test.Conventions.Accessors
+﻿namespace Jerrycurl.Mvc.Test.Project.Accessors
 {
     public class LocatorAccessor : Accessor
     {

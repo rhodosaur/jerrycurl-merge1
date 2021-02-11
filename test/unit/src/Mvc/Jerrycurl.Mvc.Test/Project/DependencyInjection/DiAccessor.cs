@@ -1,4 +1,4 @@
-﻿namespace Jerrycurl.Mvc.Test.Conventions.DependencyInjection
+﻿namespace Jerrycurl.Mvc.Test.Project.DependencyInjection
 {
     public class DiAccessor : Accessor
     {

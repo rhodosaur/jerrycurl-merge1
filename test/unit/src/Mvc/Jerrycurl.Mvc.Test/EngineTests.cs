@@ -1,5 +1,5 @@
-﻿using Jerrycurl.Mvc.Test.Conventions.Accessors;
-using Jerrycurl.Mvc.Test.Conventions2.NoDomain;
+﻿using Jerrycurl.Mvc.Test.Project.Accessors;
+using Jerrycurl.Mvc.Test.Project2.NoDomain;
 using Shouldly;
 
 namespace Jerrycurl.Mvc.Test

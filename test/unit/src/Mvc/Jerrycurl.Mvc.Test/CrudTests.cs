@@ -1,5 +1,5 @@
-﻿using Jerrycurl.Mvc.Test.Conventions.Accessors;
-using Jerrycurl.Mvc.Test.Conventions.Models;
+﻿using Jerrycurl.Mvc.Test.Project.Accessors;
+using Jerrycurl.Mvc.Test.Project.Models;
 using Shouldly;
 using System.Collections.Generic;
 using System.Linq;

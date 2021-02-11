@@ -1,6 +1,6 @@
 ﻿using Jerrycurl.Mvc.Projections;
 
-namespace Jerrycurl.Mvc.Test.Conventions.Queries.Locator
+namespace Jerrycurl.Mvc.Test.Project.Queries.Locator
 {
     public class LocatorQuery2_cssql : ProcPage<object, object>
     {

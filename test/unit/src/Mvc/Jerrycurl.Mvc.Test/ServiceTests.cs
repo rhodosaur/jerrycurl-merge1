@@ -1,6 +1,6 @@
-﻿using Jerrycurl.Mvc.Test.Conventions.Accessors;
-using Jerrycurl.Mvc.Test.Conventions.DependencyInjection;
-using Jerrycurl.Mvc.Test.Conventions.DependencyInjection.Services;
+﻿using Jerrycurl.Mvc.Test.Project.Accessors;
+using Jerrycurl.Mvc.Test.Project.DependencyInjection;
+using Jerrycurl.Mvc.Test.Project.DependencyInjection.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using System;

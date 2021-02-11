@@ -1,4 +1,4 @@
-﻿namespace Jerrycurl.Mvc.Test.Conventions2.NoDomain
+﻿namespace Jerrycurl.Mvc.Test.Project2.NoDomain
 {
     public class NoDomainAccessor : Accessor
     {

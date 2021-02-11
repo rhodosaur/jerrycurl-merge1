@@ -1,6 +1,6 @@
 ﻿using Jerrycurl.Data.Metadata.Annotations;
 
-namespace Jerrycurl.Mvc.Test.Conventions.Models
+namespace Jerrycurl.Mvc.Test.Project.Models
 {
     [Table("CrudItem")]
     public class CrudItem

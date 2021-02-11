@@ -1,6 +1,6 @@
-﻿using Jerrycurl.Mvc.Test.Conventions.DependencyInjection.Services;
+﻿using Jerrycurl.Mvc.Test.Project.DependencyInjection.Services;
 
-namespace Jerrycurl.Mvc.Test.Conventions.DependencyInjection
+namespace Jerrycurl.Mvc.Test.Project.DependencyInjection
 {
     public class DiDomain : IDomain
     {
