@@ -58,8 +58,9 @@ class BlogView : Blog
 ```
 
 #### Command/query (view) layer
-To dive into the command/query layer, we use *projections* the models above, which power customized Razor SQL syntax. Each query or command is represented a a file with the `.cssql` extension, which ensures that they are included in the usual build process.
+The command/query layer is where you write your SQL statements, and like ASP.NET it supports Razor syntax through the `.cssql` file extension. Each file consists of a header where you can declare *projections* of your model, and a body where you combine those projections with your own plain SQL code.
 
+Razor SQL supports two special directives that represents the *input data* (`@model` directive) and *output data* (`@result` directive)
 They are placed in either the `Queries` or `Commands` folders based on whether they *read* or *write* data in the underlying database.
 ```sql
 -- Queries/Blogs/GetAll.cssql
