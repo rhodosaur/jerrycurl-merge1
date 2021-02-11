@@ -8,8 +8,13 @@ namespace Jerrycurl.Data.Queries.Internal.IO
 {
     public class Scope
     {
-        public List<ScopeVariable> Variables { get; set; }
-        public List<Scope> Body { get; set; }
+        internal List<ScopeVariable> Variables { get; set; }
+        internal List<Scope> Body { get; set; }
+
+        public void Add(Scope scope)
+        {
+            this.Body.Add(scope);
+        }
 
         public void Add(Expression expression)
         {
@@ -17,9 +22,11 @@ namespace Jerrycurl.Data.Queries.Internal.IO
                 this.Body.Add(new ExpressionScope(expression));
         }
 
-        public ParameterExpression Declare(string name, Type type = null)
+        public ParameterExpression Declare(string name, Type type)
         {
-            this.Variables.Add(new ScopeVariable(name, null));
+            this.Variables.Add(new ScopeVariable(name, type));
+
+            return null;
         }
 
         public ParameterExpression Var(string name)
@@ -27,7 +34,8 @@ namespace Jerrycurl.Data.Queries.Internal.IO
             return null;
         }
 
-
+        public Expression Assign(string name, Expression value)
+            => Expression.Assign(this.Var(name), value);
 
         public virtual Expression Build()
         {
