@@ -9,7 +9,7 @@ namespace Jerrycurl.Relations.V11.Internal.Parsing
     {
         public Node Source { get; set; }
         public IList<Node> Nodes { get; } = new List<Node>();
-        public IList<IRelationMetadata> Invalid { get; } = new List<IRelationMetadata>();
+        public IList<IRelationMetadata> Unreachable { get; } = new List<IRelationMetadata>();
 
         public Node FindNode(IRelationMetadata metadata) => this.FindNode(metadata?.Identity);
         public Node FindNode(MetadataIdentity identity) => this.Nodes.FirstOrDefault(n => n.Identity.Equals(identity));

@@ -35,20 +35,10 @@ namespace Jerrycurl.Relations.V11
 
         #region " Exception helpers "
 
-        private static string GetAttributeName(RelationAttribute attribute)
-        {
-            if (attribute == null)
-                return "<missing>";
-            else if (attribute.Schema.Notation.Comparer.Equals(attribute.Name, attribute.Schema.Notation.Model()))
-                return "<model>";
-            else
-                return attribute.Name;
-        }
-
         public static RelationException2 FromRelation(Type relationType, RelationHeader header, string message = null, Exception innerException = null)
         {
-            string attributeList = string.Join(", ", header.Attributes.Select(GetAttributeName));
-            string fullMessage = $"An error occurred in relation of type {relationType.GetSanitizedFullName()}({attributeList}).";
+            string attributeList = string.Join(", ", header.Attributes.Select(a => a.Metadata.Identity));
+            string fullMessage = $"Error relation of {relationType.GetSanitizedName()}({attributeList}).";
 
             if (message != null || innerException != null)
                 fullMessage += $" {message ?? innerException.Message}";

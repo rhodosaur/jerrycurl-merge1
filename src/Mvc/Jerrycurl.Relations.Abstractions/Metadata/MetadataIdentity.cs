@@ -56,7 +56,7 @@ namespace Jerrycurl.Relations.Metadata
             return hashCode.ToHashCode();
         }
 
-        public override string ToString() => this.Notation.Model().Equals(this.Name) ? "<model>" : this.Name;
+        public override string ToString() => $"\"{this.Name}\"";
 
         public MetadataIdentity Pop()
         {

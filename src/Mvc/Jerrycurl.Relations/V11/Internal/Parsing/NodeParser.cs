@@ -21,6 +21,12 @@ namespace Jerrycurl.Relations.V11.Internal.Parsing
             for (int i = 0; i < relationMetadata.Length; i++)
                 AddNode(tree, relationMetadata[i], index: i);
 
+            if (tree.Unreachable.Any())
+            {
+                string nodeNames = string.Join(", ", tree.Unreachable.Select(m => m.Identity));
+
+                throw RelationException2.FromRelation(header, $"Following attributes are unreachable from {source}: " + nodeNames);
+            }
             return tree;
         }
 
@@ -52,9 +58,7 @@ namespace Jerrycurl.Relations.V11.Internal.Parsing
             {
                 Node parentNode = tree.FindNode(metadata.Parent) ?? AddNode(tree, metadata.Parent);
 
-                if (parentNode == null)
-                    tree.Invalid.Add(metadata);
-                else
+                if (parentNode != null)
                 {
                     thisNode = new Node(metadata);
 
@@ -68,6 +72,8 @@ namespace Jerrycurl.Relations.V11.Internal.Parsing
                     if (thisNode.Metadata.HasFlag(RelationMetadataFlags.Recursive | RelationMetadataFlags.Item))
                         AddNode(tree, thisNode.Metadata.Recursor);
                 }
+                else if (index != null)
+                    tree.Unreachable.Add(metadata);
             }
 
             if (thisNode != null && index != null)
