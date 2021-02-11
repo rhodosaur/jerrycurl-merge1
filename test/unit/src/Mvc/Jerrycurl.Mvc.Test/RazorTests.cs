@@ -135,16 +135,16 @@ namespace Jerrycurl.Mvc.Test
 
         public void Test_Razor_Star()
         {
-            var runner = new Runner();
-            var run = new Runnable<object, List<XBlog>>();
+//            var runner = new Runner();
+//            var run = new Runnable<object, List<XBlog>>();
 
-            run.R(p => p.Star());
+//            run.R(p => p.Star());
 
-            var sql = runner.Sql(run);
+//            var sql = runner.Sql(run);
 
-            sql.ShouldBe(@"T0.""Id"" AS ""Item.Id"",
-T0.""Title"" AS ""Item.Title"",
-T0.""AuthorId"" AS ""Item.AuthorId""");
+//            sql.ShouldBe(@"T0.""Id"" AS ""Item.Id"",
+//T0.""Title"" AS ""Item.Title"",
+//T0.""AuthorId"" AS ""Item.AuthorId""");
         }
     }
 }
