@@ -274,15 +274,10 @@ namespace Jerrycurl.Data.Metadata
                             else
                                 rightRef.Flags |= ReferenceFlags.Many;
                         }
-                        else
+                        else if (this.HasOneAttribute(childMetadata))
                         {
-                            rightRef.Flags |= ReferenceFlags.One;
-
-                            if (this.HasOneAttribute(childMetadata))
-                            {
-                                leftRef.Flags &= ~ReferenceFlags.One;
-                                leftRef.Flags |= ReferenceFlags.Many;
-                            }
+                            leftRef.Flags &= ~ReferenceFlags.One;
+                            leftRef.Flags |= ReferenceFlags.Many;
                         }
 
                         if (childMetadata.Equals(parent))

@@ -139,7 +139,6 @@ namespace Jerrycurl.Relations.Metadata
             };
 
             metadata.Item = this.CreateItem(context, metadata);
-            metadata.Recursor = this.CreateRecursor(context, metadata);
             metadata.Properties = this.CreateLazy(() => this.CreateProperties(context, metadata));
             metadata.Annotations = this.CreateAnnotations(metadata).ToList();
 
@@ -229,7 +228,14 @@ namespace Jerrycurl.Relations.Metadata
         private RelationMetadata CreateItem(IMetadataBuilderContext context, RelationMetadata parent)
         {
             if (parent.MemberOf.HasFlag(RelationMetadataFlags.Recursive))
-                return null;
+            {
+                MemberInfo parentMember = parent.MemberOf.Parent?.Member;
+                MemberInfo thisMember = parent.Member;
+
+                if (parentMember != null && parentMember.Equals(thisMember))
+                    return null;
+            }
+                
 
             IRelationContract contract = this.GetContract(parent);
 
@@ -250,7 +256,6 @@ namespace Jerrycurl.Relations.Metadata
 
             metadata.MemberOf = metadata;
             metadata.Item = this.CreateItem(context, metadata);
-            metadata.Recursor = this.CreateRecursor(context, metadata);
             metadata.Properties = this.CreateLazy(() => this.CreateProperties(context, metadata));
             metadata.Annotations = this.CreateAnnotations(metadata).ToList();
 
