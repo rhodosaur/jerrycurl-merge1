@@ -28,7 +28,7 @@ namespace Jerrycurl.Data.V11.Language
             {
                 string paramName = $"{this.Prefix}P{this.innerMap.Count}";
 
-                this.innerMap.Add(field, param = new Parameter(paramName, null)); // should be field
+                this.innerMap.Add(field, param = new Parameter(paramName, field)); // should be field
                 this.Add(param);
             }
 
