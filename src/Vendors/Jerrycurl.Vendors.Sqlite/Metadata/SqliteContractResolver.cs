@@ -8,6 +8,7 @@ namespace Jerrycurl.Vendors.Sqlite.Metadata
     public class SqliteContractResolver : IBindingContractResolver
     {
         public int Priority => 1000;
+
         public IBindingCompositionContract GetCompositionContract(IBindingMetadata metadata) => null;
         public IBindingParameterContract GetParameterContract(IBindingMetadata metadata) => null;
         public IBindingHelperContract GetHelperContract(IBindingMetadata metadata) => null;

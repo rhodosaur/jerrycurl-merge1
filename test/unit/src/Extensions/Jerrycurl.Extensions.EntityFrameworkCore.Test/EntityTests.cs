@@ -13,6 +13,36 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Test
 {
     public class EntityTests
     {
+        public void Test_EfCore_Metadata_Inheritance()
+        {
+            Runnable<object, AddressView> table = new Runnable<object, AddressView>();
+
+            table.Sql("CREATE TABLE IF NOT EXISTS ");
+            table.R(p => p.TblName());
+            table.Sql("( ");
+            table.R(p => p.ColName(m => m.Id));
+            table.Sql(" );");
+            table.Sql("DELETE FROM ");
+            table.R(p => p.TblName());
+            table.Sql(";");
+            table.Sql("INSERT INTO ");
+            table.R(p => p.TblName());
+            table.Sql(" VALUES (12);");
+            table.Sql("SELECT ");
+            table.R(p => p.Col(m => m.Id));
+            table.Sql(" AS ");
+            table.R(p => p.Prop(m => m.Id));
+            table.Sql(" FROM ");
+            table.R(p => p.Tbl());
+            table.Sql(";");
+
+            IList<AddressView> addresses = Runner.Query(table);
+
+            addresses.ShouldNotBeNull();
+            addresses.Count.ShouldBe(1);
+            addresses[0].Id.ShouldBe(12);
+        }
+
         public void Test_EfCore_Query_OneToMany()
         {
             Runnable<object, Order> table = new Runnable<object, Order>();
