@@ -35,10 +35,10 @@ namespace Jerrycurl.Relations.V11
 
         #region " Exception helpers "
 
-        public static RelationException2 FromRelation(Type relationType, RelationHeader header, string message = null, Exception innerException = null)
+        public static RelationException2 From(RelationHeader header, string message = null, Exception innerException = null)
         {
             string attributeList = string.Join(", ", header.Attributes.Select(a => a.Metadata.Identity));
-            string fullMessage = $"Error relation of {relationType.GetSanitizedName()}({attributeList}).";
+            string fullMessage = $"Error in relation {header.Schema}({attributeList}).";
 
             if (message != null || innerException != null)
                 fullMessage += $" {message ?? innerException.Message}";
@@ -46,7 +46,13 @@ namespace Jerrycurl.Relations.V11
             return new RelationException2(fullMessage, innerException);
         }
 
-        public static RelationException2 FromRelation(RelationHeader header, string message = null, Exception innerException = null) => FromRelation(header.Schema.Model, header, message, innerException);
+        internal static RelationException2 Unreachable(MetadataIdentity source, RelationHeader header, IEnumerable<IRelationMetadata> attributes)
+        {
+            string attributeNames = string.Join(", ", attributes.Select(a => a.Identity));
+
+            return From(header, $"Following attributes are unreachable from {source}: {attributeNames}");
+        }
+            
         #endregion
     }
 }

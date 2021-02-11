@@ -31,13 +31,15 @@ namespace Jerrycurl.Relations.V11
 
         public void Commit() { }
         public void Rollback() { }
-        public void Update(object model) => throw BindingException.FromField(this, "Cannot update model field.");
+        public void Update(object model) => throw BindingException2.From(this, "Cannot update model field.");
 
+        public override string ToString() => this.Snapshot != null ? this.Snapshot.ToString() : "<null>";
+
+        #region " Equality "
         public bool Equals(IField2 other) => Equality.Combine(this, other, m => m.Identity, m => m.Snapshot);
         public override bool Equals(object obj) => (obj is IField2 other && this.Equals(other));
         public override int GetHashCode() => this.Identity.GetHashCode();
-
-        public override string ToString() => this.Snapshot != null ? this.Snapshot.ToString() : "<null>";
+        #endregion
 
     }
 }

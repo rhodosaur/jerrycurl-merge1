@@ -16,16 +16,20 @@ namespace Jerrycurl.Data.Queries
     {
         public ISchema Schema { get; }
 
-        AggregateBuffer IQueryBuffer.Aggregate => this.aggregate;
+        AggregateBuffer IQueryBuffer.Aggregate => null;
         ElasticArray IQueryBuffer.Slots => this.slots;
 
-        private readonly AggregateBuffer aggregate;
-        private readonly ElasticArray slots = new ElasticArray();
+        private ElasticArray slots;
 
         public ListBuffer(ISchemaStore schemas)
         {
             this.Schema = schemas?.GetSchema(typeof(IList<TItem>)) ?? throw new ArgumentNullException(nameof(schemas));
-            this.aggregate = new AggregateBuffer(this.Schema);
+            this.InitBuffer();
+        }
+
+        private void InitBuffer()
+        {
+            this.slots = new ElasticArray();
         }
 
         public void Insert(IDataReader dataReader)
@@ -45,6 +49,16 @@ namespace Jerrycurl.Data.Queries
                 writer.WriteOne(this, dataReader);
         }
 
-        public IList<TItem> Commit() => (IList<TItem>)this.slots[0] ?? new List<TItem>();
+        public IList<TItem> Commit()
+        {
+            try
+            {
+                return (IList<TItem>)this.slots[0] ?? new List<TItem>();
+            }
+            finally
+            {
+                this.InitBuffer();
+            }
+        }
     }
 }

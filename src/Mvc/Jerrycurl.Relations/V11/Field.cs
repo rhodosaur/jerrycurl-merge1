@@ -19,6 +19,8 @@ namespace Jerrycurl.Relations.V11
         public bool HasChanged { get; private set; }
         public object Snapshot { get; private set; }
 
+        IFieldData IField2.Data => this.Data;
+
         public Field2(string name, IRelationMetadata metadata, FieldData<TValue, TParent> data, IField2 model)
         {
             if (name == null)
@@ -30,7 +32,7 @@ namespace Jerrycurl.Relations.V11
             this.Identity = new FieldIdentity(metadata.Identity, name);
             this.Model = model ?? throw new ArgumentNullException(nameof(model));
             this.Metadata = metadata;
-            this.Data = data;
+            this.Data = data ?? throw new ArgumentNullException(nameof(data));
             this.Snapshot = data.Value;
         }
 
@@ -54,15 +56,15 @@ namespace Jerrycurl.Relations.V11
             }
             catch (NotIndexableException)
             {
-                throw BindingException.FromField(this, "Property has no indexer.");
+                throw BindingException2.From(this, "Property has no indexer.");
             }
             catch (NotWritableException)
             {
-                throw BindingException.FromField(this, "Property has no setter.");
+                throw BindingException2.From(this, "Property has no setter.");
             }
             catch (Exception ex)
             {
-                throw BindingException.FromField(this, innerException: ex);
+                throw BindingException2.From(this, innerException: ex);
             }
         }
 
@@ -75,12 +77,12 @@ namespace Jerrycurl.Relations.V11
             this.HasChanged = false;
         }
 
-        IFieldData IField2.Data => this.Data;
+        public override string ToString() => this.Snapshot != null ? this.Snapshot.ToString() : "<null>";
 
+        #region " Equality "
         public bool Equals(IField2 other) => Equality.Combine(this, other, m => m.Model, m => m.Identity);
         public override bool Equals(object obj) => (obj is IField2 other && this.Equals(other));
         public override int GetHashCode() => HashCode.Combine(this.Model, this.Identity);
-
-        public override string ToString() => this.Snapshot != null ? this.Snapshot.ToString() : "<null>";
+        #endregion
     }
 }

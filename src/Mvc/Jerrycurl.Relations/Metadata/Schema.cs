@@ -37,10 +37,6 @@ namespace Jerrycurl.Relations.Metadata
                 throw new InvalidOperationException("Metadata already added.");
         }
 
-        public TMetadata Lookup<TMetadata>()
-            where TMetadata : IMetadata
-            => this.Lookup<TMetadata>(this.Notation.Model());
-
         internal TMetadata GetMetadataFromCache<TMetadata>(string name)
             where TMetadata : IMetadata
         {
@@ -105,15 +101,15 @@ namespace Jerrycurl.Relations.Metadata
             }
         }
 
-        public bool Equals(ISchema other) => this.Model.Equals(other?.Model);
-        public override bool Equals(object obj) => (obj is ISchema other && this.Equals(other));
-        public override int GetHashCode() => this.Model.GetHashCode();
         public override string ToString() => this.Model.GetSanitizedName();
+
+        public TMetadata Lookup<TMetadata>() where TMetadata : IMetadata
+            => this.Lookup<TMetadata>(this.Notation.Model());
 
         public TMetadata Require<TMetadata>(string name)
             where TMetadata : IMetadata
         {
-            return this.Lookup<TMetadata>(name) ?? throw new MetadataException($"Metadata of type {typeof(TMetadata).Name} was not found for attribute '{name}'.");
+            return this.Lookup<TMetadata>(name) ?? throw MetadataException.NotFound<TMetadata>(name);
         }
 
         public TMetadata Require<TMetadata>() where TMetadata : IMetadata

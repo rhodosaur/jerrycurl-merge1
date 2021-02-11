@@ -19,13 +19,19 @@ namespace Jerrycurl.Data.Queries
         AggregateBuffer IQueryBuffer.Aggregate => this.aggregate;
         ElasticArray IQueryBuffer.Slots => this.slots;
 
-        private readonly AggregateBuffer aggregate;
-        private readonly ElasticArray slots = new ElasticArray();
+        private AggregateBuffer aggregate;
+        private ElasticArray slots;
 
         public AggregateBuffer(ISchemaStore schemas)
         {
             this.Schema = schemas?.GetSchema(typeof(IList<T>)) ?? throw new ArgumentNullException(nameof(schemas));
+            this.InitBuffer();
+        }
+
+        private void InitBuffer()
+        {
             this.aggregate = new AggregateBuffer(this.Schema);
+            this.slots = new ElasticArray();
         }
 
         public void Insert(IDataReader dataReader)
@@ -47,10 +53,17 @@ namespace Jerrycurl.Data.Queries
 
         public T Commit()
         {
-            QueryCacheKey<AggregateName> cacheKey = this.aggregate.ToCacheKey();
-            AggregateReader<T> reader = QueryCache<T>.GetAggregateReader(cacheKey);
+            try
+            {
+                QueryCacheKey<AggregateName> cacheKey = this.aggregate.ToCacheKey();
+                AggregateReader<T> reader = QueryCache<T>.GetAggregateReader(cacheKey);
 
-            return reader(this);
+                return reader(this);
+            }
+            finally
+            {
+                this.InitBuffer();
+            }
         }
     }
 }

@@ -22,11 +22,8 @@ namespace Jerrycurl.Relations.V11.Internal.Parsing
                 AddNode(tree, relationMetadata[i], index: i);
 
             if (tree.Unreachable.Any())
-            {
-                string nodeNames = string.Join(", ", tree.Unreachable.Select(m => m.Identity));
+                throw RelationException2.Unreachable(source, header, tree.Unreachable);
 
-                throw RelationException2.FromRelation(header, $"Following attributes are unreachable from {source}: " + nodeNames);
-            }
             return tree;
         }
 

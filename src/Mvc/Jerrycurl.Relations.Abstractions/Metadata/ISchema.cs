@@ -2,7 +2,7 @@
 
 namespace Jerrycurl.Relations.Metadata
 {
-    public interface ISchema : IEquatable<ISchema>
+    public interface ISchema
     {
         Type Model { get; }
         IMetadataNotation Notation { get; }
