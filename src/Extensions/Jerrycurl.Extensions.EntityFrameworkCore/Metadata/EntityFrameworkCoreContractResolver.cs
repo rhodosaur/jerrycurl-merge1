@@ -78,7 +78,7 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Metadata
         {
             IProperty property = this.FindProperty(metadata.Relation);
 
-            if (property != null && property.DeclaringType.ClrType == metadata.Relation.Member?.DeclaringType)
+            if (property != null && metadata.Relation.Member != null && property.DeclaringType.ClrType.IsAssignableFrom(metadata.Relation.Member.DeclaringType))
                 return this.GetColumnName(property);
 
             return null;
