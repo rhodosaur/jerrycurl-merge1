@@ -2,12 +2,12 @@
 
 namespace Jerrycurl.Relations.Internal.IO
 {
-    internal class FieldWriter : NodeWriter
+    internal class CacheWriter : NodeWriter
     {
         public int BufferIndex { get; set; }
-        public int? CacheIndex { get; set; }
+        public int CacheIndex { get; set; }
 
-        public FieldWriter(Node node)
+        public CacheWriter(Node node)
             : base(node)
         {
             

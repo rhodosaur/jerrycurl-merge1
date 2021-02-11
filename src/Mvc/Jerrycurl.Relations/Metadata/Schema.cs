@@ -109,7 +109,7 @@ namespace Jerrycurl.Relations.Metadata
         public TMetadata Require<TMetadata>(string name)
             where TMetadata : IMetadata
         {
-            return this.Lookup<TMetadata>(name) ?? throw MetadataException.NotFound<TMetadata>(name);
+            return this.Lookup<TMetadata>(name) ?? throw MetadataException.NotFound<TMetadata>(this, name);
         }
 
         public TMetadata Require<TMetadata>() where TMetadata : IMetadata

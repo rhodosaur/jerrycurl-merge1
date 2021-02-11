@@ -102,12 +102,24 @@ namespace Jerrycurl.Relations.Internal.IO
 
                 reader.Writers.Add(fieldWriter);
                 tree.Fields.Add(fieldWriter);
+
+                if (queue.Type == RelationQueueType.Cached)
+                {
+                    CacheWriter cacheWriter = new CacheWriter(node)
+                    {
+                        BufferIndex = fieldWriter.BufferIndex,
+                        CacheIndex = queue.Cache.Count,
+                        Queue = queue,
+                    };
+
+                    queue.Cache.Add(cacheWriter);
+                }
             }
 
             if (node.Item != null || node.Metadata.HasFlag(RelationMetadataFlags.List | RelationMetadataFlags.Recursive))
             {
-                QueueIndex nextQueue = this.CreateIndex(node, tree);
                 QueueIndex prevQueue = tree.Queues.LastOrDefault()?.Index;
+                QueueIndex nextQueue = this.CreateIndex(node, tree);
 
                 QueueWriter writer = new QueueWriter(node)
                 {
@@ -119,7 +131,9 @@ namespace Jerrycurl.Relations.Internal.IO
                 if ((node.Item ?? node).Metadata.HasFlag(RelationMetadataFlags.Recursive))
                     nextQueue.Type = RelationQueueType.Recursive;
                 else if (prevQueue != null && !prevQueue.List.Identity.Equals(nextQueue.List.MemberOf.Parent?.Identity))
-                    nextQueue.Type = RelationQueueType.Cartesian;
+                    nextQueue.Type = RelationQueueType.Cached;
+                else if (prevQueue != null && prevQueue.Type == RelationQueueType.Cached)
+                    nextQueue.Type = RelationQueueType.Cached;
 
                 reader.Writers.Add(writer);
 

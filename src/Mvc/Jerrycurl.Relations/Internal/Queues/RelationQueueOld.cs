@@ -8,6 +8,7 @@ namespace Jerrycurl.Relations.Internal.Queues
         where TList : IEnumerable<TItem>
     {
         private IEnumerator<TItem> innerEnumerator;
+        private IEnumerator<IField[]> cacheEnumerator;
 
         public TList List => this.CurrentItem.List;
         public TItem Current => this.innerEnumerator.Current;
@@ -29,17 +30,21 @@ namespace Jerrycurl.Relations.Internal.Queues
 
         public void Enqueue(RelationQueueItem<TList> item)
         {
-            if (this.Type == RelationQueueType.Cartesian)
+            if (this.Type == RelationQueueType.Cached)
             {
                 this.innerCache.Clear();
                 this.innerQueue.Clear();
                 this.usingCache = false;
             }
+            else if (this.Type == RelationQueueType.Recursive)
+            {
+                this.innerCache.Add(item);
+            }
 
-            if (!this.usingCache)
+            if (!this.usingCache && this.Type != RelationQueueType.Recursive)
                 this.innerQueue.Enqueue(item);
 
-            if (this.innerEnumerator == null || this.Type == RelationQueueType.Cartesian)
+            if (this.innerEnumerator == null || this.Type == RelationQueueType.Cached)
                 this.Start();
         }
 
@@ -71,10 +76,18 @@ namespace Jerrycurl.Relations.Internal.Queues
                 this.Dequeue();
             }
 
-            if (this.Type == RelationQueueType.Cartesian)
+            if (this.Type == RelationQueueType.Cached)
                 this.EnqueueCached();
+            else if (this.Type == RelationQueueType.Recursive)
+                this.EnqueueRecursive();
 
             return false;
+        }
+        private void EnqueueRecursive()
+        {
+            this.innerQueue = new Queue<RelationQueueItem<TList>>(this.innerCache);
+            this.innerCache.Clear();
+            this.Start();
         }
 
         private void EnqueueCached()
@@ -88,7 +101,7 @@ namespace Jerrycurl.Relations.Internal.Queues
         {
             RelationQueueItem<TList> dequeued = this.innerQueue.Dequeue();
 
-            if (!this.usingCache && this.Type == RelationQueueType.Cartesian)
+            if (!this.usingCache && this.Type == RelationQueueType.Cached)
                 this.innerCache.Add(dequeued);
 
             this.Start();

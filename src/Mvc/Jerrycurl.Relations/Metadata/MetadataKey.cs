@@ -4,7 +4,7 @@ using Jerrycurl.Diagnostics;
 using Jerrycurl.Relations.Metadata;
 using HashCode = Jerrycurl.Diagnostics.HashCode;
 
-namespace Jerrycurl.Relations.Internal
+namespace Jerrycurl.Relations.Metadata
 {
     internal class MetadataKey : IEquatable<MetadataKey>
     {

@@ -194,8 +194,8 @@ namespace Jerrycurl.Relations.Metadata
             {
                 metadata.Item.Recursor = this.CreateRecursor(context, metadata.Item);
 
-                if (metadata.Recursor != null)
-                    metadata.Flags |= RelationMetadataFlags.Recursive;
+                if (metadata.Item.Recursor != null)
+                    metadata.Item.Flags |= RelationMetadataFlags.Recursive;
             }
         }
 

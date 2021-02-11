@@ -29,7 +29,7 @@ namespace Jerrycurl.Relations.Metadata
 
         }
 
-        internal static MetadataException NotFound<TMetadata>(string attributeName) where TMetadata : IMetadata
-            => new MetadataException($"Metadata of type {typeof(TMetadata).Name} was not found for attribute '{attributeName}'.");
+        internal static MetadataException NotFound<TMetadata>(ISchema schema, string attributeName) where TMetadata : IMetadata
+            => new MetadataException($"{typeof(TMetadata).Name} not found for {schema}(\"{attributeName}\").");
     }
 }

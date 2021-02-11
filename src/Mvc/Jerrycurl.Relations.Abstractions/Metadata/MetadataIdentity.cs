@@ -5,7 +5,6 @@ using HashCode = Jerrycurl.Diagnostics.HashCode;
 
 namespace Jerrycurl.Relations.Metadata
 {
-    [DebuggerDisplay("{Schema.ToString(),nq}({Name,nq})")]
     public sealed class MetadataIdentity : IEquatable<MetadataIdentity>
     {
         public string Name { get; }
@@ -30,7 +29,7 @@ namespace Jerrycurl.Relations.Metadata
         public TMetadata Require<TMetadata>() where TMetadata : IMetadata
             => this.Schema.Require<TMetadata>(this.Name);
 
-        public override string ToString() => $"\"{this.Name}\"";
+        public override string ToString() => $"{this.Schema}(\"{this.Name}\")";
 
         public MetadataIdentity Pop()
         {

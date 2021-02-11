@@ -83,8 +83,12 @@ namespace Jerrycurl.Relations.Internal.Compilation
             Expression assignVariable = Expression.Assign(reader.Index.Variable, queueIndex);
             Expression parentValue = this.GetQueuePropertyExpression(reader.Index, "List");
             Expression readWrite = this.GetReadWriteExpression(reader, parentValue);
+            Expression writeBody = this.GetBlockOrExpression(new[] { assignVariable, readWrite }, new[] { reader.Index.Variable });
 
-            return this.GetBlockOrExpression(new[] { assignVariable, readWrite }, new[] { reader.Index.Variable });
+            if (reader.Index.Type == RelationQueueType.Cached && reader.Index.Cache.Any())
+                return this.GetCacheExpression(reader.Index, writeBody);
+
+            return writeBody;
         }
 
         public Expression GetReadWriteExpression(NodeReader reader, Expression parentValue)
@@ -177,6 +181,43 @@ namespace Jerrycurl.Relations.Internal.Compilation
         }
         private Expression GetQueuePropertyExpression(QueueIndex queue, string propertyName)
             => Expression.Property(queue.Variable, propertyName);
+        #endregion
+
+        #region " Cache "
+        private Expression GetCacheExpression(QueueIndex queue, Expression nonCachedWrite)
+        {
+            Expression cache = this.GetQueuePropertyExpression(queue, "Cache");
+            Expression isNull = Expression.ReferenceEqual(cache, Expression.Constant(null));
+
+            List<Expression> writeBody = new List<Expression>() { nonCachedWrite };
+            List<Expression> readBody = new List<Expression>();
+
+            foreach (CacheWriter writer in queue.Cache)
+            {
+                writeBody.Add(this.GetCacheWriteExpression(writer));
+                readBody.Add(this.GetCacheWriteExpression(writer));
+            }
+
+            return Expression.IfThenElse(isNull, this.GetBlockOrExpression(writeBody), this.GetBlockOrExpression(readBody));
+        }
+
+        private Expression GetCacheWriteExpression(CacheWriter writer)
+        {
+            Expression cache = this.GetQueuePropertyExpression(writer.Queue, "Cache");
+            Expression cacheIndex = Expression.ArrayAccess(cache, Expression.Constant(writer.CacheIndex));
+            Expression bufferIndex = Expression.ArrayAccess(Arguments.Fields, Expression.Constant(writer.BufferIndex));
+
+            return Expression.Assign(cacheIndex, bufferIndex);
+        }
+
+        private Expression GetCacheReadExpression(CacheWriter writer)
+        {
+            Expression cache = this.GetQueuePropertyExpression(writer.Queue, "Cache");
+            Expression cacheIndex = Expression.ArrayAccess(cache, Expression.Constant(writer.CacheIndex));
+            Expression bufferIndex = Expression.ArrayAccess(Arguments.Fields, Expression.Constant(writer.BufferIndex));
+
+            return Expression.Assign(bufferIndex, cacheIndex);
+        }
         #endregion
 
         #region " Writers "
