@@ -33,7 +33,7 @@ namespace Jerrycurl.Data.Test
                 ( 3, 2, "Post 2.1" ),
             };
 
-            var buffer = new ListBuffer<Blog>(store);
+            var buffer = new QueryBuffer(store.Describe<IList<Blog>>(), QueryType.List);
 
             buffer.Insert(data1,
                 ("Item.Item1", "Item.Id2"),
@@ -46,7 +46,7 @@ namespace Jerrycurl.Data.Test
                 ("Item.Item3", "Item.Posts.Item.Headline")
             );
 
-            var result = buffer.Commit();
+            var result = buffer.Commit<IList<Blog>>();
 
             result.Count.ShouldBe(2);
 
@@ -81,7 +81,7 @@ namespace Jerrycurl.Data.Test
                 ( 3, 2, "Post 2.1" ),
             };
 
-            var buffer = new ListBuffer<Blog>(store);
+            var buffer = new QueryBuffer(store.Describe<IList<Blog>>(), QueryType.List);
 
             await buffer.InsertAsync(data1,
                 ("Item.Item1", "Item.Id2"),
@@ -94,7 +94,7 @@ namespace Jerrycurl.Data.Test
                 ("Item.Item3", "Item.Posts.Item.Headline")
             );
 
-            var result = buffer.Commit();
+            var result = buffer.Commit<IList<Blog>>();
 
             result.Count.ShouldBe(2);
 
@@ -135,7 +135,7 @@ namespace Jerrycurl.Data.Test
                 ( 4, 3, "Comment 2.1.1" ),
             };
 
-            var buffer = new ListBuffer<Blog>(store);
+            var buffer = new QueryBuffer(store.Describe<IList<Blog>>(), QueryType.List);
 
             await buffer.InsertAsync(data1,
                 ("Item.Item1", "Item.Id"),
@@ -154,7 +154,7 @@ namespace Jerrycurl.Data.Test
                 ("Item.Item3", "Item.Posts.Item.Comments.Item.Comment")
             );
 
-            var result = buffer.Commit();
+            var result = buffer.Commit<IList<Blog>>();
 
             result.Count.ShouldBe(2);
 
@@ -208,7 +208,7 @@ namespace Jerrycurl.Data.Test
                 ( 4, 3, "Comment 2.1.1" ),
             };
 
-            var buffer = new ListBuffer<Blog>(store);
+            var buffer = new QueryBuffer(store.Describe<IList<Blog>>(), QueryType.List);
 
             buffer.Insert(data1,
                 ("Item.Item1", "Item.Id"),
@@ -227,7 +227,7 @@ namespace Jerrycurl.Data.Test
                 ("Item.Item3", "Item.Posts.Item.Comments.Item.Comment")
             );
 
-            var result = buffer.Commit();
+            var result = buffer.Commit<IList<Blog>>();
 
             result.Count.ShouldBe(2);
 
@@ -268,14 +268,14 @@ namespace Jerrycurl.Data.Test
                 ( 10,   "Blog 2" )
             };
 
-            var buffer = new ListBuffer<Blog>(store);
+            var buffer = new QueryBuffer(store.Describe<IList<Blog>>(), QueryType.List);
 
             buffer.Insert(data,
                 ("Item.Item1", "Item.Id2"),
                 ("Item.Item2", "Item.Title")
             );
 
-            var result = buffer.Commit();
+            var result = buffer.Commit<IList<Blog>>();
 
             result.Count.ShouldBe(2);
             result[0].Id2.ShouldBe(0);
@@ -293,14 +293,14 @@ namespace Jerrycurl.Data.Test
                 ( 10,   "Blog 2" )
             };
 
-            var buffer = new ListBuffer<Blog>(store);
+            var buffer = new QueryBuffer(store.Describe<IList<Blog>>(), QueryType.List);
 
             await buffer.InsertAsync(data,
                 ("Item.Item1", "Item.Id2"),
                 ("Item.Item2", "Item.Title")
             );
 
-            var result = buffer.Commit();
+            var result = buffer.Commit<IList<Blog>>();
 
             result.Count.ShouldBe(2);
             result[0].Id2.ShouldBe(0);
@@ -318,14 +318,14 @@ namespace Jerrycurl.Data.Test
                 ( 10,   "Blog 2" )
             };
 
-            var buffer = new ListBuffer<Blog>(store);
+            var buffer = new QueryBuffer(store.Describe<IList<Blog>>(), QueryType.List);
 
             buffer.Insert(data,
                 ("Item.Item1", "Item.Id"),
                 ("Item.Item2", "Item.Title")
             );
 
-            var result = buffer.Commit();
+            var result = buffer.Commit<IList<Blog>>();
 
             result.Count.ShouldBe(1);
             result[0].Id.ShouldBe(10);
@@ -341,14 +341,14 @@ namespace Jerrycurl.Data.Test
                 ( 10,   "Blog 2" )
             };
 
-            var buffer = new ListBuffer<Blog>(store);
+            var buffer = new QueryBuffer(store.Describe<IList<Blog>>(), QueryType.List);
 
             await buffer.InsertAsync(data,
                 ("Item.Item1", "Item.Id"),
                 ("Item.Item2", "Item.Title")
             );
 
-            var result = buffer.Commit();
+            var result = buffer.Commit<IList<Blog>>();
 
             result.Count.ShouldBe(1);
             result[0].Id.ShouldBe(10);

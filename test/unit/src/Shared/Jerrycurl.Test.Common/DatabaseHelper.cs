@@ -8,6 +8,7 @@ using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Test.Profiling;
 using Jerrycurl.Vendors.Sqlite.Metadata;
 using Microsoft.Data.Sqlite;
+using Jerrycurl.Data.Language;
 using System;
 using System.Collections.Generic;
 using System.Linq;

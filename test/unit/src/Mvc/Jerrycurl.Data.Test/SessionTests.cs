@@ -8,6 +8,7 @@ using Jerrycurl.Test;
 using System.Data;
 using System.Threading;
 using Jerrycurl.Data.Sessions;
+using Jerrycurl.Data.Language;
 
 namespace Jerrycurl.Data.Test
 {
