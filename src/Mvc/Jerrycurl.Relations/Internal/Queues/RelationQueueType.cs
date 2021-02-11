@@ -1,6 +1,6 @@
 ﻿namespace Jerrycurl.Relations.Internal.Queues
 {
-    internal enum RelationQueueType
+    public enum RelationQueueType
     {
         List = 0,
         Recursive = 1,

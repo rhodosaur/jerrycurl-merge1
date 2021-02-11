@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Relations.Internal.Queues
 {
-    internal class RelationQueueNew<TList, TItem> : IRelationQueue
+    public class RelationQueueNew<TList, TItem> : IRelationQueue
         where TList : IEnumerable<TItem>
     {
         private IEnumerator<TItem> innerEnumerator;
@@ -18,8 +19,7 @@ namespace Jerrycurl.Relations.Internal.Queues
         public IRelationMetadata Metadata { get; }
 
         private Queue<RelationQueueItem<TList>> innerQueue = new Queue<RelationQueueItem<TList>>();
-        private readonly List<RelationQueueItem<TList>> innerCache = new List<RelationQueueItem<TList>>();
-        private readonly List<RelationQueueItem<TList>> recursiveCache = new List<RelationQueueItem<TList>>();
+        private Queue<RelationQueueItem<TList>> innerQueue2 = new Queue<RelationQueueItem<TList>>();
 
         public RelationQueueNew(IRelationMetadata metadata, RelationQueueType queueType)
         {
@@ -45,15 +45,10 @@ namespace Jerrycurl.Relations.Internal.Queues
                     this.innerQueue.Enqueue(item);
                     break;
                 case RelationQueueType.Recursive:
-                    {
-                        if (this.innerEnumerator != null)
-                            this.recursiveCache.Add(item);
-                        else
-                            this.innerQueue.Enqueue(item);
-                    }
+                    this.innerQueue.Enqueue(item);                    
                     break;
             }
-            
+
             this.Start();
         }
 
@@ -81,9 +76,6 @@ namespace Jerrycurl.Relations.Internal.Queues
             if (this.ReadItem())
                 return true;
 
-            this.Dequeue();
-            //this.EnqueueCached();
-
             return false;
         }
 
@@ -91,8 +83,8 @@ namespace Jerrycurl.Relations.Internal.Queues
         {
             if (this.Type == RelationQueueType.Recursive)
             {
-                this.innerQueue = new Queue<RelationQueueItem<TList>>(this.innerCache);
-                this.innerCache.Clear();
+                this.innerQueue = new Queue<RelationQueueItem<TList>>(this.innerQueue2);
+                this.innerQueue2.Clear();
                 this.Depth++;
 
                 this.Start();
@@ -101,9 +93,9 @@ namespace Jerrycurl.Relations.Internal.Queues
 
         private bool ReadItem()
         {
-            if (this.innerEnumerator == null)
-                return false;
-            else if (this.innerEnumerator.MoveNext())
+            this.Start();
+
+            if (this.innerEnumerator != null && this.innerEnumerator.MoveNext())
             {
                 this.CurrentItem.Increment();
 
@@ -119,6 +111,7 @@ namespace Jerrycurl.Relations.Internal.Queues
         {
             this.innerEnumerator?.Dispose();
             this.innerEnumerator = null;
+            this.CurrentItem = null;
         }
 
 

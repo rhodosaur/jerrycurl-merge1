@@ -3,7 +3,7 @@ using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Relations.Internal.Queues
 {
-    internal class NameBuffer
+    public class NameBuffer
     {
         private readonly StringBuilder buffer;
         private readonly DotNotation notation;
