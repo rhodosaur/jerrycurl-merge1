@@ -13,6 +13,7 @@ namespace Jerrycurl.Data.Queries.Internal.IO.Targets
         public int Index { get; set; }
         public ParameterExpression Variable { get; set; }
         public MethodInfo AddMethod { get; set; }
-        public ConstructorInfo NewList { get; set; }
+        public NewExpression NewList { get; set; }
+        public NewExpression NewTarget { get; set; }
     }
 }

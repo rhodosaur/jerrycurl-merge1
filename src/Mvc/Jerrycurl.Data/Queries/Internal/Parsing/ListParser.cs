@@ -72,22 +72,6 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             }
         }
 
-        private void CreateTargetWriters(ListResult result, NodeTree nodeTree)
-        {
-            foreach (Node node in nodeTree.Items)
-            {
-                TargetWriter writer = new TargetWriter()
-                {
-                    Source = this.CreateReader(result, node),
-                };
-
-                this.AddPrimaryKey(writer);
-                this.AddChildKey(result, writer);
-
-                result.Writers.Add(writer);
-            }
-        }
-
         private void CreateLists(ListResult result, NodeTree nodeTree)
         {
             foreach (Node node in nodeTree.Items)
@@ -125,36 +109,6 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 writer.PrimaryKey = newReader.PrimaryKey;
                 newReader.PrimaryKey = null;
             }
-        }
-
-        private ListTarget2 GetListTarget(ListResult result, BaseReader source, KeyReader joinKey)
-        {
-            int bufferIndex = this.Buffer.GetListIndex(source.Identity);
-
-            ListTarget2 target = result.Targets2.FirstOrDefault(t => t.Index == bufferIndex);
-
-            if (target != null)
-                return target;
-
-            target = new ListTarget2()
-            {
-
-            };
-
-            return target;
-        }
-
-        private JoinTarget2 GetJoinTarget(ListResult result, BaseReader source, KeyReader joinKey)
-        {
-            ListTarget2 list = this.GetListTarget(result, source, joinKey);
-
-            return new JoinTarget2()
-            {
-                Key = joinKey,
-                Buffer = Expression.Variable(typeof(ElasticArray)),
-                Index = this.Buffer.GetChildIndex(joinKey.Reference),
-                List = list,
-            };
         }
 
         private BaseTarget CreateTarget(ListResult result, BaseReader source, KeyReader joinKey)
@@ -262,20 +216,6 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
                 yield return parentType;
             }
-        }
-
-        private void AddTargets(ListResult result, ListWriter writer)
-        {
-            IList<IReference> references = this.GetChildReferences(writer.Source.Metadata).ToList();
-            KeyReader childKey = references.Select(r => this.FindChildKey(writer.Source, r)).NotNull().FirstOrDefault();
-
-            if (childKey != null)
-                this.InitializeKey(childKey, throwOnInvalid: true);
-
-            if (childKey == null && this.RequiresReference(writer))
-                throw new InvalidOperationException();
-
-            writer.Target = this.CreateTarget(result, writer.Source, childKey);
         }
 
         private void AddChildKey(ListResult result, ListWriter writer)

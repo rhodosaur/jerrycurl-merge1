@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Collections;
+using System.Linq.Expressions;
 using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Queries.Internal.IO.Readers;
 using Jerrycurl.Data.Queries.Internal.IO.Targets;
