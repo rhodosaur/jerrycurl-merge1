@@ -11,6 +11,7 @@ namespace Jerrycurl.Relations
     {
         public ISchema Schema { get; }
         public IReadOnlyList<RelationAttribute> Attributes { get; }
+        public int Degree => this.Attributes.Count;
 
         public RelationHeader(ISchema schema, IReadOnlyList<RelationAttribute> attributes)
         {
@@ -25,9 +26,9 @@ namespace Jerrycurl.Relations
             for (int i = 0; i < this.Attributes.Count; i++)
             {
                 if (this.Attributes[i] == null)
-                    throw new InvalidOperationException($"Attribute at index {i} is null.");
+                    throw RelationException.AttributeCannotBeNull(this.Schema, i);
                 else if (!this.Schema.Equals(this.Attributes[i].Schema))
-                    throw new InvalidOperationException($"Attribute at index {i} does not belong to the defining schema.");
+                    throw RelationException.AttributeDoesNotBelongToSchema(this.Schema, this.Attributes[i], i);
             }
         }
 

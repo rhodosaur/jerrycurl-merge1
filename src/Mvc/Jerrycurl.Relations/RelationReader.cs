@@ -9,45 +9,35 @@ namespace Jerrycurl.Relations
 {
     public class RelationReader : IRelationReader
     {
-        public IRelation Relation => this.enumerator.Current;
-        public int Degree { get; private set; }
-        internal RelationBuffer Buffer { get; private set; }
+        public IRelation Relation { get; }
+        public int Degree => this.Relation.Header.Degree;
 
         int ITuple.Degree => this.Degree;
         int IReadOnlyCollection<IField>.Count => this.Degree;
 
-        private readonly IEnumerator<IRelation> enumerator;
         private int currentIndex;
         private Func<bool> readFactory;
+        private RelationBuffer buffer;
+        private bool hasCompleted;
         
-        public RelationReader(IEnumerable<IRelation> relations)
-        {
-            this.enumerator = relations?.GetEnumerator() ?? throw new ArgumentNullException(nameof(relations));
-            this.NextResult();
-        }
-
         public RelationReader(IRelation relation)
-            : this(new[] { relation })
         {
-            
+            this.Relation = relation ?? throw new ArgumentNullException(nameof(relation));
+            this.readFactory = this.ReadFirst;
         }
 
-        public bool NextResult()
+        internal RelationBuffer Buffer
         {
-            if (this.enumerator.MoveNext())
+            get
             {
-                this.currentIndex = 0;
-                this.readFactory = this.ReadFirst;
-                this.Degree = this.enumerator.Current.Header.Attributes.Count;
+                if (this.hasCompleted)
+                    throw RelationException.NoDataAvailable(this.Relation.Header);
+                else if (this.buffer == null)
+                    throw RelationException.NoDataAvailableCallRead(this.Relation.Header);
 
-                return true;
+                return this.buffer;
             }
-
-            this.readFactory = this.ReadEnd;
-
-            return false;
         }
-
         public void CopyTo(IField[] target, int sourceIndex, int targetIndex, int length)
             => Array.Copy(this.Buffer.Fields, sourceIndex, target, targetIndex, length);
 
@@ -60,7 +50,7 @@ namespace Jerrycurl.Relations
             get
             {
                 if (index < 0 || index >= this.Degree)
-                    throw new IndexOutOfRangeException();
+                    throw RelationException.IndexOutOfRange(this.Relation.Header, index);
 
                 return this.Buffer.Fields[index];
             }
@@ -68,29 +58,24 @@ namespace Jerrycurl.Relations
 
         public void Dispose()
         {
-            this.enumerator.Dispose();
-
-            if (this.Buffer == null)
+            if (this.buffer == null)
                 return;
 
-            for (int i = 0; i < this.Buffer.Queues.Length; i++)
+            for (int i = 0; i < this.buffer.Queues.Length; i++)
             {
                 try
                 {
-                    if (this.Buffer.Queues[i] is IDisposable disposable)
-                        disposable.Dispose();
-
-                    this.Buffer.Queues[i] = null;
+                    this.buffer.Queues[i]?.Dispose();
+                    this.buffer.Queues[i] = null;
                 }
                 catch { }
             }
         }
 
-        private bool ReadEnd() => false;
         private bool ReadFirst()
         {
-            this.Buffer = RelationCache.CreateBuffer(this.Relation);
-            this.Buffer.Writer.Initializer(this.Buffer);
+            this.buffer = RelationCache.CreateBuffer(this.Relation);
+            this.buffer.Writer.Initializer(this.buffer);
 
             this.currentIndex = 0;
 
@@ -120,6 +105,8 @@ namespace Jerrycurl.Relations
                     this.currentIndex--;
             }
 
+            this.hasCompleted = true;
+
             return false;
         }
 
@@ -133,12 +120,12 @@ namespace Jerrycurl.Relations
             }
             catch (Exception ex)
             {
-                throw RelationException.CannotForwardQueue(this.Relation, queue, ex);
+                throw RelationException.CannotForwardQueue(this.Relation, queue.Metadata.Identity, ex);
             }
         }
 
         public IEnumerator<IField> GetEnumerator()
-            => ((IEnumerable<IField>)this.Buffer?.Fields).GetEnumerator();
+            => ((IEnumerable<IField>)this.Buffer.Fields).GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator()
             => this.GetEnumerator();

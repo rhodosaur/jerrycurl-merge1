@@ -77,7 +77,10 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             }
             else if (metadata.HasFlag(BindingMetadataFlags.Model))
             {
-                thisNode = new Node(metadata);
+                thisNode = new Node(metadata)
+                {
+                    IsDynamic = metadata.HasFlag(BindingMetadataFlags.Dynamic),
+                };
 
                 tree.Nodes.Add(thisNode);
                 tree.Items.Add(thisNode);

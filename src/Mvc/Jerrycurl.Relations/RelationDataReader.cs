@@ -25,17 +25,17 @@ namespace Jerrycurl.Relations
         private void InitializeHeader()
         {
             if (this.Header.Count != this.InnerReader.Degree)
-                throw RelationException.InvalidDataReaderHeader(this);
+                throw RelationException.InvalidDataReaderHeader(this.InnerReader.Relation.Header, this.Header);
 
             this.headerMap = new Dictionary<string, int>();
 
             for (int i = 0; i < this.Header.Count; i++)
             {
                 if (this.Header[i] == null)
-                    throw RelationException.HeaderCannotBeNull(this, i);
+                    throw RelationException.DataHeaderCannotBeNull(this.InnerReader.Relation.Header, i);
 
                 if (this.headerMap.ContainsKey(this.Header[i]))
-                    throw RelationException.HeaderCannotHaveDupes(this, i);
+                    throw RelationException.DataHeaderCannotHaveDupes(this.InnerReader.Relation.Header, this.Header, i);
 
                 this.headerMap.Add(this.Header[i], i);
             }

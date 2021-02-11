@@ -97,6 +97,9 @@ namespace Jerrycurl.Data.Language
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
 
+            if (relation == null)
+                throw new ArgumentNullException(nameof(relation));
+
             using DbDataReader dataReader = relation.GetDataReader(targetHeader);
 
             await buffer.InsertAsync(dataReader);
@@ -133,6 +136,9 @@ namespace Jerrycurl.Data.Language
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
 
+            if (buffer == null)
+                throw new ArgumentNullException(nameof(sourceHeader));
+
             IRelation relation = new Relation(buffer.Store.From(source), sourceHeader);
 
             await buffer.InsertAsync(relation);
@@ -142,6 +148,9 @@ namespace Jerrycurl.Data.Language
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
+
+            if (mappingHeader == null)
+                throw new ArgumentNullException(nameof(mappingHeader));
 
             IEnumerable<string> sourceHeader = mappingHeader.Select(t => t.Source);
             IEnumerable<string> targetHeader = mappingHeader.Select(t => t.Target);
