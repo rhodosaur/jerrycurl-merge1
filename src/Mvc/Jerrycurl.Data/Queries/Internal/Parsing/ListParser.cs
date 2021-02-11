@@ -211,13 +211,14 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             {
                 KeyReader joinKey = this.FindParentKey(reader, reference);
 
-                if (joinKey != null && this.IsValidJoinType(joinKey))
+                if (joinKey != null && this.IsValidJoinKey(joinKey))
                 {
                     this.InitializeKey(joinKey);
 
-                    JoinReader join = new JoinReader(reference);
-
-                    join.Target = this.GetJoinTarget(result, joinKey);
+                    JoinReader join = new JoinReader(reference)
+                    {
+                        Target = this.GetJoinTarget(result, joinKey),
+                    };
 
                     reader.Joins.Add(join.Target);
                     reader.Properties.Add(join);
@@ -229,7 +230,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             IList<IReference> references = this.GetChildReferences(writer.Source.Metadata).ToList();
             KeyReader childKey = references.Select(r => this.FindChildKey(writer.Source, r)).NotNull().FirstOrDefault();
 
-            if (childKey != null && this.IsValidJoinType(childKey, throwOnInvalid: true))
+            if (childKey != null && this.IsValidJoinKey(childKey, throwOnInvalid: true))
                 this.InitializeKey(childKey);
 
             if (childKey == null && this.RequiresReference(writer.Source.Metadata))
@@ -281,7 +282,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
         private ParameterExpression GetNamedVariable(Type type, BaseReader reader)
             => this.GetNamedVariable(type, reader.Identity);
 
-        private bool IsValidJoinType(KeyReader joinKey, bool throwOnInvalid = false)
+        private bool IsValidJoinKey(KeyReader joinKey, bool throwOnInvalid = false)
         {
             IReferenceKey parentKey = joinKey.Reference.FindParentKey();
             IReferenceKey childKey = joinKey.Reference.FindChildKey();
@@ -302,10 +303,15 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         private IReference GetRecursiveReference(IReference reference)
         {
-            return reference.Find(ReferenceFlags.Parent).Metadata.References.FirstOrDefault(r => r.HasFlag(ReferenceFlags.Child));
-            var x = reference.Find(ReferenceFlags.Parent).Metadata.References.Where(r => r.Key.Equals(reference.Key)).ToList();
+            IReferenceMetadata metadata = reference.Metadata;
 
-            return reference; // somehow locate the other reference through reference.Find(Parent).References.HasFlag(Child).Other
+            foreach (IReference otherReference in metadata.References.Where(r => r.HasFlag(ReferenceFlags.Child) && !r.HasFlag(ReferenceFlags.Self)))
+            {
+                if (reference.Other.Key.Equals(otherReference.Key) || reference.Key.Equals(otherReference.Key))
+                    return otherReference;
+            }
+
+            return null;
         }
 
         private IEnumerable<IReference> GetParentReferences(IBindingMetadata metadata)
