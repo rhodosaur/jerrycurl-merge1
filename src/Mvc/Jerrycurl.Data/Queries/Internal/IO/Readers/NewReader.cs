@@ -19,7 +19,7 @@ namespace Jerrycurl.Data.Queries.Internal.IO.Readers
         }
 
         public KeyReader PrimaryKey { get; set; }
-        public IList<KeyReader> JoinKeys { get; } = new List<KeyReader>();
+        public IList<ListIndex> Joins { get; } = new List<ListIndex>();
         public IList<BaseReader> Properties { get; set; } = new List<BaseReader>();
     }
 }
