@@ -10,5 +10,6 @@ namespace Jerrycurl.Relations.Internal.Parsing
         public SourceReader Source { get; set; }
         public List<QueueReader> Queues { get; } = new List<QueueReader>();
         public List<FieldWriter> Fields { get; } = new List<FieldWriter>();
+        public RelationHeader Header { get; set; }
     }
 }

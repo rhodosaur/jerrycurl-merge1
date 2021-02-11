@@ -18,6 +18,65 @@ namespace Jerrycurl.Data.Test
 {
     public class QueryTests
     {
+        public void Test_Insert_ManyToMany()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(IList<BlogTagView>));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            var data1 = new[] { 1, 2, 3, 4 };
+            var data2 = new[] { 11, 12, 13, 14 };
+            var data3 = new (int, int)[]
+            {
+                (1, 11),
+                (2, 11),
+                (3, 13),
+            };
+
+            buffer.Insert(data1, ("Item", "Item.BlogPost.Item.Id"));
+            buffer.Insert(data2, ("Item", "Item.Tag.Item.Id"));
+            buffer.Insert(data3,
+                ("Item.Item1", "Item.BlogPostId"),
+                ("Item.Item2", "Item.TagId")
+            );
+
+            var result = buffer.Commit<IList<BlogTagView>>();
+
+            result.ShouldNotBeNull();
+            result.Count.ShouldBe(3);
+
+            result[0].ShouldNotBeNull();
+            result[0].BlogPostId.ShouldBe(1);
+            result[0].TagId.ShouldBe(11);
+            result[0].BlogPost.ShouldNotBeNull();
+            result[0].BlogPost.HasValue.ShouldBeTrue();
+            result[0].BlogPost.Value.Id.ShouldBe(1);
+            result[0].Tag.ShouldNotBeNull();
+            result[0].Tag.HasValue.ShouldBeTrue();
+            result[0].Tag.Value.Id.ShouldBe(11);
+
+            result[1].ShouldNotBeNull();
+            result[1].BlogPostId.ShouldBe(2);
+            result[1].TagId.ShouldBe(11);
+            result[1].BlogPost.ShouldNotBeNull();
+            result[1].BlogPost.HasValue.ShouldBeTrue();
+            result[1].BlogPost.Value.Id.ShouldBe(2);
+            result[1].Tag.ShouldNotBeNull();
+            result[1].Tag.HasValue.ShouldBeTrue();
+            result[1].Tag.Value.Id.ShouldBe(11);
+            result[1].Tag.ShouldBeSameAs(result[0].Tag);
+
+            result[2].ShouldNotBeNull();
+            result[2].BlogPostId.ShouldBe(3);
+            result[2].TagId.ShouldBe(13);
+            result[2].BlogPost.ShouldNotBeNull();
+            result[2].BlogPost.HasValue.ShouldBeTrue();
+            result[2].BlogPost.Value.Id.ShouldBe(3);
+            result[2].Tag.ShouldNotBeNull();
+            result[2].Tag.HasValue.ShouldBeTrue();
+            result[2].Tag.Value.Id.ShouldBe(13);
+        }
+
         public void Test_Empty_ObjectAndList()
         {
             var store = DatabaseHelper.Default.Store;

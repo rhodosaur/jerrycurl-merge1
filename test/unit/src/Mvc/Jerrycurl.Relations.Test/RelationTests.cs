@@ -378,6 +378,20 @@ namespace Jerrycurl.Relations.Test
             result[2].Select(f => f.Identity.Name).ShouldBe(new[] { "Item[1].IntValue", "Item[1].ComplexList.Item[1].Value" });
         }
 
+
+        public void Test_Select_Duplicates()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var data = new { Value = 10 };
+
+            var result = store.From(data).Lookup("Value", "Value", "Value");
+
+            result.ShouldNotBeNull();
+            result.Degree.ShouldBe(3);
+            result[0].ShouldBeSameAs(result[1]);
+            result[1].ShouldBeSameAs(result[2]);
+        }
+
         public void Test_Select_ScalarList()
         {
             var store = DatabaseHelper.Default.Store;

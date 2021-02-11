@@ -22,7 +22,7 @@ namespace Jerrycurl.Relations.Internal.Compilation
             Delegate[] binders = this.GetBindersArgument(tree);
             IRelationMetadata[] metadata = this.GetMetadataArgument(tree);
 
-            BufferInternalWriter initializer = this.Compile(tree.Source, tree.Queues, tree.Fields.Count);
+            BufferInternalWriter initializer = this.Compile(tree.Source, tree.Queues, tree.Header.Degree);
             List<BufferInternalWriter> writers = tree.Queues.Select(this.Compile).ToList();
 
             return new BufferWriter()
@@ -234,10 +234,14 @@ namespace Jerrycurl.Relations.Internal.Compilation
 
         private Expression GetWriteExpression(FieldWriter writer, Expression parentValue, Expression value)
         {
-            Expression bufferIndex = Expression.ArrayAccess(Arguments.Fields, Expression.Constant(writer.BufferIndex));
             Expression newField = this.GetNewFieldExpression(writer, parentValue, value);
 
-            return Expression.Assign(bufferIndex, newField);
+            return writer.BufferIndex.Aggregate(newField, (a, i) =>
+            {
+                Expression bufferIndex = Expression.ArrayAccess(Arguments.Fields, Expression.Constant(i));
+
+                return Expression.Assign(bufferIndex, a);
+            });
         }
 
         private Expression GetWriteExpression(QueueWriter writer, Expression value) => this.GetQueueAddExpression(writer, value);
@@ -258,10 +262,14 @@ namespace Jerrycurl.Relations.Internal.Compilation
         #region " Missing "
         private Expression GetWriteMissingExpression(FieldWriter writer)
         {
-            Expression bufferIndex = Expression.ArrayAccess(Arguments.Fields, Expression.Constant(writer.BufferIndex));
             Expression newField = this.GetNewMissingExpression(writer);
 
-            return Expression.Assign(bufferIndex, newField);
+            return writer.BufferIndex.Aggregate(newField, (a, i) =>
+            {
+                Expression bufferIndex = Expression.ArrayAccess(Arguments.Fields, Expression.Constant(i));
+
+                return Expression.Assign(bufferIndex, a);
+            });
         }
 
 
@@ -327,11 +335,11 @@ namespace Jerrycurl.Relations.Internal.Compilation
         }
 
         private Expression GetMetadataExpression(FieldWriter writer)
-            => Expression.ArrayAccess(Arguments.Metadata, Expression.Constant(writer.BufferIndex));
+            => Expression.ArrayAccess(Arguments.Metadata, Expression.Constant(writer.BufferIndex[0]));
 
         private Expression GetBinderExpression(FieldWriter writer)
         {
-            Expression binderObject = Expression.ArrayAccess(Arguments.Binders, Expression.Constant(writer.BufferIndex));
+            Expression binderObject = Expression.ArrayAccess(Arguments.Binders, Expression.Constant(writer.BufferIndex[0]));
 
             return binderObject;
         }
@@ -446,23 +454,30 @@ namespace Jerrycurl.Relations.Internal.Compilation
 
         private IRelationMetadata[] GetMetadataArgument(BufferTree tree)
         {
-            IRelationMetadata[] metadata = new IRelationMetadata[tree.Fields.Count + tree.Queues.Count];
+            IRelationMetadata[] metadata = new IRelationMetadata[tree.Header.Degree + tree.Queues.Count];
 
             foreach (FieldWriter writer in tree.Fields)
-                metadata[writer.BufferIndex] = writer.Metadata;
+            {
+                foreach (int i in writer.BufferIndex)
+                    metadata[i] = writer.Metadata;
+            }
+                
 
             foreach (QueueReader queue in tree.Queues)
-                metadata[tree.Fields.Count + queue.Index.Buffer] = queue.Metadata;
+                metadata[tree.Header.Degree + queue.Index.Buffer] = queue.Metadata;
 
             return metadata;
         }
 
         private Delegate[] GetBindersArgument(BufferTree tree)
         {
-            Delegate[] binders = new Delegate[tree.Fields.Count];
+            Delegate[] binders = new Delegate[tree.Header.Degree];
 
             foreach (FieldWriter writer in tree.Fields)
-                binders[writer.BufferIndex] = this.GetBinderArgument(writer);
+            {
+                foreach (int i in writer.BufferIndex)
+                    binders[i] = this.GetBinderArgument(writer);
+            }
 
             return binders;
         }

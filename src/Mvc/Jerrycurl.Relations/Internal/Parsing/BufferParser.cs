@@ -15,6 +15,7 @@ namespace Jerrycurl.Relations.Internal.Parsing
             BufferTree tree = new BufferTree()
             {
                 Notation = new DotNotation(),
+                Header = header,
             };
 
             this.CreateSource(nodeTree.Source, tree);
@@ -91,23 +92,23 @@ namespace Jerrycurl.Relations.Internal.Parsing
 
         private void AddWriters(Node node, NodeReader reader, BufferTree tree, QueueIndex queue)
         {
-            foreach (int index in node.Index)
+            if (node.Index.Count > 0)
             {
-                FieldWriter fieldWriter = new FieldWriter(node)
+                FieldWriter writer = new FieldWriter(node)
                 {
-                    BufferIndex = index,
+                    BufferIndex = node.Index.ToArray(),
                     NamePart = this.GetNamePart(node, queue, tree),
                     Queue = queue,
                 };
 
-                reader.Writers.Add(fieldWriter);
-                tree.Fields.Add(fieldWriter);
+                reader.Writers.Add(writer);
+                tree.Fields.Add(writer);
 
                 if (queue != null && queue.Type == RelationQueueType.Cached)
                 {
                     CacheWriter cacheWriter = new CacheWriter(node)
                     {
-                        BufferIndex = fieldWriter.BufferIndex,
+                        BufferIndex = writer.BufferIndex.First(),
                         CacheIndex = queue.Cache.Count,
                         Queue = queue,
                     };
