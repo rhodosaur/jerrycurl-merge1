@@ -1,253 +1,933 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Shouldly;
-using Jerrycurl.Data.Queries;
-using Jerrycurl.Data.Test.Models;
 using Jerrycurl.Test;
-using Jerrycurl.Data.Sessions;
+using Jerrycurl.Data.Test.Model;
+using Jerrycurl.Data.Queries;
+using Jerrycurl.Data.Language;
+using Jerrycurl.Relations.Language;
+using System.Collections.Generic;
 using Jerrycurl.Data.Metadata;
+using System.Collections.Immutable;
+using System.Linq;
+using Newtonsoft.Json.Serialization;
+using System.IO;
+using System;
+using Jerrycurl.Relations.Metadata;
+using System.ComponentModel;
+using System.Drawing;
 
 namespace Jerrycurl.Data.Test
 {
     public class QueryTests
     {
-        public async Task Test_Binding_OfEnumerateAsyncWithMultipleSets()
+        public void Test_Empty_ObjectAndList()
         {
-            SqliteTable table1 = new SqliteTable("Item")
-            {
-                new object[] { 1 },
-                new object[] { 2 },
-                new object[] { 3 },
-            };
-            SqliteTable table2 = new SqliteTable("Item")
-            {
-                new object[] { 4 },
-                new object[] { 5 },
-                new object[] { 6 },
-            };
+            var store = DatabaseHelper.Default.Store;
+            var schema1 = store.GetSchema(typeof(Blog));
+            var schema2 = store.GetSchema(typeof(IList<Blog>));
 
-            DatabaseHelper.Default.Enumerate<int>(table1, table2).ShouldBe(new[] { 1, 2, 3, 4, 5, 6 });
-            (await (DatabaseHelper.Default.EnumerateAsync<int>(table1, table2)).ToList()).ShouldBe(new[] { 1, 2, 3, 4, 5, 6 });
+            var buffer1 = new QueryBuffer(schema1, QueryType.List);
+            var buffer2 = new QueryBuffer(schema2, QueryType.List);
+
+            var result1 = buffer1.Commit<Blog>();
+            var result2 = buffer2.Commit<IList<Blog>>();
+
+            result1.ShouldBeNull();
+            result2.ShouldBeNull();
         }
 
-        public async Task Test_Binding_OfNestedStructs()
+        public void Test_Read_NullableSet()
         {
-            SqliteTable table = new SqliteTable("Item.Integer", "Item.String", "Item.Sub.Value")
-            {
-                new object[] { 1, "Jerrycurl", 2 },
-            };
+            var store = DatabaseHelper.Default.Store;
+            var data = new int?[] { 1, 2, null };
 
-            BigStruct result1 = DatabaseHelper.Default.Query<BigStruct>(table).FirstOrDefault();
-            BigStruct result2 = (await DatabaseHelper.Default.QueryAsync<BigStruct>(table)).FirstOrDefault();
+            using var dataReader = store.From(data).Select("Item").As("Item");
 
-            result1.Integer.ShouldBe(1);
-            result2.Integer.ShouldBe(1);
+            var reader = new QueryReader(store, dataReader);
+            var result = reader.Read<int?>();
 
-            result1.String.ShouldBe("Jerrycurl");
-            result2.String.ShouldBe("Jerrycurl");
-
-            result1.Sub.Value.ShouldBe(2);
-            result2.Sub.Value.ShouldBe(2);
+            result.ShouldBe(new int?[] { 1, 2, null });
         }
 
-        public async Task Test_Binding_OfValuesFromNullableParameters()
+        public void Test_Read_IntegerSet()
         {
-            Query query = new Query()
-            {
-                QueryText = @"SELECT @P0 AS `Item` UNION
-                              SELECT @P1 AS `Item` UNION
-                              SELECT @P2 AS `Item`
-                              ORDER BY `Item`",
-                Parameters = new IParameter[]
-                {
-                    new Parameter("P0", DatabaseHelper.Default.Model<int?>(0)),
-                    new Parameter("P1", DatabaseHelper.Default.Model<int?>()),
-                    new Parameter("P2", DatabaseHelper.Default.Model<int?>(1)),
-                }
-            };
+            var store = DatabaseHelper.Default.Store;
+            var data = new[] { 1, 2, 3, 4, 5, 6 };
 
-            IList<int?> result1 = DatabaseHelper.Default.Query<int?>(query);
-            IList<int?> result2 = await DatabaseHelper.Default.QueryAsync<int?>(query);
+            using var dataReader = store.From(data).Select("Item").As("Item");
 
-            static void verifyResult(IList<int?> result)
-            {
-                result.ShouldNotBeNull();
-                result.ShouldBe(new int?[] { null, 0, 1 });
-            }
+            var reader = new QueryReader(store, dataReader);
+            var result = reader.Read<int>();
 
-            verifyResult(result1);
-            verifyResult(result2);
+            result.ShouldBe(new[] { 1, 2, 3, 4, 5, 6 });
         }
 
-        public async Task Test_Binding_OfBigAggregateResult()
+        public void Test_Insert_ManyToOne_List()
         {
-            SqliteTable table2 = new SqliteTable("Item.None.BigKey", "Item.None.Value")
+            var store = DatabaseHelper.Default.Store;
+
+            var data1 = new (int, int)[]
             {
-                new object[] { null, 1 },
+                // BlogPost(Id, BlogId)
+                (1, 1),
+                (2, 1),
+                (3, 2),
+                (4, 4),
             };
-            SqliteTable table1 = new SqliteTable("Item.Scalar")
-            {
-                new object[] { 2 },
-                new object[] { 1 },
-            };
-            SqliteTable table3 = new SqliteTable("Item.One.BigKey", "Item.One.Value")
-            {
-                new object[] { 1, 22 },
-            };
-            SqliteTable table4 = new SqliteTable("Item.Many.Item.BigKey", "Item.Many.Item.Value", "Item.Many.Item.OneToMany.Item.BigKey", "Item.Many.Item.OneToMany.Item.Value")
-            {
-                new object[] { 1, 33, 3, 22 },
-                new object[] { null, 34, null, 23 },
-                new object[] { 3, 35, 3, 24 },
-            };
+            var data2 = new[] { 1, 2, 3 }; // Blog(Id)
 
-            BigAggregate result1 = DatabaseHelper.Default.Aggregate<BigAggregate>(table1, table2, table3, table4);
-            BigAggregate result2 = await DatabaseHelper.Default.AggregateAsync<BigAggregate>(table1, table2, table3, table4);
+            var schema = store.GetSchema(typeof(List<BlogPostView>));
+            var buffer = new QueryBuffer(schema, QueryType.List);
 
-            static void verifyResult(BigAggregate result)
-            {
-                result.ShouldNotBeNull();
+            buffer.Insert(data1,
+                ("Item.Item1", "Item.Id"),
+                ("Item.Item2", "Item.BlogId")
+            );
 
-                result.Scalar.ShouldBe(2);
-                result.None.ShouldBeNull();
-                result.One.ShouldNotBeNull();
-                result.One.Value.ShouldBe(22);
+            buffer.Insert(data2,
+                ("Item", "Item.Blog2.Item.Id")
+            );
 
-                result.Many.ShouldNotBeNull();
-                result.Many.Select(m => m.Value).ShouldBe(new[] { 33, 35 });
+            var result = buffer.Commit<List<BlogPostView>>();
 
-                result.Many[0].OneToMany.ShouldBeEmpty();
-                result.Many[1].OneToMany.ShouldNotBeNull();
-                result.Many[1].OneToMany.Select(m => m.Value).ShouldBe(new[] { 22, 24 });
-            }
+            result.Count.ShouldBe(4);
 
-            verifyResult(result1);
-            verifyResult(result2);
+            result[0].Blog2.ShouldNotBeNull();
+            result[0].Blog2.HasValue.ShouldBeTrue();
+            result[0].Blog2.Value.Id.ShouldBe(1);
+            result[0].Blog2.ShouldBeSameAs(result[1].Blog2);
+
+            result[2].Blog2.ShouldNotBeNull();
+            result[2].Blog2.HasValue.ShouldBeTrue();
+            result[2].Blog2.Value.Id.ShouldBe(2);
+
+            result[3].Blog2.ShouldNotBeNull();
+            result[3].Blog2.HasValue.ShouldBeFalse();
         }
 
-        public async Task Test_Binding_OfOneToOneSelfJoins()
+        public void Test_Insert_ManyToOne_Object()
         {
-            SqliteTable table1 = new SqliteTable("Item.Parent.Id", "Item.Parent.ParentId")
+            var store = DatabaseHelper.Default.Store;
+
+            var data1 = new[] { 2 }; // Blog(Id)
+            var data2 = new (int, int)[]
             {
-                new object[] { 4,    null },
-                new object[] { 3,    4 },
-                new object[] { 2,    3 },
+                // BlogPost(Id, BlogId)
+                (2, 1),
+                (1, 2),
             };
-            SqliteTable table2 = new SqliteTable("Item.Id", "Item.ParentId")
-            {
-                new object[] { 1, 2 },
-            };
+            var data3 = new[] { 1 }; // Blog(Id)
 
-            IList<BigRecurse.One> result1 = DatabaseHelper.Default.Query<BigRecurse.One>(table1, table2);
-            IList<BigRecurse.One> result2 = await DatabaseHelper.Default.QueryAsync<BigRecurse.One>(table1, table2);
+            var schema = store.GetSchema(typeof(List<BlogPostView>));
+            var buffer = new QueryBuffer(schema, QueryType.List);
 
-            static void verifyResult(IList<BigRecurse.One> result)
-            {
-                result.ShouldNotBeNull();
-                result.Count.ShouldBe(1);
+            buffer.Insert(data1,
+                ("Item", "Item.Blog1.Id")
+            );
 
-                result[0].Id.ShouldBe(1);
-                result[0].Parent.ShouldNotBeNull();
+            buffer.Insert(data2,
+                ("Item.Item1", "Item.Id"),
+                ("Item.Item2", "Item.BlogId")
+            );
 
-                result[0].Parent.Id.ShouldBe(2);
-                result[0].Parent.Parent.ShouldNotBeNull();
+            buffer.Insert(data3,
+                ("Item", "Item.Blog1.Id")
+            );
 
-                result[0].Parent.Parent.Id.ShouldBe(3);
-                result[0].Parent.Parent.Parent.ShouldNotBeNull();
+            var result = buffer.Commit<List<BlogPostView>>();
 
-                result[0].Parent.Parent.Parent.Id.ShouldBe(4);
-                result[0].Parent.Parent.Parent.Parent.ShouldBeNull();
-            }
+            result.Count.ShouldBe(2);
 
-            verifyResult(result1);
-            verifyResult(result2);
+            result[0].Blog1.ShouldBeNull();
+
+            result[1].Blog1.ShouldNotBeNull();
+            result[1].Blog1.Id.ShouldBe(2);
         }
 
-        public async Task Test_Binding_OfBigModelWithDifferentJoins()
+        public void Test_Insert_AllTypes()
         {
-            SqliteTable table1 = new SqliteTable("Item.OneToManyAsOne.BigKey", "Item.OneToManyAsOne.Value")
+            throw new NotImplementedException();
+        }
+
+        public void Test_Insert_DualRecursiveTree()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(IList<BlogCategory>));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            // BlogCategory(Id, ParentId)
+            var data1 = new (int, int?)[] // Parents
             {
-                new object[] { 3, 99 },
-                new object[] { 2, 999 },
-            };
-            SqliteTable table2 = new SqliteTable("Item.BigKey", "Item.Value", "Item.OneToOne.SubKey", "Item.OneToOne.Value")
-            {
-                new object[] { 1, 77, 1, 1 },
-                new object[] { 2, 777, null, 2 },
-            };
-            SqliteTable table3 = new SqliteTable("Item.BigKey", "Item.Value", "Item.OneToOne.Value")
-            {
-                new object[] { 3, 7777, 3 },
-            };
-            SqliteTable table4 = new SqliteTable("Item.OneToMany.Item.BigKey", "Item.OneToMany.Item.Value")
-            {
-                new object[] { 2, 55 },
-                new object[] { 2, 555 },
-                new object[] { 3, 66 },
-            };
-            SqliteTable table5 = new SqliteTable("Item.OneToManySelf.Item.BigKey", "Item.OneToManySelf.Item.Id", "Item.OneToManySelf.Item.ParentId")
-            {
-                new object[] { 1, 1, null },
-                new object[] { 1, 2, null },
-                new object[] { 1, 3, null },
-                new object[] { 2, 4, null },
-            };
-            SqliteTable table6 = new SqliteTable("Item.OneToManySelf.Item.Children.Item.Id", "Item.OneToManySelf.Item.Children.Item.ParentId")
-            {
-                new object[] { 5, 2 },
-                new object[] { 6, 2 },
-                new object[] { 7, 3 },
-                new object[] { 8, 3 },
-                new object[] { 9, 3 },
-                new object[] { 10, 6 },
-                new object[] { 11, 6 },
-                new object[] { 12, 9 },
+                (1, null), (2, 0), (3, 1), (4, 1),
             };
 
-            IList<BigModel> result1 = DatabaseHelper.Default.Query<BigModel>(table1, table2, table3, table4, table5, table6);
-            IList<BigModel> result2 = await DatabaseHelper.Default.QueryAsync<BigModel>(table1, table2, table3, table4, table5, table6);
-
-            static void verifyResult(IList<BigModel> result)
+            var data2 = new (int, int?)[]
             {
-                result.ShouldNotBeNull();
-                result.Select(m => m.Value).ShouldBe(new[] { 77, 777, 7777 });
-
-                result[0].OneToOne.ShouldNotBeNull();
-                result[0].OneToOne.Value.ShouldBe(1);
-                result[1].OneToOne.ShouldBeNull();
-                result[2].OneToOne.ShouldNotBeNull();
-                result[2].OneToOne.Value.ShouldBe(3);
-
-                result[0].OneToManyAsOne.ShouldBeNull();
-                result[1].OneToManyAsOne.ShouldNotBeNull();
-                result[1].OneToManyAsOne.Value.ShouldBe(999);
-                result[2].OneToManyAsOne.ShouldNotBeNull();
-                result[2].OneToManyAsOne.Value.ShouldBe(99);
-
-                result[0].OneToMany.ShouldNotBeNull();
-                result[0].OneToMany.ShouldBeEmpty();
-                result[1].OneToMany.ShouldNotBeNull();
-                result[1].OneToMany.Select(m => m.Value).ShouldBe(new[] { 55, 555 });
-                result[2].OneToMany.ShouldNotBeNull();
-                result[2].OneToMany.Select(m => m.Value).ShouldBe(new[] { 66 });
-
-                result[0].OneToManySelf.ShouldNotBeNull();
-                result[0].OneToManySelf.Select(m => m.Id).ShouldBe(new[] { 1, 2, 3 });
-                result[1].OneToManySelf.ShouldNotBeNull();
-                result[1].OneToManySelf.Select(m => m.Id).ShouldBe(new[] { 4 });
-                result[2].OneToManySelf.ShouldBeEmpty();
-
-                result[0].OneToManySelf[0].Children.ShouldBeEmpty();
-                result[0].OneToManySelf[1].Children.Select(m => m.Id).ShouldBe(new[] { 5, 6 });
-                result[0].OneToManySelf[2].Children.Select(m => m.Id).ShouldBe(new[] { 7, 8, 9 });
-
-                result[0].OneToManySelf[1].Children[1].Children.Select(m => m.Id).ShouldBe(new[] { 10, 11 });
-                result[0].OneToManySelf[2].Children[2].Children.Select(m => m.Id).ShouldBe(new[] { 12 });
+                (5, 2), (6, 3)
             };
 
-            verifyResult(result1);
-            verifyResult(result2);
+            var data3 = new (int, int?)[] // Children
+            {
+                (7, 6), (8, 6), (9, 8), (10, 9),
+            };
+
+            buffer.Insert(data1,
+                ("Item.Item1", "Item.Parent.Item.Id"),
+                ("Item.Item2", "Item.Parent.Item.ParentId")
+            );
+
+            buffer.Insert(data2,
+                ("Item.Item1", "Item.Id"),
+                ("Item.Item2", "Item.ParentId")
+            );
+
+            buffer.Insert(data3,
+                ("Item.Item1", "Item.Children.Item.Id"),
+                ("Item.Item2", "Item.Children.Item.ParentId")
+            );
+
+            var result = buffer.Commit<IList<BlogCategory>>();
+
+            result.Count.ShouldBe(2);
+            result[0].Id.ShouldBe(5);
+            result[0].ParentId.ShouldBe(2);
+            result[0].Parent.ShouldNotBeNull();
+            result[0].Parent.HasValue.ShouldBeTrue();
+
+            result[0].Parent.HasValue.ShouldBeTrue();
+            result[0].Parent.Value.Id.ShouldBe(2);
+            result[0].Parent.Value.ParentId.ShouldBe(0);
+            result[0].Parent.Value.Parent.ShouldNotBeNull();
+            result[0].Parent.Value.Parent.HasValue.ShouldBeFalse();
+
+            result[1].Id.ShouldBe(6);
+            result[1].ParentId.ShouldBe(3);
+
+            result[1].Parent.HasValue.ShouldBeTrue();
+            result[1].Parent.Value.Id.ShouldBe(3);
+            result[1].Parent.Value.ParentId.ShouldBe(1);
+
+            result[1].Parent.Value.Parent.HasValue.ShouldBeTrue();
+            result[1].Parent.Value.Parent.Value.Id.ShouldBe(1);
+            result[1].Parent.Value.Parent.Value.ParentId.ShouldBeNull();
+            result[1].Parent.Value.Parent.Value.Parent.ShouldBeNull();
+
+            result[1].Children.ShouldNotBeNull();
+            result[1].Children.Count.ShouldBe(2);
+            result[1].Children.Select(c => c.Id).ShouldBe(new[] { 7, 8 });
+
+            result[1].Children[0].Children.ShouldNotBeNull();
+            result[1].Children[0].Children.Count.ShouldBe(0);
+
+            result[1].Children[1].Children.ShouldNotBeNull();
+            result[1].Children[1].Children.Count.ShouldBe(1);
+            result[1].Children[1].Children[0].Id.ShouldBe(9);
+            result[1].Children[1].Children[0].ParentId.ShouldBe(8);
+            result[1].Children[1].Children[0].Children.ShouldNotBeNull();
+            result[1].Children[1].Children[0].Children.Count.ShouldBe(1);
+            result[1].Children[1].Children[0].Children[0].Id.ShouldBe(10);
+            result[1].Children[1].Children[0].Children[0].ParentId.ShouldBe(9);
+            result[1].Children[1].Children[0].Children[0].Children.ShouldNotBeNull();
+            result[1].Children[1].Children[0].Children[0].Children.Count.ShouldBe(0);
+        }
+
+        public void Test_Aggregate_PrimaryKey()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(Blog));
+            var buffer = new QueryBuffer(schema, QueryType.Aggregate);
+
+            buffer.Insert<object>(null, ("", "Id"));
+
+            var result = buffer.Commit();
+
+            result.ShouldBeNull();
+        }
+
+        public void Test_Aggregate_NonPrimaryKey()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(Blog));
+            var buffer = new QueryBuffer(schema, QueryType.Aggregate);
+
+            buffer.Insert<object>(null, ("", "Id2"));
+
+            var result = buffer.Commit<Blog>();
+
+            result.ShouldNotBeNull();
+            result.Id2.ShouldBe(0);
+        }
+
+        public void Test_Insert_One()
+        {
+            var store = DatabaseHelper.Default.Store;
+            
+            var data = new (int, string)[]
+            {
+                (1, "Hello World!"),
+                (2, "Hello Universe!"),
+            };
+
+            var schema = store.GetSchema(typeof(Blog));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            buffer.Insert(data,
+                ("Item.Item1", "Id"),
+                ("Item.Item2", "Title")
+            );
+
+            var result = buffer.Commit<Blog>();
+
+            result.ShouldNotBeNull();
+            result.Id.ShouldBe(2);
+            result.Title.ShouldBe("Hello Universe!");
+        }
+
+        public void Test_Insert_OneToMany_NonPrimary()
+        {
+            var store = DatabaseHelper.Default.Store;
+
+            var data1 = new (int?, string)[]
+            {
+                ( 1, "Blog 1" ),
+                ( null, "Blog 2" ),
+            };
+            var data2 = new (int, int, string)[]
+            {
+                ( 1, 1, "Post 1.1" ),
+                ( 2, 1, "Post 1.2" ),
+                ( 3, 2, "Post 2.1" ),
+            };
+
+            var buffer = new QueryBuffer(store.Describe<IList<Blog>>(), QueryType.List);
+
+            buffer.Insert(data1,
+                ("Item.Item1", "Item.Id2"),
+                ("Item.Item2", "Item.Title")
+            );
+
+            buffer.Insert(data2,
+                ("Item.Item1", "Item.Posts.Item.Id"),
+                ("Item.Item2", "Item.Posts.Item.BlogId2"),
+                ("Item.Item3", "Item.Posts.Item.Headline")
+            );
+
+            var result = buffer.Commit<IList<Blog>>();
+
+            result.Count.ShouldBe(2);
+
+            result[0].Id2.ShouldBe(1);
+            result[0].Title.ShouldBe("Blog 1");
+
+            result[0].Posts.Count.ShouldBe(2);
+            result[0].Posts[0].BlogId2.ShouldBe(result[0].Id2);
+            result[0].Posts[0].Headline.ShouldBe("Post 1.1");
+            result[0].Posts[1].BlogId2.ShouldBe(result[0].Id2);
+            result[0].Posts[1].Headline.ShouldBe("Post 1.2");
+
+            result[1].Id2.ShouldBe(0);
+            result[1].Title.ShouldBe("Blog 2");
+
+            result[1].Posts.ShouldBeNull();
+        }
+
+        public void Test_Insert_NonMatching()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var schema1 = store.GetSchema(typeof(Blog));
+            var schema2 = store.GetSchema(typeof(List<Blog>));
+            var buffer1 = new QueryBuffer(schema1, QueryType.List);
+            var buffer2 = new QueryBuffer(schema2, QueryType.List);
+
+            buffer1.Insert(50, ("", "Foo"));
+            buffer2.Insert(50, ("", "Item.Bar"));
+
+            var result1 = buffer1.Commit();
+            var result2 = buffer1.Commit();
+
+            result1.ShouldBeNull();
+            result2.ShouldBeNull();
+        }
+
+        public void Test_Aggregate_NonMatching()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var schema1 = store.GetSchema(typeof(Blog));
+            var schema2 = store.GetSchema(typeof(List<Blog>));
+            var buffer1 = new QueryBuffer(schema1, QueryType.Aggregate);
+            var buffer2 = new QueryBuffer(schema2, QueryType.Aggregate);
+
+            buffer1.Insert(50, ("", "Foo"));
+            buffer2.Insert(50, ("", "Item.Bar"));
+
+            var result1 = buffer1.Commit();
+            var result2 = buffer2.Commit();
+
+            result1.ShouldBeNull();
+            result2.ShouldBeNull();
+        }
+
+        public void Test_Insert_EmptySet()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var schema1 = store.GetSchema(typeof(Blog));
+            var schema2 = store.GetSchema(typeof(List<Blog>));
+            var buffer1 = new QueryBuffer(schema1, QueryType.List);
+            var buffer2 = new QueryBuffer(schema2, QueryType.List);
+            var buffer3 = new QueryBuffer(schema1, QueryType.Aggregate);
+            var buffer4 = new QueryBuffer(schema2, QueryType.Aggregate);
+
+            var data = (50, new List<int>());
+            var empty = store.From(data).Select("Item1", "Item2.Item");
+
+            buffer1.Insert(empty, "Id2", "Foo");
+            buffer2.Insert(empty, "Item.Id2", "Foo");
+            buffer3.Insert(empty, "Id2", "Foo");
+            buffer4.Insert(empty, "Item.Id2", "Foo");
+
+            var result1 = buffer1.Commit<Blog>();
+            var result2 = buffer2.Commit<List<Blog>>();
+            var result3 = buffer3.Commit<Blog>();
+            var result4 = buffer4.Commit<List<Blog>>();
+
+            result1.ShouldBeNull();
+
+            result2.ShouldNotBeNull();
+            result2.Count.ShouldBe(0);
+
+            result3.ShouldNotBeNull();
+            result3.Id2.ShouldBe(0);
+
+            result4.ShouldNotBeNull();
+            result4.Count.ShouldBe(1);
+            result4[0].ShouldNotBeNull();
+            result4[0].Id2.ShouldBe(0);
+        }
+
+
+        public void Test_Insert_Struct()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(Point));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            buffer.Insert((10, 20),
+                ("Item1", "X"),
+                ("Item2", "Y")
+            );
+
+            var result = buffer.Commit<Point>();
+
+            result.X.ShouldBe(10);
+            result.Y.ShouldBe(20);
+        }
+
+        public void Test_Insert_Invalid_Constructor()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(NoConstruct));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            Should.Throw<BindingException>(() =>
+            {
+                buffer.Insert("Hello World!", ("", "String"));
+            });
+        }
+
+        public void Test_Insert_Invalid_ParentKey()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(Blog));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            Should.NotThrow(() =>
+            {
+                buffer.Insert(10, ("", "Id3"));
+            });
+
+            var result = buffer.Commit<Blog>();
+
+            result.ShouldNotBeNull();
+            result.Id3.ShouldBe(10);
+            result.Posts.ShouldBeNull();
+        }
+
+        public void Test_Insert_Key_Priority()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Test_Insert_Result_Priority()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Test_Insert_Missing_ChildKey()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(Blog));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            Should.Throw<BindingException>(() =>
+            {
+                buffer.Insert("Hello World!", ("", "Posts.Item.Headline"));
+            });
+        }
+
+        public void Test_Insert_Invalid_ChildKey()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(Blog));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            Should.Throw<BindingException>(() =>
+            {
+                buffer.Insert(10, ("", "Posts.Item.BlogId3"));
+            });
+        }
+
+        public void Test_Insert_CaseInsensitive()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(IList<Blog>));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            buffer.Insert(50, ("", "ITEM.id"));
+
+            var result = buffer.Commit<IList<Blog>>();
+
+            result.Count.ShouldBe(1);
+            result[0].Id.ShouldBe(50);
+        }
+
+        public void Test_Insert_CaseSensitive()
+        {
+            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false, new DotNotation(StringComparer.Ordinal));
+            var schema = store.GetSchema(typeof(IList<Blog>));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            buffer.Insert(50, ("", "ITEM.id"));
+            buffer.Insert(60, ("", "Item.Id"));
+
+            var result = buffer.Commit<IList<Blog>>();
+
+            result.ShouldNotBeNull();
+            result.Count.ShouldBe(1);
+            result[0].Id.ShouldBe(60);
+        }
+
+        public async Task Test_Insert_OneToMany_NonPrimary_Async()
+        {
+            var store = DatabaseHelper.Default.Store;
+
+            var data1 = new (int?, string)[]
+            {
+                ( 1, "Blog 1" ),
+                ( null, "Blog 2" ),
+            };
+            var data2 = new (int, int, string)[]
+            {
+                ( 1, 1, "Post 1.1" ),
+                ( 2, 1, "Post 1.2" ),
+                ( 3, 2, "Post 2.1" ),
+            };
+
+            var buffer = new QueryBuffer(store.Describe<IList<Blog>>(), QueryType.List);
+
+            await buffer.InsertAsync(data1,
+                ("Item.Item1", "Item.Id2"),
+                ("Item.Item2", "Item.Title")
+            );
+
+            await buffer.InsertAsync(data2,
+                ("Item.Item1", "Item.Posts.Item.Id"),
+                ("Item.Item2", "Item.Posts.Item.BlogId2"),
+                ("Item.Item3", "Item.Posts.Item.Headline")
+            );
+
+            var result = buffer.Commit<IList<Blog>>();
+
+            result.Count.ShouldBe(2);
+
+            result[0].Id2.ShouldBe(1);
+            result[0].Title.ShouldBe("Blog 1");
+
+            result[0].Posts.Count.ShouldBe(2);
+            result[0].Posts[0].BlogId2.ShouldBe(result[0].Id2);
+            result[0].Posts[0].Headline.ShouldBe("Post 1.1");
+            result[0].Posts[1].BlogId2.ShouldBe(result[0].Id2);
+            result[0].Posts[1].Headline.ShouldBe("Post 1.2");
+
+            result[1].Id2.ShouldBe(0);
+            result[1].Title.ShouldBe("Blog 2");
+
+            result[1].Posts.ShouldBeNull();
+        }
+
+        public async Task Test_Insert_OneToMany_Async()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var data1 = new (int, string)[]
+            {
+                ( 1, "Blog 1" ),
+                ( 2, "Blog 2" ),
+            };
+            var data2 = new (int, int, string)[]
+            {
+                ( 1, 1, "Post 1.1" ),
+                ( 2, 1, "Post 1.2" ),
+                ( 3, 2, "Post 2.1" ),
+            };
+            var data3 = new (int, int, string)[]
+            {
+                ( 1, 2, "Comment 1.2.1" ),
+                ( 2, 2, "Comment 1.2.2" ),
+                ( 3, 2, "Comment 1.2.3" ),
+                ( 4, 3, "Comment 2.1.1" ),
+            };
+
+            var buffer = new QueryBuffer(store.Describe<IList<Blog>>(), QueryType.List);
+
+            await buffer.InsertAsync(data1,
+                ("Item.Item1", "Item.Id"),
+                ("Item.Item2", "Item.Title")
+            );
+
+            await buffer.InsertAsync(data2,
+                ("Item.Item1", "Item.Posts.Item.Id"),
+                ("Item.Item2", "Item.Posts.Item.BlogId"),
+                ("Item.Item3", "Item.Posts.Item.Headline")
+            );
+
+            await buffer.InsertAsync(data3,
+                ("Item.Item1", "Item.Posts.Item.Comments.Item.Id"),
+                ("Item.Item2", "Item.Posts.Item.Comments.Item.BlogPostId"),
+                ("Item.Item3", "Item.Posts.Item.Comments.Item.Comment")
+            );
+
+            var result = buffer.Commit<IList<Blog>>();
+
+            result.Count.ShouldBe(2);
+
+            result[0].Id.ShouldBe(1);
+            result[0].Title.ShouldBe("Blog 1");
+
+            result[0].Posts.Count.ShouldBe(2);
+            result[0].Posts[0].BlogId.ShouldBe(result[0].Id);
+            result[0].Posts[0].Headline.ShouldBe("Post 1.1");
+            result[0].Posts[1].BlogId.ShouldBe(result[0].Id);
+            result[0].Posts[1].Headline.ShouldBe("Post 1.2");
+
+            result[0].Posts[0].Comments.Count.ShouldBe(0);
+
+            result[0].Posts[1].Comments.Count.ShouldBe(3);
+            result[0].Posts[1].Comments[0].BlogPostId.ShouldBe(result[0].Posts[1].Id);
+            result[0].Posts[1].Comments[0].Comment.ShouldBe("Comment 1.2.1");
+            result[0].Posts[1].Comments[1].BlogPostId.ShouldBe(result[0].Posts[1].Id);
+            result[0].Posts[1].Comments[1].Comment.ShouldBe("Comment 1.2.2");
+            result[0].Posts[1].Comments[2].BlogPostId.ShouldBe(result[0].Posts[1].Id);
+            result[0].Posts[1].Comments[2].Comment.ShouldBe("Comment 1.2.3");
+
+            result[1].Posts.Count.ShouldBe(1);
+            result[1].Posts[0].BlogId.ShouldBe(result[1].Id);
+            result[1].Posts[0].Headline.ShouldBe("Post 2.1");
+
+            result[1].Posts[0].Comments.Count.ShouldBe(1);
+            result[1].Posts[0].Comments[0].BlogPostId.ShouldBe(result[1].Posts[0].Id);
+            result[1].Posts[0].Comments[0].Comment.ShouldBe("Comment 2.1.1");
+        }
+
+        public void Test_Insert_OneToMany()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var data1 = new (int, string)[]
+            {
+                ( 1, "Blog 1" ),
+                ( 2, "Blog 2" ),
+            };
+            var data2 = new (int, int, string)[]
+            {
+                ( 1, 1, "Post 1.1" ),
+                ( 2, 1, "Post 1.2" ),
+                ( 3, 2, "Post 2.1" ),
+            };
+            var data3 = new (int, int, string)[]
+            {
+                ( 1, 2, "Comment 1.2.1" ),
+                ( 2, 2, "Comment 1.2.2" ),
+                ( 3, 2, "Comment 1.2.3" ),
+                ( 4, 3, "Comment 2.1.1" ),
+            };
+
+            var buffer = new QueryBuffer(store.Describe<IList<Blog>>(), QueryType.List);
+
+            buffer.Insert(data1,
+                ("Item.Item1", "Item.Id"),
+                ("Item.Item2", "Item.Title")
+            );
+
+            buffer.Insert(data2,
+                ("Item.Item1", "Item.Posts.Item.Id"),
+                ("Item.Item2", "Item.Posts.Item.BlogId"),
+                ("Item.Item3", "Item.Posts.Item.Headline")
+            );
+
+            buffer.Insert(data3,
+                ("Item.Item1", "Item.Posts.Item.Comments.Item.Id"),
+                ("Item.Item2", "Item.Posts.Item.Comments.Item.BlogPostId"),
+                ("Item.Item3", "Item.Posts.Item.Comments.Item.Comment")
+            );
+
+            var result = buffer.Commit<IList<Blog>>();
+
+            result.Count.ShouldBe(2);
+
+            result[0].Id.ShouldBe(1);
+            result[0].Title.ShouldBe("Blog 1");
+
+            result[0].Posts.Count.ShouldBe(2);
+            result[0].Posts[0].BlogId.ShouldBe(result[0].Id);
+            result[0].Posts[0].Headline.ShouldBe("Post 1.1");
+            result[0].Posts[1].BlogId.ShouldBe(result[0].Id);
+            result[0].Posts[1].Headline.ShouldBe("Post 1.2");
+
+            result[0].Posts[0].Comments.Count.ShouldBe(0);
+
+            result[0].Posts[1].Comments.Count.ShouldBe(3);
+            result[0].Posts[1].Comments[0].BlogPostId.ShouldBe(result[0].Posts[1].Id);
+            result[0].Posts[1].Comments[0].Comment.ShouldBe("Comment 1.2.1");
+            result[0].Posts[1].Comments[1].BlogPostId.ShouldBe(result[0].Posts[1].Id);
+            result[0].Posts[1].Comments[1].Comment.ShouldBe("Comment 1.2.2");
+            result[0].Posts[1].Comments[2].BlogPostId.ShouldBe(result[0].Posts[1].Id);
+            result[0].Posts[1].Comments[2].Comment.ShouldBe("Comment 1.2.3");
+
+            result[1].Posts.Count.ShouldBe(1);
+            result[1].Posts[0].BlogId.ShouldBe(result[1].Id);
+            result[1].Posts[0].Headline.ShouldBe("Post 2.1");
+
+            result[1].Posts[0].Comments.Count.ShouldBe(1);
+            result[1].Posts[0].Comments[0].BlogPostId.ShouldBe(result[1].Posts[0].Id);
+            result[1].Posts[0].Comments[0].Comment.ShouldBe("Comment 2.1.1");
+        }
+
+        public void Test_Insert_NonPrimaryKeys()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var data = new (int?, string)[]
+            {
+                ( null, "Blog 1" ),
+                ( 10,   "Blog 2" )
+            };
+
+            var buffer = new QueryBuffer(store.Describe<IList<Blog>>(), QueryType.List);
+
+            buffer.Insert(data,
+                ("Item.Item1", "Item.Id2"),
+                ("Item.Item2", "Item.Title")
+            );
+
+            var result = buffer.Commit<IList<Blog>>();
+
+            result.Count.ShouldBe(2);
+            result[0].Id2.ShouldBe(0);
+            result[0].Title.ShouldBe("Blog 1");
+            result[1].Id2.ShouldBe(10);
+            result[1].Title.ShouldBe("Blog 2");
+        }
+
+        public async Task Test_Insert_NonPrimaryKeys_Async()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var data = new (int?, string)[]
+            {
+                ( null, "Blog 1" ),
+                ( 10,   "Blog 2" )
+            };
+
+            var buffer = new QueryBuffer(store.Describe<IList<Blog>>(), QueryType.List);
+
+            await buffer.InsertAsync(data,
+                ("Item.Item1", "Item.Id2"),
+                ("Item.Item2", "Item.Title")
+            );
+
+            var result = buffer.Commit<IList<Blog>>();
+
+            result.Count.ShouldBe(2);
+            result[0].Id2.ShouldBe(0);
+            result[0].Title.ShouldBe("Blog 1");
+            result[1].Id2.ShouldBe(10);
+            result[1].Title.ShouldBe("Blog 2");
+        }
+
+        public void Test_Insert_PrimaryKeys()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var data = new (int?, string)[]
+            {
+                ( null, "Blog 1" ),
+                ( 10,   "Blog 2" )
+            };
+
+            var buffer = new QueryBuffer(store.Describe<IList<Blog>>(), QueryType.List);
+
+            buffer.Insert(data,
+                ("Item.Item1", "Item.Id"),
+                ("Item.Item2", "Item.Title")
+            );
+
+            var result = buffer.Commit<IList<Blog>>();
+
+            result.Count.ShouldBe(1);
+            result[0].Id.ShouldBe(10);
+            result[0].Title.ShouldBe("Blog 2");
+        }
+
+        public async Task Test_Insert_PrimaryKeys_Async()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var data = new (int?, string)[]
+            {
+                ( null, "Blog 1" ),
+                ( 10,   "Blog 2" )
+            };
+
+            var buffer = new QueryBuffer(store.Describe<IList<Blog>>(), QueryType.List);
+
+            await buffer.InsertAsync(data,
+                ("Item.Item1", "Item.Id"),
+                ("Item.Item2", "Item.Title")
+            );
+
+            var result = buffer.Commit<IList<Blog>>();
+
+            result.Count.ShouldBe(1);
+            result[0].Id.ShouldBe(10);
+            result[0].Title.ShouldBe("Blog 2");
+        }
+
+        public void Test_Insert_DynamicResult()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var data = new int?[] { 1, 2, null };
+
+            var schema1 = store.GetSchema(typeof(object));
+            var schema2 = store.GetSchema(typeof(IList<object>));
+            var buffer1 = new QueryBuffer(schema1, QueryType.List);
+            var buffer2 = new QueryBuffer(schema2, QueryType.List);
+
+            buffer1.Insert(data,
+                ("Item", "")
+            );
+
+            buffer2.Insert(data,
+                ("Item", "Item")
+            );
+
+            var result1 = buffer1.Commit<dynamic>();
+            var result2 = buffer2.Commit<IList<dynamic>>();
+
+            ((object)result1).ShouldBeNull();
+            result2.Select(d => (int?)d).ShouldBe(new int?[] { 1, 2, null });
+        }
+
+        public void Test_Aggregate_Invalid_DataType()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(Blog));
+            var buffer = new QueryBuffer(schema, QueryType.Aggregate);
+
+            Should.Throw<BindingException>(() => buffer.Insert("Text", ("", "Id"))); // compile time
+            Should.Throw<BindingException>(() => buffer.Insert((object)12, ("", "Title"))); // runtime
+        }
+
+        public void Test_Insert_Invalid_DataType()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(Blog));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            Should.Throw<BindingException>(() => buffer.Insert("Text", ("", "Id"))); // compile time
+            Should.Throw<BindingException>(() => buffer.Insert((object)12, ("", "Title"))); // runtime
+        }
+
+        public void Test_Insert_Invalid_Setter()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(Blog));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            var exception = Should.Throw<NotSupportedException>(() =>
+            {
+                buffer.Insert(100, ("", "GetOnly"));
+            });
+
+            exception.Message.ShouldBe("NoTryCatchHere");
+        }
+
+        public void Test_Aggregate_Dynamic()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var data = (3, "L3");
+
+            var schema = store.GetSchema(typeof(object));
+            var buffer = new QueryBuffer(schema, QueryType.Aggregate);
+
+            buffer.Insert(data, ("Item1", "Id"));
+            buffer.Insert(data, ("Item2", "Text.String"));
+
+            var result = buffer.Commit<dynamic>();
+
+            DynamicShould.HaveProperty(result, "Id");
+            DynamicShould.HaveProperty(result, "Text");
+            DynamicShould.HaveProperty(result.Text, "String");
+
+            int id = Should.NotThrow(() => (int)result.Id);
+            string text = Should.NotThrow(() => (string)result.Text.String);
+
+            id.ShouldBe(3);
+            text.ShouldBe("L3");
+        }
+        public void Test_Insert_DynamicGraph()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var data = new (int, string)[]
+            {
+                (1, "L1"),
+                (2, "L2"),
+            };
+
+            var schema = store.GetSchema(typeof(IList<object>));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            buffer.Insert(data,
+                ("Item.Item1", "Item.Id"),
+                ("Item.Item2", "Item.Text.String")
+            );
+
+            var result = buffer.Commit<IList<dynamic>>();
+
+            result.ShouldNotBeNull();
+            result.Count.ShouldBe(2);
+
+            DynamicShould.HaveProperty(result[0], "Id");
+            DynamicShould.HaveProperty(result[0], "Text");
+            DynamicShould.HaveProperty(result[0].Text, "String");
+
+            DynamicShould.HaveProperty(result[1], "Id");
+            DynamicShould.HaveProperty(result[1], "Text");
+            DynamicShould.HaveProperty(result[1].Text, "String");
+
+            int id0 = Should.NotThrow(() => (int)result[0].Id);
+            string text0 = Should.NotThrow(() => (string)result[0].Text.String);
+            int id1 = Should.NotThrow(() => (int)result[1].Id);
+            string text1 = Should.NotThrow(() => (string)result[1].Text.String);
+
+
+            id0.ShouldBe(1);
+            text0.ShouldBe("L1");
+            id1.ShouldBe(2);
+            text1.ShouldBe("L2");
         }
     }
 }

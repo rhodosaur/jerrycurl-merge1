@@ -262,14 +262,17 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
             foreach (DataReader value in key.Values)
             {
-                value.IsDbNull ??= Expression.Variable(typeof(bool), "kv_isnull");
-                value.Variable ??= Expression.Variable(value.KeyType, "kv");
+                value.IsDbNull ??= this.GetValueVariable(typeof(bool), value);
+                value.Variable ??= this.GetValueVariable(value.KeyType, value);
 
                 if (key.Reference.HasFlag(ReferenceFlags.Child))
                     value.CanBeDbNull = false;
             }
 
         }
+
+        private ParameterExpression GetValueVariable(Type type, DataReader reader)
+            => Expression.Variable(type, "_" + reader.Identity.Name.ToLower());
 
         private bool IsValidJoinType(KeyReader joinKey, bool throwOnInvalid = false)
         {
@@ -292,6 +295,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         private IReference GetRecursiveReference(IReference reference)
         {
+            //return reference.Find(ReferenceFlags.Parent).Metadata.References.FirstOrDefault(r => r.HasFlag(ReferenceFlags.Child));
             var x = reference.Find(ReferenceFlags.Parent).Metadata.References.Where(r => r.Key.Equals(reference.Key)).ToList();
 
             return reference; // somehow locate the other reference through reference.Find(Parent).References.HasFlag(Child).Other

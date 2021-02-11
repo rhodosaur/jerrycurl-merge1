@@ -15,7 +15,7 @@ using System.Data;
 
 namespace Jerrycurl.Data.Test
 {
-    public class Command2Tests
+    public class CommandTests
     {
         public void Test_Update_InvalidDataType()
         {
