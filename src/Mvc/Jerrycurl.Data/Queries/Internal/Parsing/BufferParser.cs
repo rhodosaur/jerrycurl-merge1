@@ -35,29 +35,12 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 Schema = this.Schema,
             };
 
-            //this.MoveManyToOneNodes(nodeTree);
-
             this.AddWriters(tree, nodeTree, valueNames);
             this.AddAggregates(tree, nodeTree, valueNames);
             this.PrioritizeWriters(tree);
 
             return tree;
         }
-
-        //private void MoveManyToOneNodes(NodeTree nodeTree)
-        //{
-        //    foreach (Node node in nodeTree.Nodes.Where(n => this.HasOneAttribute(n.Metadata)))
-        //    {
-        //        Node parentNode = nodeTree.FindNode(node.Metadata.Parent);
-
-        //        parentNode.Properties.Remove(node);
-
-        //        nodeTree.Items.Add(node);
-        //    }
-        //}
-
-        //private bool HasOneAttribute(IBindingMetadata metadata) => metadata.Annotations.OfType<OneAttribute>().Any();
-        //private bool HasOneAttribute(IReference reference) => reference.Metadata.Annotations.OfType<OneAttribute>().Any();
 
         private void PrioritizeWriters(BufferTree tree)
         {
@@ -230,11 +213,18 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         private void AddParentKeys(BufferTree tree, NewBinder binder)
         {
-            IEnumerable<IReference> references = this.GetValidReferences(binder.Metadata).Where(r => r.HasFlag(ReferenceFlags.Parent));
+            IEnumerable<IReference> references = this.GetParentReferences(binder.Metadata);
             IEnumerable<KeyBinder> joinKeys = references.Select(r => BindingHelper.FindParentKey(binder, r));
 
-            foreach (KeyBinder joinKey in joinKeys.NotNull().DistinctBy(k => k.Metadata.Other))
+            var x = joinKeys.NotNull().DistinctBy(k => k.Metadata.Other.Metadata.Identity).ToList();
+
+            foreach (KeyBinder joinKey in joinKeys.NotNull().DistinctBy(k => k.Metadata.Other.Metadata.Identity))
             {
+                if (joinKey.Metadata.HasFlag(ReferenceFlags.Self))
+                {
+                    var xx = this.GetChildReferences(binder.Metadata).ToList();
+                }
+
                 IBindingMetadata metadata = (joinKey.Metadata.List ?? joinKey.Metadata.Other.Metadata).Identity.Lookup<IBindingMetadata>();
 
                 JoinBinder joinBinder = new JoinBinder(metadata)
@@ -256,7 +246,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
         {
             if (writer.Item is NewBinder binder)
             {
-                IEnumerable<IReference> references = this.GetValidReferences(writer.Item.Metadata).Where(r => r.HasFlag(ReferenceFlags.Child));
+                IEnumerable<IReference> references = this.GetChildReferences(writer.Item.Metadata);
                 IEnumerable<KeyBinder> joinKeys = references.Select(r => BindingHelper.FindChildKey(binder, r));
 
                 KeyBinder joinKey = writer.JoinKey = joinKeys.NotNull().FirstOrDefault();
@@ -269,6 +259,17 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 }
             }
         }
+
+        private IEnumerable<IReference> GetRecursiveReferences(IReference reference)
+        {
+            return null;
+        }
+
+        private IEnumerable<IReference> GetParentReferences(IBindingMetadata metadata)
+            => this.GetValidReferences(metadata).Where(r => r.HasFlag(ReferenceFlags.Parent));
+
+        private IEnumerable<IReference> GetChildReferences(IBindingMetadata metadata)
+            => this.GetValidReferences(metadata).Where(r => r.HasFlag(ReferenceFlags.Child) && !r.HasFlag(ReferenceFlags.Self));
 
         private IEnumerable<IReference> GetValidReferences(IBindingMetadata metadata)
         {
