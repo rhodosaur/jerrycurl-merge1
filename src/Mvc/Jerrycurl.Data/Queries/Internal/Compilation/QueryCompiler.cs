@@ -13,6 +13,7 @@ using Jerrycurl.Reflection;
 using Jerrycurl.Data.Queries.Internal.IO;
 using Jerrycurl.Data.Queries.Internal.Caching;
 using System.Collections;
+using Jerrycurl.Data.Buf2;
 
 namespace Jerrycurl.Data.Queries.Internal.Compilation
 {
@@ -21,6 +22,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
         private delegate void BufferInternalWriter(IDataReader dataReader, ElasticArray slots, ElasticArray aggregates, ElasticArray helpers, Type schemaType);
         private delegate void BufferInternalInitializer(ElasticArray slots);
         private delegate TItem AggregateInternalReader<TItem>(ElasticArray slots, ElasticArray aggregates, Type schemaType);
+        private delegate object AggregateInternalReader(ElasticArray slots, ElasticArray aggregates, Type schemaType);
         private delegate TItem EnumerateInternalReader<TItem>(IDataReader dataReader, ElasticArray helpers, Type schemaType);
 
         private BufferWriter CompileBuffer(BufferTree tree, Expression initialize, Expression writeOne, Expression writeAll)
@@ -122,6 +124,18 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
             ParameterExpression[] arguments = new[] { Arguments.Slots, Arguments.Aggregates, Arguments.SchemaType };
             AggregateInternalReader<TItem> reader = this.Compile<AggregateInternalReader<TItem>>(block, arguments);
+
+            Type schemaType = tree.Schema.Model;
+
+            return buf => reader(buf.Slots, buf.Aggregate.Values, schemaType);
+        }
+
+        public AggregateReader Compile(AggregateTree tree)
+        {
+            Expression block = this.GetBinderExpression(tree.Aggregate);
+
+            ParameterExpression[] arguments = new[] { Arguments.Slots, Arguments.Aggregates, Arguments.SchemaType };
+            AggregateInternalReader reader = this.Compile<AggregateInternalReader>(block, arguments);
 
             Type schemaType = tree.Schema.Model;
 

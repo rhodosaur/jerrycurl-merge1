@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using Jerrycurl.Data.Metadata;
+using Jerrycurl.Data.Queries;
+using Jerrycurl.Data.Queries.Internal.Caching;
 using Jerrycurl.Data.Queries.Internal.Compilation;
 using Jerrycurl.Data.Queries.Internal.Parsing;
 using Jerrycurl.Relations.Metadata;
 using AggregateCacheKey = Jerrycurl.Data.Queries.Internal.Caching.QueryCacheKey<Jerrycurl.Data.Queries.Internal.Caching.AggregateName>;
 using ColumnCacheKey = Jerrycurl.Data.Queries.Internal.Caching.QueryCacheKey<Jerrycurl.Data.Queries.Internal.Caching.ColumnName>;
 
-namespace Jerrycurl.Data.Queries.Internal.Caching
+namespace Jerrycurl.Data.Buf2
 {
     internal class QueryCache2
     {
@@ -21,9 +23,9 @@ namespace Jerrycurl.Data.Queries.Internal.Caching
 
         private static BufferCache GetBuffer(ISchema schema) => buffers.GetOrAdd(schema, s => new BufferCache(s));
 
-        public static AggregateReader<TItem> GetAggregateReader<TItem>(AggregateCacheKey cacheKey)
+        public static AggregateReader GetAggregateReader(AggregateCacheKey cacheKey)
         {
-            return (AggregateReader<TItem>)aggregateReaders.GetOrAdd(cacheKey, k =>
+            return (AggregateReader)aggregateReaders.GetOrAdd(cacheKey, k =>
             {
                 BufferCache buffer = GetBuffer(k.Schema);
                 AggregateParser parser = new AggregateParser(buffer);
@@ -31,7 +33,7 @@ namespace Jerrycurl.Data.Queries.Internal.Caching
 
                 QueryCompiler compiler = new QueryCompiler();
 
-                return compiler.Compile<TItem>(tree);
+                return compiler.Compile(tree);
             });
         }
 

@@ -8,6 +8,8 @@ using System.Data.Common;
 using System.Threading;
 using System.Runtime.CompilerServices;
 using Jerrycurl.Data.Sessions;
+using Jerrycurl.Data.Buf2;
+using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Data.Queries
 {
@@ -31,7 +33,8 @@ namespace Jerrycurl.Data.Queries
             if (this.Options.Schemas == null)
                 throw new InvalidOperationException("No schema store found.");
 
-            AggregateBuffer<T> buffer = new AggregateBuffer<T>(this.Options.Schemas);
+            AggregateBuffer2 buffer = new AggregateBuffer2(this.Options.Schemas.GetSchema(typeof(List<T>)));
+            //AggregateBuffer<T> buffer = new AggregateBuffer<T>(this.Options.Schemas);
 
             using ISyncSession connection = this.Options.GetSyncSession();
 
@@ -41,7 +44,7 @@ namespace Jerrycurl.Data.Queries
                     buffer.Insert(dataReader);
             }
 
-            return buffer.Commit();
+            return (T)buffer.Commit();
         }
 
         public Task<T> AggregateAsync<T>(Query query, CancellationToken cancellationToken = default) => this.AggregateAsync<T>(new[] { query }, cancellationToken);
@@ -54,7 +57,8 @@ namespace Jerrycurl.Data.Queries
             if (this.Options.Schemas == null)
                 throw new InvalidOperationException("No schema builder found.");
 
-            AggregateBuffer<T> buffer = new AggregateBuffer<T>(this.Options.Schemas);
+            AggregateBuffer2 buffer = new AggregateBuffer2(this.Options.Schemas.GetSchema(typeof(List<T>)));
+            //AggregateBuffer<T> buffer = new AggregateBuffer<T>(this.Options.Schemas);
 
             await using IAsyncSession connection = this.Options.GetAsyncSession();
 
@@ -64,15 +68,15 @@ namespace Jerrycurl.Data.Queries
                     await buffer.InsertAsync(dataReader, cancellationToken).ConfigureAwait(false);
             }
 
-            return buffer.Commit();
+            return (T)buffer.Commit();
         }
 
         #endregion
 
         #region " List "
 
-        public IList<TItem> List<TItem>(Query query) => this.List<TItem>(new[] { query });
-        public IList<TItem> List<TItem>(IEnumerable<Query> queries)
+        public IList<T> List<T>(Query query) => this.List<T>(new[] { query });
+        public IList<T> List<T>(IEnumerable<Query> queries)
         {
             if (queries == null)
                 throw new ArgumentNullException(nameof(queries));
@@ -80,7 +84,8 @@ namespace Jerrycurl.Data.Queries
             if (this.Options.Schemas == null)
                 throw new InvalidOperationException("No schema store found.");
 
-            ListBuffer<TItem> buffer = new ListBuffer<TItem>(this.Options.Schemas);
+            ListBuffer2 buffer = new ListBuffer2(this.Options.Schemas.GetSchema(typeof(List<T>)));
+            //ListBuffer<TItem> buffer = new ListBuffer<TItem>(this.Options.Schemas);
 
             using ISyncSession connection = this.Options.GetSyncSession();
 
@@ -90,12 +95,12 @@ namespace Jerrycurl.Data.Queries
                     buffer.Insert(dataReader);
             }
 
-            return buffer.Commit();
+            return (List<T>)buffer.Commit();
         }
 
-        public Task<IList<TItem>> ListAsync<TItem>(Query query, CancellationToken cancellationToken = default) => this.ListAsync<TItem>(new[] { query }, cancellationToken);
+        public Task<IList<T>> ListAsync<T>(Query query, CancellationToken cancellationToken = default) => this.ListAsync<T>(new[] { query }, cancellationToken);
 
-        public async Task<IList<TItem>> ListAsync<TItem>(IEnumerable<Query> queries, CancellationToken cancellationToken = default)
+        public async Task<IList<T>> ListAsync<T>(IEnumerable<Query> queries, CancellationToken cancellationToken = default)
         {
             if (queries == null)
                 throw new ArgumentNullException(nameof(queries));
@@ -103,7 +108,8 @@ namespace Jerrycurl.Data.Queries
             if (this.Options.Schemas == null)
                 throw new InvalidOperationException("No schema builder found.");
 
-            ListBuffer<TItem> buffer = new ListBuffer<TItem>(this.Options.Schemas);
+            ListBuffer2 buffer = new ListBuffer2(this.Options.Schemas.GetSchema(typeof(List<T>)));
+            //ListBuffer<TItem> buffer = new ListBuffer<TItem>(this.Options.Schemas);
 
             await using IAsyncSession connection = this.Options.GetAsyncSession();
 
@@ -113,7 +119,7 @@ namespace Jerrycurl.Data.Queries
                     await buffer.InsertAsync(dataReader, cancellationToken).ConfigureAwait(false);
             }
 
-            return buffer.Commit();
+            return (List<T>)buffer.Commit();
         }
 
         #endregion
