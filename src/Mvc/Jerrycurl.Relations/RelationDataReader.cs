@@ -25,17 +25,17 @@ namespace Jerrycurl.Relations
         private void InitializeHeader()
         {
             if (this.Header.Count != this.InnerReader.Degree)
-                throw RelationException2.InvalidDataReaderHeader(this);
+                throw RelationException.InvalidDataReaderHeader(this);
 
             this.headerMap = new Dictionary<string, int>();
 
             for (int i = 0; i < this.Header.Count; i++)
             {
                 if (string.IsNullOrEmpty(this.Header[i]))
-                    throw RelationException2.HeaderCannotBeEmpty(this, i);
+                    throw RelationException.HeaderCannotBeEmpty(this, i);
 
                 if (this.headerMap.ContainsKey(this.Header[i]))
-                    throw RelationException2.HeaderCannotHaveDupes(this, i);
+                    throw RelationException.HeaderCannotHaveDupes(this, i);
 
                 this.headerMap.Add(this.Header[i], i);
             }
@@ -54,7 +54,7 @@ namespace Jerrycurl.Relations
                 if (this.InnerReader[i].Type == FieldType.Missing)
                     return DBNull.Value;
 
-                return this.InnerReader[i].Snapshot;
+                return this.InnerReader[i].Snapshot ?? DBNull.Value;
             }
         }
 

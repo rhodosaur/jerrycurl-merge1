@@ -19,7 +19,7 @@ namespace Jerrycurl.Relations.Internal.Parsing
                 AddNode(tree, relationMetadata[i], index: i);
 
             if (tree.Unreachable.Any())
-                throw RelationException2.Unreachable(source, header, tree.Unreachable);
+                throw RelationException.Unreachable(source, header, tree.Unreachable);
 
             return tree;
         }

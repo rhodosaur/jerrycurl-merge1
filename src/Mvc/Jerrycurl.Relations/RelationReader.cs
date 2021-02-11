@@ -133,7 +133,7 @@ namespace Jerrycurl.Relations
             }
             catch (Exception ex)
             {
-                throw RelationException2.CannotForwardQueue(this.Relation, queue, ex);
+                throw RelationException.CannotForwardQueue(this.Relation, queue, ex);
             }
         }
 
