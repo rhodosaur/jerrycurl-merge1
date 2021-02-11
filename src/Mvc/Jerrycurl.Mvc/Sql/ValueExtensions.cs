@@ -36,28 +36,28 @@ namespace Jerrycurl.Mvc.Sql
             }
         }
 
-        //public static IProjectionValues<TModel> Desc<TModel>(this IProjectionValues<TModel> projections)
-        //    => new ProjectionValues<TModel>(projections.Context, projections.Identity, projections.Items.Reverse());
+        public static IProjectionValues<TModel> Desc<TModel>(this IProjectionValues<TModel> projections)
+            => new ProjectionValues<TModel>(projections.Context, projections.Identity, projections.Items.Reverse());
 
-        //public static IProjectionValues<TModel> Union<TModel>(this IProjectionValues<TModel> projections, Expression<Func<TModel, IEnumerable<TModel>>> expression)
-        //{
-        //    return new ProjectionValues<TModel>(projections.Context, projections.Identity, InnerUnion());
+        public static IProjectionValues<TModel> Union<TModel>(this IProjectionValues<TModel> projections, Expression<Func<TModel, IEnumerable<TModel>>> expression)
+        {
+            return new ProjectionValues<TModel>(projections.Context, projections.Identity, InnerUnion());
 
-        //    IEnumerable<IProjection<TModel>> InnerUnion()
-        //    {
-        //        List<IProjection<TModel>> valueList = new List<IProjection<TModel>>();
+            IEnumerable<IProjection<TModel>> InnerUnion()
+            {
+                List<IProjection<TModel>> valueList = new List<IProjection<TModel>>();
 
-        //        foreach (IProjection<TModel> projection in projections)
-        //        {
-        //            valueList.Add(projection);
+                foreach (IProjection<TModel> projection in projections)
+                {
+                    valueList.Add(projection);
 
-        //            yield return projection;
-        //        }
+                    yield return projection;
+                }
 
-        //        foreach (IProjection<TModel> projection in valueList.SelectMany(p => p.Vals(expression)))
-        //            yield return projection;
-        //    }
-        //}
+                foreach (IProjection<TModel> projection in valueList.SelectMany(p => p.Vals(expression)))
+                    yield return projection;
+            }
+        }
 
         public static IProjection Val(this IProjection projection)
         {

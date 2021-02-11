@@ -28,10 +28,11 @@ namespace Jerrycurl.Mvc
 
         public void Push(int batchIndex)
         {
+            this.bufferStack.Push(batchIndex);
+
             if (batchIndex >= 0)
             {
                 this.ReserveBuffer(batchIndex);
-                this.bufferStack.Push(batchIndex);
                 this.currentBuffer = this.innerBuffers[batchIndex];
             }
         }
@@ -39,12 +40,17 @@ namespace Jerrycurl.Mvc
         public void Pop()
         {
             if (this.bufferStack.Count > 0)
-                this.bufferStack.Pop();
+            {
+                int batchIndex = this.bufferStack.Pop();
 
-            if (this.bufferStack.Count > 0)
-                this.currentBuffer = this.innerBuffers[this.bufferStack.Peek()];
-            else
-                this.currentBuffer = this.innerBuffers[0];
+                if (batchIndex >= 0)
+                {
+                    if (this.bufferStack.Count > 0)
+                        this.currentBuffer = this.innerBuffers[this.bufferStack.Peek()];
+                    else
+                        this.currentBuffer = this.innerBuffers[0];
+                }
+            }
         }
 
         public void Mark()
