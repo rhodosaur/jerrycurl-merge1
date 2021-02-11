@@ -96,7 +96,7 @@ namespace Jerrycurl.Mvc.Sql
         }
 
         public static IEnumerable<IProjection> Vals(this IProjection projection, int batchIndex = -1) => projection.Cast<object>().Vals(batchIndex);
-        public static IProjectionValues<TItem> Vals<TModel, TItem>(this IProjection<TModel> projection, Expression<Func<TModel, IEnumerable<TItem>>> expression, int batchIndex = -1) => projection.Open(expression).Vals();
+        public static IProjectionValues<TItem> Vals<TModel, TItem>(this IProjection<TModel> projection, Expression<Func<TModel, IEnumerable<TItem>>> expression, int batchIndex = -1) => projection.Open(expression).Vals(batchIndex);
 
         public static IProjection<TProperty> Val<TModel, TProperty>(this IProjection<TModel> projection, Expression<Func<TModel, TProperty>> expression) => projection.For(expression).Val();
         public static IProjection<TModel> Val<TModel>(this IProjection<TModel> projection) => ((IProjection)projection).Val().Cast<TModel>();
