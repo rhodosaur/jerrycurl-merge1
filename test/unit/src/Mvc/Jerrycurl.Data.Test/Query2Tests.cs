@@ -13,6 +13,7 @@ using Newtonsoft.Json.Serialization;
 using System.IO;
 using System;
 using Jerrycurl.Relations.Metadata;
+using System.ComponentModel;
 
 namespace Jerrycurl.Data.Test
 {
@@ -398,7 +399,14 @@ namespace Jerrycurl.Data.Test
 
         public void Test_Insert_Invalid_Constructor()
         {
-            throw new NotImplementedException();
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(NoConstruct));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            Should.Throw<BindingException>(() =>
+            {
+                buffer.Insert("Hello World!", ("", "String"));
+            });
         }
 
         public void Test_Insert_Invalid_ParentKey()
@@ -808,13 +816,18 @@ namespace Jerrycurl.Data.Test
             Should.Throw<BindingException>(() => buffer.Insert((object)12, ("", "Title"))); // runtime
         }
 
-        public void Test_Insert_Invalid_Property()
+        public void Test_Insert_Invalid_Setter()
         {
             var store = DatabaseHelper.Default.Store;
             var schema = store.GetSchema(typeof(Blog));
             var buffer = new QueryBuffer(schema, QueryType.List);
 
-            Should.Throw<BindingException>(() => buffer.Insert(100, ("", "GetOnly")));
+            var exception = Should.Throw<NotSupportedException>(() =>
+            {
+                buffer.Insert(100, ("", "GetOnly"));
+            });
+
+            exception.Message.ShouldBe("NoTryCatchHere");
         }
 
         public void Test_Aggregate_Dynamic()

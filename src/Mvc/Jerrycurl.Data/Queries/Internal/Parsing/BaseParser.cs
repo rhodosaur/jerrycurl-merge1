@@ -96,18 +96,6 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             }
         }
 
-        private void InitializePrimaryKey(KeyReader primaryKey)
-        {
-            int index = 0;
-
-            foreach (DataReader valueReader in primaryKey.Values)
-            {
-                valueReader.CanBeDbNull = false;
-                //valueReader.IsDbNull ??= Expression.Variable(typeof(bool), $"key_{index++}_isnull");
-                //valueReader.Variable ??= Expression.Variable(valueReader.Metadata.Type, $"key_{index}");
-            }
-        }
-
         private void AddPrimaryKey(NewReader binder)
         {
             IReferenceMetadata metadata = binder.Metadata.Identity.Lookup<IReferenceMetadata>();
@@ -117,7 +105,10 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             binder.PrimaryKey = keys?.NotNull().FirstOrDefault();
 
             if (binder.PrimaryKey != null)
-                this.InitializePrimaryKey(binder.PrimaryKey);
+            {
+                foreach (DataReader valueReader in binder.PrimaryKey.Values)
+                    valueReader.CanBeDbNull = false;
+            }
         }
 
         protected KeyReader FindChildKey(BaseReader reader, IReference reference)

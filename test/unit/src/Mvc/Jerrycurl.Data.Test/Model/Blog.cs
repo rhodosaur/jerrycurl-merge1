@@ -20,7 +20,7 @@ namespace Jerrycurl.Data.Test.Model
         public int GetOnly
         {
             get => 1;
-            set => throw new NotSupportedException();
+            set => throw new NotSupportedException("NoTryCatchHere");
         }
     }
 }

@@ -400,6 +400,10 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
         private Expression GetReaderExpression(NewReader reader)
         {
             NewExpression newExpression = reader.Metadata.Composition.Construct;
+
+            if (newExpression == null)
+                throw BindingException.InvalidConstructor(reader.Metadata);
+
             Expression memberInit = Expression.MemberInit(newExpression, reader.Properties.Select(r =>
             {
                 if (!r.Metadata.HasFlag(BindingMetadataFlags.Writable))

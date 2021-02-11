@@ -293,7 +293,7 @@ namespace Jerrycurl.Data.Metadata
                 if (valueInfo.Metadata.Type.IsValueType && Nullable.GetUnderlyingType(valueInfo.Metadata.Type) == null)
                     defaultValue = this.GetConvertExpression(defaultValue, typeof(object));
 
-                value = Expression.Condition(isNull, defaultValue, value);
+                value = Expression.Condition(isNull, defaultValue, value, typeof(object));
             }
 
             if (!valueInfo.Metadata.Type.IsAssignableFrom(value.Type))
