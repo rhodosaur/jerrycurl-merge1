@@ -6,6 +6,7 @@ using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Data.Metadata;
 using Jerrycurl.Mvc.Metadata.Annotations;
 using Jerrycurl.Data.Metadata.Annotations;
+using Jerrycurl.Collections;
 
 namespace Jerrycurl.Mvc.Metadata
 {
@@ -25,14 +26,14 @@ namespace Jerrycurl.Mvc.Metadata
             return parent.Properties.FirstOrDefault(m => m.Identity.Equals(relation.Identity));
         }
 
-        public void Initialize(IMetadataBuilderContext context) => this.CreateAndAddMetadata(context, context.Relation);
+        public void Initialize(IMetadataBuilderContext context) => this.CreateAndAddMetadata(context, context.Relation, null);
 
         private Lazy<IReadOnlyList<TItem>> CreateLazy<TItem>(Func<IEnumerable<TItem>> factory) => new Lazy<IReadOnlyList<TItem>>(() => factory().ToList());
 
         private IEnumerable<ProjectionMetadata> CreateProperties(IMetadataBuilderContext context, ProjectionMetadata parent)
         {
             foreach (IRelationMetadata property in parent.Relation.Properties)
-                yield return this.CreateAndAddMetadata(context, property);
+                yield return this.CreateAndAddMetadata(context, property, parent);
         }
 
         private ProjectionMetadata CreateItem(IMetadataBuilderContext context, ProjectionMetadata parent)
@@ -51,11 +52,13 @@ namespace Jerrycurl.Mvc.Metadata
             return null;
         }
 
-        private ProjectionMetadata CreateAndAddMetadata(IMetadataBuilderContext context, IRelationMetadata relation)
+        private ProjectionMetadata CreateAndAddMetadata(IMetadataBuilderContext context, IRelationMetadata relation, IProjectionMetadata parent)
         {
             ProjectionMetadata metadata = this.CreateBaseMetadata(context, relation);
 
             context.AddMetadata<IProjectionMetadata>(metadata);
+
+            metadata.Value = this.CreateValueMetadata(context, metadata, parent);
 
             return metadata;
         }
@@ -69,6 +72,28 @@ namespace Jerrycurl.Mvc.Metadata
             metadata.Flags = this.GetFlags(metadata);
 
             this.CreateTableMetadata(metadata);
+
+            return metadata;
+        }
+
+        private IProjectionMetadata CreateValueMetadata(IMetadataBuilderContext context, IProjectionMetadata metadata, IProjectionMetadata parent)
+        {
+            if (parent == null)
+                return metadata;
+
+            IReferenceMetadata referenceMetadata = parent.Identity.Lookup<IReferenceMetadata>();
+
+            foreach (IReference reference in referenceMetadata.References.Where(r => r.HasFlag(ReferenceFlags.Foreign)))
+            {
+                int valueIndex = reference.Key.Properties.IndexOf(m => m.Identity.Equals(metadata.Identity));
+
+                if (valueIndex > -1)
+                {
+                    IReferenceMetadata valueMetadata = reference.Other.Key.Properties[valueIndex];
+
+                    return this.GetMetadata(context, valueMetadata.Relation);
+                }
+            }
 
             return metadata;
         }

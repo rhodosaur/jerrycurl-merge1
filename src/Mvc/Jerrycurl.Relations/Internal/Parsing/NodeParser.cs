@@ -6,17 +6,16 @@ namespace Jerrycurl.Relations.Internal.Parsing
 {
     internal static class NodeParser
     {
-        public static NodeTree Parse(MetadataIdentity source, RelationHeader header)
+        public static NodeTree Parse(MetadataIdentity source, IRelationHeader header)
         {
             NodeTree tree = new NodeTree();
 
             IRelationMetadata sourceMetadata = GetMetadata(source);
-            IRelationMetadata[] relationMetadata = header.Attributes.Select(a => a.Metadata).ToArray();
 
             tree.Source = AddSourceNode(tree, sourceMetadata);
 
-            for (int i = 0; i < relationMetadata.Length; i++)
-                AddNode(tree, relationMetadata[i], index: i);
+            for (int i = 0; i < header.Degree; i++)
+                AddNode(tree, header.Attributes[i], index: i);
 
             if (tree.Unreachable.Any())
                 throw RelationException.Unreachable(source, header, tree.Unreachable);

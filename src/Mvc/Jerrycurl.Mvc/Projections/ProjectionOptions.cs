@@ -5,6 +5,7 @@ namespace Jerrycurl.Mvc.Projections
     public class ProjectionOptions : IProjectionOptions
     {
         public string Separator { get; set; } = "," + Environment.NewLine;
+        public static IProjectionOptions Default { get; } = new ProjectionOptions();
 
         public ProjectionOptions()
         {

@@ -10,13 +10,13 @@ namespace Jerrycurl.Relations
 {
     public class Relation : IRelation
     {
-        public RelationHeader Header { get; }
+        public IRelationHeader Header { get; }
         public IField Model => this.Source.Model;
         public IField Source { get; }
 
         IRelationReader IRelation.GetReader() => this.GetReader();
 
-        public Relation(IField source, RelationHeader header)
+        public Relation(IField source, IRelationHeader header)
         {
             this.Source = source ?? throw new ArgumentNullException(nameof(source));
             this.Header = header ?? throw new ArgumentNullException(nameof(header));
@@ -24,7 +24,7 @@ namespace Jerrycurl.Relations
 
         public RelationReader GetReader() => new RelationReader(this);
         public DbDataReader GetDataReader(IEnumerable<string> header) => new RelationDataReader(this.GetReader(), header);
-        public DbDataReader GetDataReader() => this.GetDataReader(this.Header.Attributes.Select(a => a.Name));
+        public DbDataReader GetDataReader() => this.GetDataReader(this.Header.Attributes.Select(a => a.Identity.Name));
 
         public IEnumerable<ITuple> Body
         {

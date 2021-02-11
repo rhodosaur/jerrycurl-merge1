@@ -7,13 +7,18 @@ using HashCode = Jerrycurl.Diagnostics.HashCode;
 
 namespace Jerrycurl.Relations
 {
-    public class RelationHeader : IEquatable<RelationHeader>
+    public class RelationHeader : IRelationHeader
     {
         public ISchema Schema { get; }
-        public IReadOnlyList<RelationAttribute> Attributes { get; }
+        public virtual IReadOnlyList<IRelationMetadata> Attributes { get; }
         public int Degree => this.Attributes.Count;
 
-        public RelationHeader(ISchema schema, IReadOnlyList<RelationAttribute> attributes)
+        protected RelationHeader(ISchema schema)
+        {
+            this.Schema = schema;
+        }
+
+        public RelationHeader(ISchema schema, IReadOnlyList<IRelationMetadata> attributes)
         {
             this.Schema = schema ?? throw new ArgumentNullException(nameof(schema));
             this.Attributes = attributes ?? throw new ArgumentNullException(nameof(attributes));
@@ -34,8 +39,8 @@ namespace Jerrycurl.Relations
 
         public override string ToString() => $"{this.Schema}({string.Join(", ", this.Attributes.Select(a => $"\"{a.Identity.Name}\""))})";
 
-        public bool Equals(RelationHeader other) => Equality.CombineAll(this.Attributes, other?.Attributes);
-        public override bool Equals(object obj) => (obj is RelationHeader other && this.Equals(other));
+        public bool Equals(IRelationHeader other) => Equality.CombineAll(this.Attributes, other?.Attributes);
+        public override bool Equals(object obj) => (obj is IRelationHeader other && this.Equals(other));
         public override int GetHashCode() => HashCode.CombineAll(this.Attributes);
     }
 }

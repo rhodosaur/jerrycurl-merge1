@@ -5,4 +5,8 @@
 	</PropertyGroup>
 
 	<Import Project="..\..\Shared\Jerrycurl.Common\Jerrycurl.Common.projitems" Label="Shared" />
+
+	<ItemGroup>
+	  <Compile Remove="RelationAttribute.cs" />
+	</ItemGroup>
 </Project>

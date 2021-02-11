@@ -57,6 +57,9 @@ namespace Jerrycurl.Collections
         }
 #pragma warning restore IDE0063
 
+        public static int IndexOf<T>(this IEnumerable<T> source, Func<T, bool> predicate)
+            => source.Select((it, i) => ((T Item, int Index)?)(it, i)).FirstOrDefault(t => predicate(t.Value.Item))?.Index ?? -1;
+
         public static IEnumerable<TResult> NotNull<T, TResult>(this IEnumerable<T> source, Func<T, TResult> selector)
             where TResult : class
             => source.Select(selector).NotNull();

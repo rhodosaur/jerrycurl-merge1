@@ -12,8 +12,7 @@ namespace Jerrycurl.Relations.Language
             if (header == null)
                 throw new ArgumentException(nameof(header));
 
-            IEnumerable<IRelationMetadata> metadata = header.Select(a => schema.Require<IRelationMetadata>(a)).ToList();
-            IReadOnlyList<RelationAttribute> attributes = metadata.Select(m => new RelationAttribute(m)).ToList();
+            IReadOnlyList<IRelationMetadata> attributes = header.Select(a => schema.Require<IRelationMetadata>(a)).ToList();
 
             return new RelationHeader(schema, attributes);
         }

@@ -52,15 +52,15 @@ namespace Jerrycurl.Vendors.SqlServer
             binder(sqlParam, this.Relation);
         }
 
-        private static void GetHeadingMetadata(RelationHeader header, out IBindingMetadata[] bindingMetadata, out ITableMetadata[] columnMetadata)
+        private static void GetHeadingMetadata(IRelationHeader header, out IBindingMetadata[] bindingMetadata, out ITableMetadata[] columnMetadata)
         {
             bindingMetadata = new IBindingMetadata[header.Attributes.Count];
             columnMetadata = new ITableMetadata[header.Attributes.Count];
 
             for (int i = 0; i < header.Attributes.Count; i++)
             {
-                IBindingMetadata bindingEntry = header.Attributes[i].Metadata.Identity.Require<IBindingMetadata>();
-                ITableMetadata tableEntry = header.Attributes[i].Metadata.Identity.Require<ITableMetadata>();
+                IBindingMetadata bindingEntry = header.Attributes[i].Identity.Require<IBindingMetadata>();
+                ITableMetadata tableEntry = header.Attributes[i].Identity.Require<ITableMetadata>();
 
                 bindingMetadata[i] = bindingEntry;
                 columnMetadata[i] = tableEntry;

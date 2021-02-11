@@ -22,7 +22,7 @@ namespace Jerrycurl.Mvc.Sql.SqlServer
             else if (!projection.Attributes.Any())
                 throw ProjectionException.FromProjection(projection, "No attributes found.");
 
-            RelationHeader header = new RelationHeader(projection.Source.Identity.Schema, projection.Attributes.Select(a => new RelationAttribute(a.Metadata.Relation)).ToList());
+            RelationHeader header = new RelationHeader(projection.Source.Identity.Schema, projection.Attributes.Select(a => a.Metadata.Relation).ToList());
             Relation relation = new Relation(projection.Source, header);
 
             string paramName = projection.Context.Lookup.Custom("TP", projection.Identity, metadata: projection.Metadata.Identity, field: projection.Source);

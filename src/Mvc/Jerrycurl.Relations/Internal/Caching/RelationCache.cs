@@ -24,7 +24,7 @@ namespace Jerrycurl.Relations.Internal.Caching
             };
         }
 
-        private static BufferWriter GetWriter(MetadataIdentity source, RelationHeader header)
+        private static BufferWriter GetWriter(MetadataIdentity source, IRelationHeader header)
         {
             RelationCacheKey key = new RelationCacheKey(source, header);
 

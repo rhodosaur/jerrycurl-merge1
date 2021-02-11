@@ -15,7 +15,7 @@ namespace Jerrycurl.Mvc.Metadata
         IReadOnlyList<IProjectionMetadata> Properties { get; }
         ProjectionMetadataFlags Flags { get; }
 
-        IProjectionMetadata Parameter { get; }
+        IProjectionMetadata Value { get; }
         IProjectionMetadata Item { get; }
         IProjectionMetadata List { get; }
     }

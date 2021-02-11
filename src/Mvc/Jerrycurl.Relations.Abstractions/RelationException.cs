@@ -44,9 +44,9 @@ namespace Jerrycurl.Relations
             return new RelationException(fullMessage, innerException);
         }
 
-        public static RelationException From(RelationHeader header, string message = null, Exception innerException = null)
+        public static RelationException From(IRelationHeader header, string message = null, Exception innerException = null)
         {
-            string attributeList = string.Join(", ", header.Attributes.Select(a => a.Metadata.Identity));
+            string attributeList = string.Join(", ", header.Attributes.Select(a => a.Identity));
             string fullMessage = $"Error in relation {header.Schema}({attributeList}).";
 
             if (message != null || innerException != null)
@@ -55,38 +55,38 @@ namespace Jerrycurl.Relations
             return new RelationException(fullMessage, innerException);
         }
 
-        internal static RelationException AttributeDoesNotBelongToSchema(ISchema schema, RelationAttribute attribute, int index)
+        internal static RelationException AttributeDoesNotBelongToSchema(ISchema schema, IRelationMetadata attribute, int index)
             => From(schema, $"Attribute {attribute.Identity} at index {index} does not belong to {schema}.");
 
-        internal static RelationException InvalidDataReaderHeader(RelationHeader header, IEnumerable<string> dataHeader)
+        internal static RelationException InvalidDataReaderHeader(IRelationHeader header, IEnumerable<string> dataHeader)
         {
             string headerString = string.Join(", ", dataHeader.Select(a => $"\"{a}\""));
 
             return From(header, $"Degree does not match IDataReader({headerString}).");
         }
 
-        internal static RelationException IndexOutOfRange(RelationHeader header, int index)
+        internal static RelationException IndexOutOfRange(IRelationHeader header, int index)
             => From(header, $"Index {index} is out of range.");
 
-        internal static RelationException NoDataAvailable(RelationHeader header)
+        internal static RelationException NoDataAvailable(IRelationHeader header)
             => From(header, $"No data available.");
 
-        internal static RelationException NoDataAvailableCallRead(RelationHeader header)
+        internal static RelationException NoDataAvailableCallRead(IRelationHeader header)
             => From(header, $"No data available. Call Read() to start reading data.");
 
         internal static RelationException AttributeCannotBeNull(ISchema schema, int emptyIndex)
             => From(schema, $"Attribute at index {emptyIndex} cannot be null.");
 
-        internal static RelationException DataHeaderCannotBeNull(RelationHeader header, int emptyIndex)
+        internal static RelationException DataHeaderCannotBeNull(IRelationHeader header, int emptyIndex)
             => From(header, $"Attribute name at index {emptyIndex} cannot be null.");
 
-        internal static RelationException DataHeaderCannotHaveDupes(RelationHeader header, IReadOnlyList<string> dataHeader, int dupeIndex)
+        internal static RelationException DataHeaderCannotHaveDupes(IRelationHeader header, IReadOnlyList<string> dataHeader, int dupeIndex)
             => From(header, $"Attribute \"{dataHeader[dupeIndex]}\" at index {dupeIndex} is already specified.");
 
         internal static RelationException CannotForwardQueue(IRelation relation, MetadataIdentity identity, Exception innerException)
             => From(relation.Header, $"Cannot move cursor for '{identity}'.", innerException);
 
-        internal static RelationException Unreachable(MetadataIdentity source, RelationHeader header, IEnumerable<IRelationMetadata> attributes)
+        internal static RelationException Unreachable(MetadataIdentity source, IRelationHeader header, IEnumerable<IRelationMetadata> attributes)
         {
             string attributeNames = string.Join(", ", attributes.Select(a => a.Identity));
 

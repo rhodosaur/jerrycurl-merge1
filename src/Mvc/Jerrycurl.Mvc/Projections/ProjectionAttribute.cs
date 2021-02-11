@@ -44,7 +44,7 @@ namespace Jerrycurl.Mvc.Projections
             else if (source.Identity.Metadata.Equals(this.Metadata.Identity))
                 return () => source;
 
-            RelationHeader header = new RelationHeader(source.Identity.Schema, new[] { new RelationAttribute(this.Metadata.Relation) });
+            RelationHeader header = new RelationHeader(source.Identity.Schema, new[] { this.Metadata.Relation });
             Relation relation = new Relation(source, header);
 
             return () => relation.Scalar();

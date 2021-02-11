@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Jerrycurl.Mvc.Projections;
 using Jerrycurl.Relations;
+using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Mvc.Sql
 {
@@ -14,7 +15,7 @@ namespace Jerrycurl.Mvc.Sql
             if (projection.Source == null)
                 return new ProjectionValues<TModel>(projection.Context, projection.Identity, Array.Empty<IProjection<TModel>>());
 
-            IEnumerable<RelationAttribute> attributes = new[] { projection.Metadata.Relation }.Concat(projection.Attributes.Select(a => a.Metadata.Relation)).Select(m => new RelationAttribute(m));
+            IEnumerable<IRelationMetadata> attributes = new[] { projection.Metadata.Relation }.Concat(projection.Attributes.Select(a => a.Metadata.Relation));
             RelationHeader header = new RelationHeader(projection.Source.Identity.Schema, attributes.ToList());
 
             Relation relation = new Relation(projection.Source, header);

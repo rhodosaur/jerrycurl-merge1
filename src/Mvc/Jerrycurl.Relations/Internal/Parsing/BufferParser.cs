@@ -9,7 +9,7 @@ namespace Jerrycurl.Relations.Internal.Parsing
 {
     internal class BufferParser
     {
-        public BufferTree Parse(MetadataIdentity source, RelationHeader header)
+        public BufferTree Parse(MetadataIdentity source, IRelationHeader header)
         {
             NodeTree nodeTree = NodeParser.Parse(source, header);
             BufferTree tree = new BufferTree()

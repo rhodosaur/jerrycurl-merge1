@@ -8,21 +8,21 @@ namespace Jerrycurl.Relations.Language
 {
     public sealed class RelationHeader<TSource> : RelationHeader
     {
-        public RelationAttribute Source { get; }
+        public IRelationMetadata Source { get; }
 
         public RelationHeader(ISchema schema)
-            : base(schema, Array.Empty<RelationAttribute>())
+            : base(schema, Array.Empty<IRelationMetadata>())
         {
-            this.Source = new RelationAttribute(schema, schema.Notation.Model());
+            this.Source = schema.Model;
         }
 
-        public RelationHeader(ISchema schema, IReadOnlyList<RelationAttribute> attributes)
+        public RelationHeader(ISchema schema, IReadOnlyList<IRelationMetadata> attributes)
             : base(schema, attributes)
         {
-            this.Source = new RelationAttribute(schema, schema.Notation.Model());
+            this.Source = schema.Model;
         }
 
-        public RelationHeader(RelationAttribute source, IReadOnlyList<RelationAttribute> attributes)
+        public RelationHeader(IRelationMetadata source, IReadOnlyList<IRelationMetadata> attributes)
             : base(source?.Schema, attributes)
         {
             this.Source = source;
@@ -34,7 +34,7 @@ namespace Jerrycurl.Relations.Language
         [Obsolete("Needs more overloads")]
         public RelationHeader<TSource> Select<TTarget>(Expression<Func<TSource, TTarget>> expression)
         {
-            MetadataIdentity newIdentity = this.Source.Metadata.Identity.Push(this.Schema.Notation.Lambda(expression));
+            MetadataIdentity newIdentity = this.Source.Identity.Push(this.Schema.Notation.Lambda(expression));
             IRelationMetadata metadata = newIdentity.Lookup<IRelationMetadata>();
 
             return new RelationHeader<TSource>(this.Source, this.Add(metadata));
@@ -49,7 +49,7 @@ namespace Jerrycurl.Relations.Language
 
         public RelationHeader<TSource> Select<TTarget>(Expression<Func<TSource, TTarget>> expression, Func<IRelationMetadata, bool> selector)
         {
-            MetadataIdentity sourceIdentity = this.Source.Metadata.Identity.Push(this.Schema.Notation.Lambda(expression));
+            MetadataIdentity sourceIdentity = this.Source.Identity.Push(this.Schema.Notation.Lambda(expression));
             IReadOnlyList<IRelationMetadata> metadata = sourceIdentity.Lookup<IRelationMetadata>().Properties;
 
             return new RelationHeader<TSource>(this.Source, this.Add(metadata.Where(selector)));
@@ -57,17 +57,16 @@ namespace Jerrycurl.Relations.Language
 
         public RelationHeader<TTarget> Join<TTarget>(Expression<Func<TSource, IEnumerable<TTarget>>> expression)
         {
-            MetadataIdentity newIdentity = this.Source.Metadata.Identity.Push(this.Schema.Notation.Lambda(expression));
+            MetadataIdentity newIdentity = this.Source.Identity.Push(this.Schema.Notation.Lambda(expression));
             IRelationMetadata metadata = newIdentity.Lookup<IRelationMetadata>();
-            RelationAttribute newSource = new RelationAttribute(metadata.Item);
 
-            return new RelationHeader<TTarget>(newSource, this.Attributes);
+            return new RelationHeader<TTarget>(metadata.Item, this.Attributes);
         }
 
-        private IReadOnlyList<RelationAttribute> Add(IRelationMetadata metadata)
-            => this.Attributes.Append(new RelationAttribute(metadata)).ToList();
+        private IReadOnlyList<IRelationMetadata> Add(IRelationMetadata attribute)
+            => this.Attributes.Append(attribute).ToList();
 
-        private IReadOnlyList<RelationAttribute> Add(IEnumerable<IRelationMetadata> metadata)
-            => this.Attributes.Concat(metadata.Select(m => new RelationAttribute(m))).ToList();
+        private IReadOnlyList<IRelationMetadata> Add(IEnumerable<IRelationMetadata> attributes)
+            => this.Attributes.Concat(attributes).ToList();
     }
 }

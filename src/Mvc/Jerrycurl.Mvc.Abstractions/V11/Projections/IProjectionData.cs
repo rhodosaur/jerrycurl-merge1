@@ -14,6 +14,6 @@ namespace Jerrycurl.Mvc.V11.Projections
     public interface IProjectionData
     {
         public IProjectionMetadata Metadata { get; }
-        public Func<IField> Value { get; set; }
+        public IField Value { get; }
     }
 }

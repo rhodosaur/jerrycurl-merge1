@@ -17,19 +17,16 @@ namespace Jerrycurl.Mvc.V11.Projections
         IProjectionIdentity Identity { get; }
         IProcContext Context { get; }
         IProjectionOptions Options { get; }
-        IField Source { get; }
 
-        IProjection Append(IEnumerable<IParameter> parameters);
-        IProjection Append(IEnumerable<IUpdateBinding> bindings);
-        IProjection Append(string text);
-        IProjection Append(params IParameter[] parameter);
-        IProjection Append(params IUpdateBinding[] bindings);
+        IProjection2 Append(IEnumerable<IParameter> parameters);
+        IProjection2 Append(IEnumerable<IUpdateBinding> bindings);
+        IProjection2 Append(string text);
+        IProjection2 Append(params IParameter[] parameter);
+        IProjection2 Append(params IUpdateBinding[] bindings);
 
-        IProjection Map(Func<IProjectionAttribute, IProjectionAttribute> map);
+        IProjection2 Map(Func<IProjectionAttribute2, IProjectionAttribute2> map);
 
-        IProjection With(IProjectionMetadata metadata = null,
-                         IEnumerable<IProjectionAttribute> attributes = null,
-                         IField source = null,
-                         IProjectionOptions options = null);
+        IProjection2 With(ProjectionHeader header = null,
+                          IProjectionOptions options = null);
     }
 }

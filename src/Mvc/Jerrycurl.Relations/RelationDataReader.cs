@@ -64,7 +64,7 @@ namespace Jerrycurl.Relations
         public override bool HasRows => true;
 
         public override string GetDataTypeName(int i) => null;
-        public override Type GetFieldType(int i) => this.InnerReader.Relation.Header.Attributes[i].Metadata.Type;
+        public override Type GetFieldType(int i) => this.InnerReader.Relation.Header.Attributes[i].Type;
         public override string GetName(int i) => this.Header[i];
         public override int GetOrdinal(string name) => this.headerMap[name];
         public override T GetFieldValue<T>(int i)
