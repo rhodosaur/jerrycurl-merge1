@@ -59,7 +59,7 @@ namespace Jerrycurl.Data.Test
 
             result[1].Posts.Count.ShouldBe(1);
             result[1].Posts[0].BlogId.ShouldBe(result[1].Id);
-            result[1].Posts[0].Headline.ShouldBe("Blog post 1.2");
+            result[1].Posts[0].Headline.ShouldBe("Blog post 2.1");
         }
 
         public void Test_Insert_OneToMany()
@@ -104,7 +104,7 @@ namespace Jerrycurl.Data.Test
 
             result[1].Posts.Count.ShouldBe(1);
             result[1].Posts[0].BlogId.ShouldBe(result[1].Id);
-            result[1].Posts[0].Headline.ShouldBe("Blog post 1.2");
+            result[1].Posts[0].Headline.ShouldBe("Blog post 2.1");
         }
 
         public void Test_Insert_PrimaryKeys()

@@ -258,6 +258,7 @@ namespace Jerrycurl.Relations.Metadata
 
         private bool IsFieldOrNonIndexedProperty(MemberInfo memberInfo)
         {
+
             if (memberInfo is PropertyInfo pi)
                 return (pi.GetIndexParameters().Length == 0 && pi.GetAccessors(nonPublic: true).Any(m => m.IsAssembly || m.IsPublic));
             else if (memberInfo is FieldInfo fi)
