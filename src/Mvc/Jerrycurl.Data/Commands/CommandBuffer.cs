@@ -80,7 +80,7 @@ namespace Jerrycurl.Data.Commands
 
             foreach (FieldBuffer buffer in this.paramHeader.Values)
             {
-                IDbDataParameter adoParam = parameterFactory();
+                IDbDataParameter adoParam = buffer.Parameter.AdoParameter = parameterFactory();
 
                 adoParam.ParameterName = buffer.Parameter.Name;
                 buffer.Parameter.Parameter?.Build(adoParam);
@@ -96,8 +96,6 @@ namespace Jerrycurl.Data.Commands
 
                 if (this.TryReadValue(buffer.Parameter.Parameter?.Source, out object newValue))
                     adoParam.Value = newValue;
-
-                buffer.Parameter.AdoParameter = adoParam;
 
                 parameters.Add(adoParam);
             }
