@@ -144,7 +144,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 writer.PrimaryKey = newReader.PrimaryKey;
                 newReader.PrimaryKey = null;
 
-                writer.JOINS.AddRange(newReader.Joins);
+                writer.ForeignJoins.AddRange(newReader.Joins);
                 newReader.Joins.Clear();
             }
         }

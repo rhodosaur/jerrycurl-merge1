@@ -223,7 +223,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 body = Expression.IfThen(bufferNotNull, addValue);
             }
 
-            return this.GetKeyBlockExpression(new[] { writer.PrimaryKey }, new[] { writer.Join }.Concat(writer.JOINS), body);
+            return this.GetKeyBlockExpression(new[] { writer.PrimaryKey }, new[] { writer.Join }.Concat(writer.ForeignJoins), body);
         }
         
         private Expression GetWriterExpression(HelperWriter writer)
@@ -296,7 +296,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             Expression bufferIndex = this.GetElasticIndexExpression(join.Buffer, join.Index);
             Expression assignBuffer = Expression.Assign(join.Buffer, newBuffer);
             Expression addArray = this.GetDictionaryAddExpression(join.List.Variable, dictKey, assignBuffer);
-            Expression getOrAdd = Expression.IfThenElse(tryGet, Expression.Default(typeof(void)), addArray);
+            Expression getOrAdd = Expression.IfThen(Expression.Not(tryGet), addArray);
 
             IEnumerable<ParameterExpression> isNullVars = join.Key.Values.Where(v => v.CanBeDbNull).Select(v => v.IsDbNull).ToList();
 
@@ -343,9 +343,9 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             {
                 IEnumerable<DataReader> values = primaryKeys.NotNull().SelectMany(k => k.Values).Distinct();
 
-                Expression isNull = this.GetOrConditionExpression(values, this.GetIsDbNullExpression);
+                Expression isNotNull = this.GetAndConditionExpression(values, this.GetIsNotDbNullExpression);
 
-                return Expression.Condition(isNull, Expression.Default(block.Type), block);
+                return Expression.IfThen(isNotNull, block);
             }
 
             return block;
@@ -385,7 +385,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             }
         }
 
-        private Expression GetReaderExpression(DataReader reader, Expression isDbNull, Expression value, bool canBeDbNull, bool useTryCatch = false)
+        private Expression GetReaderExpression(DataReader reader, Expression isDbNull, Expression value, bool canBeDbNull, bool useTryCatch = true)
         {
             isDbNull ??= this.GetIsDbNullExpression(reader);
 
@@ -408,13 +408,15 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                     value = Expression.Condition(isDbNull, Expression.Default(reader.Metadata.Type), matchedValue);
                 }
             }
-            else if (value.Type != reader.Metadata.Type)
+            else if (canBeDbNull && value.Type != reader.Metadata.Type)
             {
                 Expression defaultValue = Expression.Default(reader.Metadata.Type);
                 Expression matchedValue = Expression.Convert(value, reader.Metadata.Type);
 
-                value = Expression.Condition(isDbNull, Expression.Default(reader.Metadata.Type), matchedValue);
+                value = Expression.Condition(isDbNull, defaultValue, matchedValue);
             }
+            else if (value.Type != reader.Metadata.Type)
+                value = Expression.Convert(value, reader.Metadata.Type);
 
             return value;
         }
@@ -468,6 +470,9 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
         #endregion
 
         #region  " IsDbNull "
+
+        private Expression GetIsNotDbNullExpression(DataReader reader)
+            => Expression.Not(this.GetIsDbNullExpression(reader));
 
         private Expression GetIsDbNullExpression(DataReader reader) => reader switch
         {

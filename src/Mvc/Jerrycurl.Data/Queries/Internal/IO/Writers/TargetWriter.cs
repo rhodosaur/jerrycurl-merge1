@@ -11,7 +11,7 @@ namespace Jerrycurl.Data.Queries.Internal.IO.Writers
     internal class TargetWriter
     {
         public KeyReader PrimaryKey { get; set; }
-        public List<JoinTarget> JOINS { get; } = new List<JoinTarget>();
+        public List<JoinTarget> ForeignJoins { get; } = new List<JoinTarget>();
         public ListTarget List { get; set; }
         public JoinTarget Join { get; set; }
         public BaseReader Source { get; set; }
