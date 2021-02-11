@@ -453,5 +453,73 @@ namespace Jerrycurl.Relations.Test
             Should.Throw<RelationException>(() => rel2.Scalar());
         }
 
+        public void Test_Select_RecursiveBreadthFirst()
+        {
+            List<RecursiveModel> model = new List<RecursiveModel>()
+            {
+                new RecursiveModel()
+                {
+                    Name = "1",
+                    Subs = new List<RecursiveModel>()
+                    {
+                        new RecursiveModel()
+                        {
+                            Name = "1.1",
+                            Subs = new List<RecursiveModel>()
+                            {
+                                new RecursiveModel()
+                                {
+                                    Name = "1.1.1",
+                                    Subs = new List<RecursiveModel>()
+                                    {
+                                        new RecursiveModel() { Name = "1.1.1.1" },
+                                        new RecursiveModel() { Name = "1.1.1.2" },
+                                        new RecursiveModel() { Name = "1.1.1.3" },
+                                        new RecursiveModel() { Name = "1.1.1.4" },
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                new RecursiveModel()
+                {
+                    Name = "2",
+                    Subs = new List<RecursiveModel>()
+                    {
+                        new RecursiveModel()
+                        {
+                            Name = "2.1",
+                            Subs = new List<RecursiveModel>()
+                            {
+                                new RecursiveModel() { Name = "2.1.1" },
+                                new RecursiveModel() { Name = "2.1.2" },
+                                new RecursiveModel() { Name = "2.1.3" },
+                            }
+                        },
+                        new RecursiveModel()
+                        {
+                            Name = "2.2",
+                            Subs = new List<RecursiveModel>()
+                            {
+                                new RecursiveModel() { Name = "2.2.1" },
+                                new RecursiveModel() { Name = "2.2.2" },
+                            }
+                        }
+                    }
+                },
+                new RecursiveModel() { Name = "3" },
+                new RecursiveModel() { Name = "4" },
+            };
+
+            IRelation2 rel1 = DatabaseHelper.Default.Relation2(model, "Item.Name");
+            IRelation2 rel2 = DatabaseHelper.Default.Relation2(model, "Item.Subs.Item.Name");
+
+            IList<string> actual1 = rel1.Body.Select(t => (string)t[0].Snapshot).ToList();
+            IList<string> actual2 = rel2.Body.Select(t => (string)t[0].Snapshot).ToList();
+
+            actual1.ShouldBe(new[] { "1", "2", "3", "4" });
+            actual2.ShouldBe(new[] { "1.1", "2.1", "2.2", "1.1.1", "2.1.1", "2.1.2", "2.1.3", "2.2.1", "2.2.2", "1.1.1.1", "1.1.1.2", "1.1.1.3", "1.1.1.4" });
+        }
     }
 }
