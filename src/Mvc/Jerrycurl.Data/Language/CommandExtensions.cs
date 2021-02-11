@@ -13,6 +13,34 @@ namespace Jerrycurl.Data.Language
 {
     public static class CommandExtensions
     {
+        #region " Add "
+        public static void Add(this CommandBuffer buffer, IRelation targets)
+        {
+            if (buffer == null)
+                throw new ArgumentNullException(nameof(buffer));
+
+            if (targets == null)
+                throw new ArgumentNullException(nameof(targets));
+
+            using IRelationReader reader = targets.GetReader();
+
+            while (reader.Read())
+                buffer.Add(reader);
+        }
+
+        public static void Add(this CommandBuffer buffer, ITuple targets)
+        {
+            if (buffer == null)
+                throw new ArgumentNullException(nameof(buffer));
+
+            if (targets == null)
+                throw new ArgumentNullException(nameof(targets));
+
+            foreach (IField target in targets)
+                buffer.Add(new ColumnBinding(target));
+        }
+
+        #endregion
         #region " Update "
         public static CommandBuffer Update(this CommandBuffer buffer, IRelation relation, params string[] targetHeader)
             => buffer.Update(relation, (IEnumerable<string>)targetHeader);
@@ -35,7 +63,7 @@ namespace Jerrycurl.Data.Language
             return buffer;
         }
 
-        public static CommandBuffer Insert(this CommandBuffer buffer, IRelation relation)
+        public static CommandBuffer Update(this CommandBuffer buffer, IRelation relation)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));

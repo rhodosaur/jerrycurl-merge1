@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 using Jerrycurl.Data.Commands;
 using Jerrycurl.Data.Queries;
 using Jerrycurl.Data.Sessions;
@@ -78,5 +79,27 @@ namespace Jerrycurl.Data.Language
 
         public static IParameter AsParameter(this IField field, string parameterName)
             => new Parameter(parameterName, field);
+
+        public static IEnumerable<ColumnBinding> AsBindings(this IRelation targets)
+        {
+            if (targets == null)
+                throw new ArgumentNullException(nameof(targets));
+
+            using IRelationReader reader = targets.GetReader();
+
+            List<ColumnBinding> bindings = new List<ColumnBinding>();
+
+            while (reader.Read())
+                bindings.AddRange(reader.AsBindings());
+
+            return bindings;
+        }
+        public static IEnumerable<ColumnBinding> AsBindings(this ITuple targets)
+        {
+            if (targets == null)
+                throw new ArgumentNullException(nameof(targets));
+
+            return targets.Select(t => new ColumnBinding(t));
+        }
     }
 }
