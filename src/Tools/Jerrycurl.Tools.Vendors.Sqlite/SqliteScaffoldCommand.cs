@@ -46,8 +46,6 @@ namespace Jerrycurl.Tools.Vendors.Sqlite
 
             using (DbCommand foreignKeys = connection.CreateCommand())
             {
-                string systemTables = string.Join(",", this.GetSystemTableNames().Select(t => $"'{t}'"));
-
                 foreignKeys.CommandText = $@"SELECT m.tbl_name, fks.*
                                              FROM sqlite_master AS m
                                              JOIN pragma_foreign_key_list(m.name) AS fks
@@ -81,15 +79,15 @@ namespace Jerrycurl.Tools.Vendors.Sqlite
                 string tableName = tuple["tbl_name"] as string;
                 string columnName = tuple["name"] as string;
                 string typeName = this.GetNormalizedTypeName(tuple);
-                bool isPrimaryKey = (long)tuple["pk"] == 1;
-                bool isAutoIncrement = isPrimaryKey && ((long)tuple["autoincr"] > 0 || this.HasAutoIncrementInSqlDefinition(columnName, sqlDef));
-                bool isNullable = (!isPrimaryKey && (long)tuple["notnull"] == 0);
+                int keyIndex = (int)(long)tuple["pk"];
+                bool isAutoIncrement = keyIndex > 0 && ((long)tuple["autoincr"] > 0 || this.HasAutoIncrementInSqlDefinition(columnName, sqlDef));
+                bool isNullable = (keyIndex == 0 && (long)tuple["notnull"] == 0);
                 bool ignoreTable = this.IsIgnoredTable(tableName);
 
                 builder.AddColumn(null, tableName, columnName, typeName, isNullable, isIdentity: isAutoIncrement, ignoreTable: ignoreTable);
 
-                if (isPrimaryKey)
-                    builder.AddKey(null, tableName, columnName, "pk_" + tableName, 1);
+                if (keyIndex > 0)
+                    builder.AddKey(null, tableName, columnName, "pk_" + tableName, (int)keyIndex);
             }
         }
 
@@ -101,7 +99,7 @@ namespace Jerrycurl.Tools.Vendors.Sqlite
                 string columnName = tuple["from"] as string;
                 string uniqueName = $"pk_{tuple["table"]}";
                 string foreignName = $"fk_{tableName}_{tuple["table"]}_{tuple["id"]}";
-                int keyIndex = (int)(long)tuple["seq"];
+                int keyIndex = (int)(long)tuple["seq"] + 1;
 
                 builder.AddReference(null, tableName, columnName, foreignName, uniqueName, keyIndex);
             }
