@@ -278,6 +278,7 @@ namespace Jerrycurl.Data.Metadata
                         {
                             leftRef.Flags &= ~ReferenceFlags.One;
                             leftRef.Flags |= ReferenceFlags.Many;
+                            rightRef.Flags |= ReferenceFlags.One;
                         }
 
                         if (childMetadata.Equals(parent))
