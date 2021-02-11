@@ -31,6 +31,14 @@ namespace Jerrycurl.Mvc.Sql.SqlServer
         }
 
         /// <summary>
+        /// Appends a table-valued parameter from the current values, e.g. <c>@TP0</c>, to the projection buffer.
+        /// </summary>
+        /// <param name="projection">The current projection.</param>
+        /// <param name="expression">Expression selecting a specific attribute.</param>
+        /// <returns>A new attribute containing the appended buffer.</returns>
+        public static IProjectionAttribute TvpName<TModel, TProperty>(this IProjection<TModel> projection, Expression<Func<TModel, TProperty>> expression) => projection.For(expression).TvpName();
+
+        /// <summary>
         /// Appends a correlated table-valued parameter from the selected values, e.g. <c>@TP0 T0</c>, to the projection buffer.
         /// </summary>
         /// <param name="projection">The current projection.</param>
