@@ -25,11 +25,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)IO\PathHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IO\ResponseFile.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IO\ResponseSettings.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Linq\Expressions\CompositeKey.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Linq\Expressions\ExpressionBuilder.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Linq\Expressions\ExpressionBuilderContext.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Linq\Expressions\ExpressionOptimizer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Linq\Expressions\ExpressionOptimizerState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Reflection\AssemblyExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Reflection\NuGetExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Reflection\NuGetVersion.cs" />

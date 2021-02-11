@@ -9,6 +9,7 @@ using Jerrycurl.Relations.Internal.IO;
 using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Reflection;
 using Jerrycurl.Relations.Internal.Parsing;
+using System.Runtime.InteropServices;
 
 namespace Jerrycurl.Relations.Internal.Compilation
 {
@@ -443,11 +444,14 @@ namespace Jerrycurl.Relations.Internal.Compilation
         {
             if (expressions.Count == 1 && (variables == null || !variables.Any()))
                 return expressions[0];
+            else if (expressions.Count == 0 && this.IsRunningNetFramework())
+                return Expression.Block(Expression.Constant(0));
             else if (variables == null)
                 return Expression.Block(expressions);
             else
                 return Expression.Block(variables.NotNull(), expressions);
         }
+        private bool IsRunningNetFramework() => RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework");
         #endregion
 
         #region " Arguments "

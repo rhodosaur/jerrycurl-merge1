@@ -637,6 +637,8 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
         {
             if (expressions.Count == 1 && (variables == null || !variables.Any()))
                 return expressions[0];
+            else if (expressions.Count == 0 && this.IsRunningNetFramework())
+                return Expression.Block(Expression.Constant(0));
             else if (variables == null)
                 return Expression.Block(expressions);
             else
