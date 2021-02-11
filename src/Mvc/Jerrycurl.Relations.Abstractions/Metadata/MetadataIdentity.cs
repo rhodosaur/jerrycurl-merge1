@@ -44,6 +44,12 @@ namespace Jerrycurl.Relations.Metadata
         public MetadataIdentity Push(string propertyName) => new MetadataIdentity(this.Schema, this.Notation.Combine(this.Name, propertyName));
 
         #region " Equality "
+        public bool Equals(string name)
+            => this.Equals(new MetadataIdentity(this.Schema, name));
+
+        public bool Equals(ISchema schema, string name)
+            => this.Equals(new MetadataIdentity(schema, name));
+
         public bool Equals(MetadataIdentity other)
         {
             if (other == null)

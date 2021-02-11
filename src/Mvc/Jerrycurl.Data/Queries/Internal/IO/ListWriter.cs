@@ -13,6 +13,6 @@ namespace Jerrycurl.Data.Queries.Internal.IO
         public KeyBinder PrimaryKey { get; set; }
         public KeyBinder JoinKey { get; set; }
         public IBindingMetadata Metadata { get; set; }
-        public int Priority { get; set; }
+        public int Depth => this.Item?.Metadata.Relation.Depth ?? 0;
     }
 }

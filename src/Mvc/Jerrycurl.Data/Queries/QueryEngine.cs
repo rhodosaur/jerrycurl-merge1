@@ -22,6 +22,58 @@ namespace Jerrycurl.Data.Queries
             this.Options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
+        #region " Execute (v1.1) "
+        public TResult Execute<TResult>(Query query, QueryType2 queryType)
+            => this.Execute<TResult>(new[] { query }, queryType);
+
+        public TResult Execute<TResult>(IEnumerable<Query> queries, QueryType2 queryType)
+        {
+            if (queries == null)
+                throw new ArgumentNullException(nameof(queries));
+
+            if (this.Options.Schemas == null)
+                throw new InvalidOperationException("No schema store found.");
+
+            ISchema schema = this.Options.Schemas.GetSchema(typeof(TResult));
+            QueryBuffer buffer = new QueryBuffer(schema, queryType);
+
+            using ISyncSession connection = this.Options.GetSyncSession();
+
+            foreach (IBatch batch in this.FilterBatches(queries))
+            {
+                foreach (IDataReader dataReader in connection.Execute(batch))
+                    buffer.Insert(dataReader);
+            }
+
+            return (TResult)buffer.Commit();
+        }
+
+        public Task<TResult> ExecuteAsync<TResult>(Query query, QueryType2 queryType, CancellationToken cancellationToken = default)
+            => this.ExecuteAsync<TResult>(new[] { query }, queryType, cancellationToken);
+
+        public async Task<TResult> ExecuteAsync<TResult>(IEnumerable<Query> queries, QueryType2 queryType, CancellationToken cancellationToken = default)
+        {
+            if (queries == null)
+                throw new ArgumentNullException(nameof(queries));
+
+            if (this.Options.Schemas == null)
+                throw new InvalidOperationException("No schema builder found.");
+
+            ISchema schema = this.Options.Schemas.GetSchema(typeof(TResult));
+            QueryBuffer buffer = new QueryBuffer(schema, queryType);
+
+            await using IAsyncSession connection = this.Options.GetAsyncSession();
+
+            foreach (IBatch batch in this.FilterBatches(queries))
+            {
+                await foreach (DbDataReader dataReader in connection.ExecuteAsync(batch, cancellationToken).ConfigureAwait(false))
+                    await buffer.InsertAsync(dataReader, cancellationToken).ConfigureAwait(false);
+            }
+
+            return (TResult)buffer.Commit();
+        }
+        #endregion
+
         #region " Aggregate "
 
         public T Aggregate<T>(Query query) => this.Aggregate<T>(new[] { query });

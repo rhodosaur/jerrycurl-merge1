@@ -11,7 +11,6 @@ namespace Jerrycurl.Data.Queries.Internal.IO
         public ParameterExpression Variable { get; set; }
         public ParameterExpression Slot { get; set; }
         public ParameterExpression Array { get; set; }
-        public int BufferIndex { get; set; }
         public IReference Metadata { get; set; }
         public Type KeyType { get; set; }
     }

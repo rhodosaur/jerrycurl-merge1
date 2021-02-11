@@ -77,6 +77,9 @@ namespace Jerrycurl.Data.Metadata
 
         private NewExpression GetConstructor(IBindingMetadata metadata) => this.GetListConstructor(metadata) ?? this.GetDefaultConstructor(metadata);
 
+        private bool IsOneValueType(IBindingMetadata metadata, out Type valueType)
+            => ((valueType = this.GetOneValueType(metadata)) != null);
+
         private Type GetOneValueType(IBindingMetadata metadata)
         {
             Type openType = this.GetOpenType(metadata);

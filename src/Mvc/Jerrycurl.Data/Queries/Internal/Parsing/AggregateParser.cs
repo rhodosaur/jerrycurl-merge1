@@ -5,6 +5,7 @@ using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Queries.Internal.IO;
 using Jerrycurl.Data.Queries.Internal.Caching;
 using Jerrycurl.Relations.Metadata;
+using Jerrycurl.Collections;
 
 namespace Jerrycurl.Data.Queries.Internal.Parsing
 {
@@ -20,45 +21,29 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         public AggregateTree Parse(IEnumerable<AggregateName> values)
         {
-            NodeTree nodeTree = NodeParser.Parse(this.Schema, values);
-
-            Node itemNode = nodeTree.Items.FirstOrDefault(n => n.Depth == 1);
+            AggregateName modelValue = new AggregateName(this.Schema.Notation.Model(), useSlot: false);
+            NodeTree nodeTree = NodeParser.Parse(this.Schema, values.Concat(new[] { modelValue }));
+            Node modelNode = nodeTree.Items.FirstOrDefault(n => n.Metadata.HasFlag(BindingMetadataFlags.Model));
 
             return new AggregateTree()
             {
                 Schema = this.Schema,
-                Aggregate = itemNode != null ? this.CreateBinder(itemNode, values) : this.GetEmptyBinder(),
+                Aggregate = this.CreateBinder(modelNode, values),
             };
         }
 
-        private NewBinder GetEmptyBinder()
+        private AggregateBinder FindValue(Node node, IEnumerable<AggregateName> values)
         {
-            IBindingMetadata metadata = this.Schema.Require<IBindingMetadata>().Item;
+            AggregateName value = values.OrderBy(n => n.UseSlot).FirstOrDefault(n => node.Identity.Equals(n.Name));
 
-            return new NewBinder(metadata);
-        }
-
-        private AggregateBinder FindValue(Node node, IEnumerable<AggregateName> names)
-        {
-            foreach (AggregateName name in names)
+            if (value != null)
             {
-                MetadataIdentity metadata = new MetadataIdentity(node.Metadata.Identity.Schema, name.Name);
-
-                if (metadata.Equals(node.Identity))
+                return new AggregateBinder(node)
                 {
-                    AggregateBinder value = new AggregateBinder(node)
-                    {
-                        CanBeDbNull = true,
-                        IsPrincipal = name.IsPrincipal,
-                    };
-
-                    if (value.IsPrincipal)
-                        value.BufferIndex = this.Buffer.GetListIndex(metadata);
-                    else
-                        value.BufferIndex = this.Buffer.GetAggregateIndex(metadata);
-
-                    return value;
-                }
+                    CanBeDbNull = true,
+                    UseSlot = value.UseSlot,
+                    BufferIndex = value.UseSlot ? this.Buffer.GetListIndex(node.Identity) : this.Buffer.GetAggregateIndex(node.Identity),
+                };
             }
 
             return null;
@@ -66,6 +51,9 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         private NodeBinder CreateBinder(Node node, IEnumerable<AggregateName> valueNames)
         {
+            if (node == null)
+                return this.CreateEmptyBinder();
+
             AggregateBinder value = this.FindValue(node, valueNames);
 
             if (value != null)
@@ -79,6 +67,13 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             BindingHelper.AddPrimaryKey(binder);
 
             return binder;
+        }
+
+        private NewBinder CreateEmptyBinder()
+        {
+            IBindingMetadata metadata = this.Schema.Require<IBindingMetadata>().Item;
+
+            return new NewBinder(metadata);
         }
     }
 }

@@ -27,6 +27,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         public MetadataIdentity Identity { get; }
         public IBindingMetadata Metadata { get; }
+        public ISchema Schema => this.Metadata?.Identity.Schema ?? this.Identity?.Schema;
         public IList<Node> Properties { get; } = new List<Node>();
         public bool IsDynamic { get; set; }
         public int Depth => this.Metadata.Relation.Depth;

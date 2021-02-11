@@ -22,13 +22,10 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
         {
             IBindingMetadata metadata = identity.Lookup<IBindingMetadata>() ?? FindDynamicMetadata(identity);
 
-            if (IsValidMetadata(metadata))
-            {
-                if (metadata.HasFlag(BindingMetadataFlags.Dynamic))
-                    AddDynamicNode(tree, identity, metadata);
-                else
-                    AddStaticNode(tree, metadata);
-            }
+            if (metadata.HasFlag(BindingMetadataFlags.Dynamic))
+                AddDynamicNode(tree, identity, metadata);
+            else
+                AddStaticNode(tree, metadata);
         }
 
         private static Node AddDynamicNode(NodeTree tree, MetadataIdentity identity, IBindingMetadata metadata)
@@ -75,6 +72,13 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 tree.Nodes.Add(thisNode);
                 tree.Items.Add(thisNode);
             }
+            else if (metadata.HasFlag(BindingMetadataFlags.Model))
+            {
+                thisNode = new Node(metadata);
+
+                tree.Nodes.Add(thisNode);
+                tree.Items.Add(thisNode);
+            }
             else
             {
                 Node parentNode = tree.FindNode(metadata.Parent) ?? AddStaticNode(tree, metadata.Parent);
@@ -107,8 +111,6 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
             return false;
         }
-
-        private static bool IsValidMetadata(IBindingMetadata metadata) => (metadata != null && !metadata.MemberOf.HasFlag(BindingMetadataFlags.Model));
 
         private static IBindingMetadata FindDynamicMetadata(MetadataIdentity identity)
         {

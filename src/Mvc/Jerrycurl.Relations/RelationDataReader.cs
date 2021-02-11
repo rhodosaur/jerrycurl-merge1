@@ -31,8 +31,8 @@ namespace Jerrycurl.Relations
 
             for (int i = 0; i < this.Header.Count; i++)
             {
-                if (string.IsNullOrEmpty(this.Header[i]))
-                    throw RelationException.HeaderCannotBeEmpty(this, i);
+                if (this.Header[i] == null)
+                    throw RelationException.HeaderCannotBeNull(this, i);
 
                 if (this.headerMap.ContainsKey(this.Header[i]))
                     throw RelationException.HeaderCannotHaveDupes(this, i);

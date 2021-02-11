@@ -53,9 +53,9 @@ namespace Jerrycurl.Relations
             return From(dataReader.InnerReader.Relation.Header, $"Degree does not match IDataReader({dataHeader}).");
         }
 
-        internal static RelationException HeaderCannotBeEmpty(RelationDataReader dataReader, int emptyIndex)
+        internal static RelationException HeaderCannotBeNull(RelationDataReader dataReader, int emptyIndex)
         {
-            return From(dataReader.InnerReader.Relation.Header, $"Attribute name at index {emptyIndex} cannot be empty.");
+            return From(dataReader.InnerReader.Relation.Header, $"Attribute name at index {emptyIndex} cannot be null.");
         }
 
         internal static RelationException HeaderCannotHaveDupes(RelationDataReader dataReader, int dupeIndex)

@@ -53,7 +53,7 @@ namespace Jerrycurl.Data.Commands
 
         private IEnumerable<IBatch> GetBufferedCommands(IEnumerable<Command> commands, CommandBuffer buffer)
         {
-            IEnumerable<Command> filteredCommands = commands.NotNull().Where(d => !string.IsNullOrWhiteSpace(d.CommandText));
+            IEnumerable<Command> filteredCommands = commands.NotNull().Where(c => !string.IsNullOrWhiteSpace(c.CommandText));
 
             return filteredCommands.Select(c => new BufferedCommand(buffer, c));
         }

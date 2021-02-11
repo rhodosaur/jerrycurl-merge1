@@ -200,7 +200,14 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             Expression value = this.GetBinderExpression(writer.Item);
             Expression writeItem;
 
-            if (writer.JoinKey == null)
+            if (writer.Metadata.HasFlag(BindingMetadataFlags.Model))
+            {
+                Expression arrayIndex = this.GetElasticIndexExpression(Arguments.Slots, writer.BufferIndex);
+                Expression objectValue = Expression.Convert(value, typeof(object));
+
+                writeItem = Expression.Assign(arrayIndex, objectValue);
+            }
+            else if (writer.JoinKey == null)
                 writeItem = Expression.Call(writer.Slot, writer.Metadata.Composition.Add, value);
             else
             {
@@ -467,7 +474,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
         private Expression GetIsDbNullExpression(AggregateBinder binder)
         {
-            Expression array = binder.IsPrincipal ? Arguments.Slots : Arguments.Aggregates;
+            Expression array = binder.UseSlot ? Arguments.Slots : Arguments.Aggregates;
             Expression arrayIndex = this.GetElasticIndexExpression(array, binder.BufferIndex);
 
             return Expression.ReferenceEqual(arrayIndex, Expression.Constant(null));
@@ -485,7 +492,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
         private Expression GetValueExpression(AggregateBinder binder)
         {
-            Expression array = binder.IsPrincipal ? Arguments.Slots : Arguments.Aggregates;
+            Expression array = binder.UseSlot ? Arguments.Slots : Arguments.Aggregates;
 
             return this.GetElasticIndexExpression(array, binder.BufferIndex);
         }   

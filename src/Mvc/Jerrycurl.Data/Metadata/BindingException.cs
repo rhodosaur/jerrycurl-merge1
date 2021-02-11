@@ -1,4 +1,5 @@
 ﻿using Jerrycurl.Reflection;
+using Jerrycurl.Relations.Metadata;
 using System;
 using System.Runtime.Serialization;
 
@@ -65,6 +66,9 @@ namespace Jerrycurl.Data.Metadata
         {
             return new BindingException($"Unable to bind to {metadata.Identity}: {innerException.Message}", innerException);
         }
+
+        internal static BindingException NoValidReference(MetadataIdentity metadata)
+            => throw new BindingException($"No valid reference found for {metadata}. Please specify matching [Key] and [Ref] annotations to map across one-to-many boundaries.");
 
         #endregion
     }

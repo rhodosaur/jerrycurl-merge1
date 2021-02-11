@@ -11,6 +11,6 @@ namespace Jerrycurl.Data.Queries.Internal.IO
         }
 
         public int BufferIndex { get; set; }
-        public bool IsPrincipal { get; set; }
+        public bool UseSlot { get; set; }
     }
 }
