@@ -453,69 +453,71 @@ namespace Jerrycurl.Relations.Test
             Should.Throw<RelationException>(() => rel2.Scalar());
         }
 
-        public void Test_Select_CrossJoinCaching()
+        public void Test_Select_CartesianProduct_Order()
         {
             var store = DatabaseHelper.Default.GetSchemas(useSqlite: false);
-            var model = new List<XModel>()
+            var model = new XModel()
             {
-                new XModel()
-                {
-                    Xs = new List<int>() { 1, 2, 3 },
-                    Ys = new List<int>() { 4, 5, 6 },
-                    Zs = new List<XModel.NestedZ>()
-                    {
-                        new XModel.NestedZ()
-                        {
-                            Values = new List<int>() { 7, 8, 9 },
-                        },
-                        new XModel.NestedZ()
-                        {
-                            Values = new List<int>() { 10, 11, 12 },
-                        },
-                    }
-                },
-                new XModel()
-                {
-                    Xs = new List<int>() { 10, 20 },
-                    Ys = new List<int>() { 40, 50 },
-                    Zs = new List<XModel.NestedZ>()
-                    {
-                        new XModel.NestedZ()
-                        {
-                            Values = new List<int>() { 70, 80, 90 },
-                        },
-                        new XModel.NestedZ()
-                        {
-                            Values = new List<int>() { 10, 11, 12 },
-                        },
-                    }
-                },
+                Xs = new List<int>() { 1, 2, 3, 4 },
+                Ys = new List<int>() { 5, 6 },
+                Zs = new List<int>() { 7, 8, 9 },
             };
 
-            var relation = store.From(model).Select("Item.Xs.Item", "Item.Ys.Item", "Item.Zs.Item.Values.Item");
+            var relation = store.From(model).Select("Xs.Item", "Ys.Item", "Zs.Item");
             var data = relation.Body.ToArray();
 
-            data.Length.ShouldBe(3 * 3 + 2 * 2);
+            data.Length.ShouldBe(4 * 2 * 3);
 
-            data[0].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 4 });
-            data[1].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 5 });
-            data[2].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 6 });
+            data[0].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 5, 7 });
+            data[1].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 5, 8 });
+            data[2].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 5, 9 });
+            data[3].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 6, 7 });
+            data[4].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 6, 8 });
+            data[5].Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 6, 9 });
 
-            data[3].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 4 });
-            data[4].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 5 });
-            data[5].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 6 });
+            data[6].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 5, 7 });
+            data[7].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 5, 8 });
+            data[8].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 5, 9 });
+            data[9].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 6, 7 });
+            data[10].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 6, 8 });
+            data[11].Select(f => (int)f.Snapshot).ShouldBe(new[] { 2, 6, 9 });
 
-            data[6].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 4 });
-            data[7].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 5 });
-            data[8].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 6 });
+            data[12].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 5, 7 });
+            data[13].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 5, 8 });
+            data[14].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 5, 9 });
+            data[15].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 6, 7 });
+            data[16].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 6, 8 });
+            data[17].Select(f => (int)f.Snapshot).ShouldBe(new[] { 3, 6, 9 });
 
-            data[9].Select(f => (int)f.Snapshot).ShouldBe(new[] { 10, 40 });
-            data[10].Select(f => (int)f.Snapshot).ShouldBe(new[] { 10, 50 });
-
-            data[11].Select(f => (int)f.Snapshot).ShouldBe(new[] { 20, 40 });
-            data[12].Select(f => (int)f.Snapshot).ShouldBe(new[] { 20, 50 });
-
+            data[18].Select(f => (int)f.Snapshot).ShouldBe(new[] { 4, 5, 7 });
+            data[19].Select(f => (int)f.Snapshot).ShouldBe(new[] { 4, 5, 8 });
+            data[20].Select(f => (int)f.Snapshot).ShouldBe(new[] { 4, 5, 9 });
+            data[21].Select(f => (int)f.Snapshot).ShouldBe(new[] { 4, 6, 7 });
+            data[22].Select(f => (int)f.Snapshot).ShouldBe(new[] { 4, 6, 8 });
+            data[23].Select(f => (int)f.Snapshot).ShouldBe(new[] { 4, 6, 9 });
         }
+
+        public void Test_Select_CartesianProduct_Cache()
+        {
+            var store = DatabaseHelper.Default.GetSchemas(useSqlite: false);
+            var model = new XModel()
+            {
+                Xs = new List<int>() { 1, 2 },
+                Ys = new List<int>() { 5, 6 },
+            };
+
+            var relation = store.From(model).Select("Xs.Item", "Ys.Item");
+            var data = relation.Body.ToArray();
+
+            data.Length.ShouldBe(2 * 2);
+
+            data[0][0].ShouldBeSameAs(data[1][0]);
+            data[2][0].ShouldBeSameAs(data[3][0]);
+
+            data[0][1].ShouldBeSameAs(data[2][1]);
+            data[1][1].ShouldBeSameAs(data[3][1]);
+        }
+
         public void Test_Select_RecursiveBreadthFirst()
         {
             List<RecursiveModel> model = new List<RecursiveModel>()
