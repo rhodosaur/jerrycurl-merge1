@@ -180,7 +180,7 @@ namespace Jerrycurl.Data.Commands
                 case null:
                     throw new ArgumentNullException(nameof(binding));
                 default:
-                    throw new CommandException("ICommandBinding must be a ColumnBinding, ParameterBinding or CascadeBinding instance.");
+                    throw new CommandException($"Invalid binding type '{binding.GetType().Name}': Only ColumnBinding, ParameterBinding and CascadeBinding are supported.");
             }
         }
 
