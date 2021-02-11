@@ -85,12 +85,12 @@ function Test-Integration
 
 function Get-Target-Frameworks
 {
-    $tfm = @("netcoreapp2.1", "netcoreapp3.1", "net472")
+    $tfm = @("netcoreapp2.1", "netcoreapp3.1")
     
-    #if ($IsWindows)
-    #{
-        #$tfm += , "net472"
-    #}
+    if ($IsWindows)
+    {
+        $tfm += , "net472"
+    }
     
     return $tfm
 }
