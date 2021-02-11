@@ -16,17 +16,17 @@ namespace Jerrycurl.Mvc.Sql
     {
         public static IProjection IsEq(this IProjection projection, IProjection other)
         {
-            List<IProjectionAttribute> newAttrs = new List<IProjectionAttribute>();
+            List<IProjectionAttribute> newHeader = new List<IProjectionAttribute>();
 
             foreach (var (l, r) in projection.Attrs().Zip(other.Attrs()))
             {
                 IProjectionAttribute newAttr = l;
 
                 newAttr = newAttr.Eq();
-                newAttr = newAttr.With(metadata: r.Metadata, field: r.Field).Par();
-                newAttr = newAttr.With(metadata: l.Metadata, field: l.Field);
+                newAttr = newAttr.With(data: r.Data).Par();
+                newAttr = newAttr.With(data: l.Data);
 
-                newAttrs.Add(newAttr);
+                newHeader.Add(newAttr);
             }
 
             ProjectionOptions newOptions = new ProjectionOptions(projection.Options)
@@ -34,7 +34,7 @@ namespace Jerrycurl.Mvc.Sql
                 Separator = Environment.NewLine + "AND" + Environment.NewLine,
             };
 
-            return projection.With(attributes: newAttrs, options: newOptions);
+            return projection.With(header: newHeader, options: newOptions);
         }
 
         /// <summary>
@@ -47,33 +47,37 @@ namespace Jerrycurl.Mvc.Sql
             if (!attribute.Context.Domain.Dialect.Support.HasFlag(DialectSupport.InputParameters))
                 throw ProjectionException.ParametersNotSupported(attribute);
 
-            if (attribute.Data.InputValue != null)
+            if (attribute.Data.Input != null)
             {
-                string paramName = attribute.Context.Lookup.Parameter(attribute.Identity, attribute.Data.InputValue);
+                string paramName = attribute.Context.Lookup.Parameter(attribute.Identity, attribute.Data.Input);
                 string dialectName = attribute.Context.Domain.Dialect.Parameter(paramName);
 
-                Parameter param = new Parameter(paramName, attribute.Data.InputValue);
+                Parameter param = new Parameter(paramName, attribute.Data.Input);
 
                 IProjectionAttribute result = attribute.Append(dialectName).Append(param);
 
-                if (attribute.Data.Metadata.HasFlag(ProjectionMetadataFlags.Output | ProjectionMetadataFlags.Cascade))
+                if (attribute.Metadata.HasFlag(ProjectionMetadataFlags.Output))
                 {
-                    CascadeBinding binding = new CascadeBinding(attribute.Data.OutputValue, attribute.Data.InputValue);
+                    if (attribute.Context.Domain.Dialect.Support.HasFlag(DialectSupport.OutputParameters))
+                    {
+                        ParameterBinding binding = new ParameterBinding(attribute.Data.Output, param.Name);
 
-                    result = result.Append(binding);
-                }
-                else if (attribute.Data.Metadata.HasFlag(ProjectionMetadataFlags.Output) && attribute.Context.Domain.Dialect.Support.HasFlag(DialectSupport.OutputParameters))
-                {
-                    ParameterBinding binding = new ParameterBinding(param);
+                        result = result.Append(binding);
+                    }
 
-                    result = result.Append(binding);
+                    if (attribute.Metadata.HasAnyFlag(ProjectionMetadataFlags.Cascade))
+                    {
+                        CascadeBinding binding = new CascadeBinding(attribute.Data.Input, attribute.Data.Output);
+
+                        result = result.Append(binding);
+                    }
                 }
 
                 return result;
             }
             else
             {
-                string paramName = attribute.Context.Lookup.Parameter(attribute.Identity, attribute.Data.Metadata.Identity);
+                string paramName = attribute.Context.Lookup.Parameter(attribute.Identity, attribute.Metadata.Identity);
                 string dialectName = attribute.Context.Domain.Dialect.Parameter(paramName);
 
                 return attribute.Append(dialectName);

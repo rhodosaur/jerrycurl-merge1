@@ -18,7 +18,7 @@ namespace Jerrycurl.Mvc.Sql
             IProjectionMetadata modelMetadata = modelSchema.Require<IProjectionMetadata>();
             IField field = new Model(modelSchema, model);
 
-            IProjectionIdentity modelIdentity = new ProjectionIdentity(field);
+            ProjectionIdentity modelIdentity = new ProjectionIdentity(field);
 
             IProjection modelProjection = new Projection(modelIdentity, projection.Context, modelMetadata);
             IProjection resultProjection = projection;
@@ -33,7 +33,7 @@ namespace Jerrycurl.Mvc.Sql
         {
             ISchema resultSchema = projection.Context.Domain.Schemas.GetSchema(typeof(object));
             IProjectionMetadata resultMetadata = resultSchema.Require<IProjectionMetadata>();
-            IProjectionIdentity resultIdentity = new ProjectionIdentity(resultSchema);
+            ProjectionIdentity resultIdentity = new ProjectionIdentity(resultSchema);
 
             IProjection modelProjection = projection;
             IProjection resultProjection = new Projection(resultIdentity, projection.Context, resultMetadata);

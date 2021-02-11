@@ -10,6 +10,7 @@ namespace Jerrycurl.Mvc.Projections
     public interface IProjectionAttribute : ISqlWritable
     {
         ProjectionIdentity Identity { get; }
+        IProjectionMetadata Metadata { get; }
         IProjectionData Data { get; }
         IProcContext Context { get; }
         ISqlContent Content { get; }

@@ -20,15 +20,15 @@ namespace Jerrycurl.Mvc.Projections
         {
             this.Identity = projection.Identity;
             this.Context = projection.Context;
-            this.Data = projection.Header.Source.Data;
+            this.Data = projection.Data;
             this.Content = SqlContent.Empty;
         }
 
         public ProjectionAttribute(ProjectionIdentity identity, IProcContext context, IProjectionMetadata metadata, IProjectionData data)
         {
-            this.Identity = identity ?? throw ProjectionException.ArgumentNull(nameof(identity), this);
-            this.Context = context ?? throw ProjectionException.ArgumentNull(nameof(context), this);
-            this.Metadata = metadata ?? throw ProjectionException.ArgumentNull(nameof(metadata), this);
+            this.Identity = identity ?? throw ProjectionException.ArgumentNull(nameof(identity), metadata);
+            this.Context = context ?? throw ProjectionException.ArgumentNull(nameof(context), metadata);
+            this.Metadata = metadata ?? throw ProjectionException.ArgumentNull(nameof(metadata), metadata);
             this.Data = data;
             this.Content = SqlContent.Empty;
         }
@@ -36,13 +36,13 @@ namespace Jerrycurl.Mvc.Projections
         protected ProjectionAttribute(IProjectionAttribute attribute, IProjectionMetadata metadata, IProjectionData data, ISqlContent content)
         {
             if (attribute == null)
-                throw ProjectionException.ArgumentNull(nameof(attribute), this);
+                throw ProjectionException.ArgumentNull(nameof(attribute), metadata);
 
             this.Context = attribute.Context;
             this.Identity = attribute.Identity;
-            this.Metadata = metadata ?? throw ProjectionException.ArgumentNull(nameof(metadata), this);
+            this.Metadata = metadata ?? throw ProjectionException.ArgumentNull(nameof(metadata), metadata);
             this.Data = data;
-            this.Content = content ?? throw ProjectionException.ArgumentNull(nameof(content), this);
+            this.Content = content ?? throw ProjectionException.ArgumentNull(nameof(content), metadata);
         }
 
         public void WriteTo(ISqlBuffer buffer) => this.Content.WriteTo(buffer);

@@ -30,7 +30,7 @@ namespace Jerrycurl.Mvc.Sql
         public static IProjection Open(this IProjection projection)
         {
             if (!projection.Metadata.HasFlag(RelationMetadataFlags.List))
-                throw ProjectionException.FromProjection(projection, "No metadata list contract found.");
+                throw ProjectionException.InvalidProjection(projection.Metadata, "Attribute is not a list.");
 
             return projection.With(metadata: projection.Metadata.Item);
         }
@@ -66,7 +66,7 @@ namespace Jerrycurl.Mvc.Sql
         public static IProjectionAttribute Attr(this IProjection projection) => new ProjectionAttribute(projection);
         public static IProjectionAttribute Attr<TModel, TProperty>(this IProjection<TModel> projection, Expression<Func<TModel, TProperty>> expression) => projection.For(expression).Attr();
 
-        public static IEnumerable<IProjectionAttribute> Attrs(this IProjection projection) => projection.Attributes;
+        public static IEnumerable<IProjectionAttribute> Attrs(this IProjection projection) => projection.Header;
         public static IEnumerable<IProjectionAttribute> Attrs<TModel, TProperty>(this IProjection<TModel> projection, Expression<Func<TModel, TProperty>> expression) => projection.For(expression).Attrs();
 
         public static IProjection<TProperty> For<TModel, TItem, TProperty>(this IProjection<TModel> projection, Expression<Func<TModel, IEnumerable<TItem>>> listExpression, Expression<Func<TItem, TProperty>> propertyExpression)

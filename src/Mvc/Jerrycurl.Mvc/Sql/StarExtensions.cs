@@ -15,7 +15,7 @@ namespace Jerrycurl.Mvc.Sql
         public static IProjection Star(this IProjection projection)
         {
             if (!projection.Any())
-                throw ProjectionException.FromProjection(projection, "No attributes found.");
+                throw ProjectionException.AttributesNotFound(projection.Metadata);
 
             IProjectionMetadata metadata = ProjectionHelper.GetTableMetadata(projection).Identity.Lookup<IProjectionMetadata>();
 

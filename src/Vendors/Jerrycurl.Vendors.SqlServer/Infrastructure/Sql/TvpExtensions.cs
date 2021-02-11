@@ -17,7 +17,7 @@ namespace Jerrycurl.Mvc.Sql.SqlServer
         /// <returns>A new attribute containing the appended buffer.</returns>
         public static IProjectionAttribute TvpName(this IProjection projection)
         {
-            if (projection.Source == null)
+            if (projection.Data == null)
                 throw ProjectionException.ValueNotFound(projection);
             else if (!projection.Attributes.Any())
                 throw ProjectionException.FromProjection(projection, "No attributes found.");

@@ -13,8 +13,10 @@ namespace Jerrycurl.Mvc.Projections
     /// </summary>
     public interface IProjection : ISqlWritable
     {
-        ProjectionHeader Header { get; }
         ProjectionIdentity Identity { get; }
+        IEnumerable<IProjectionAttribute> Header { get; }
+        IProjectionMetadata Metadata { get; }
+        IProjectionData Data { get; }
         IProcContext Context { get; }
         IProjectionOptions Options { get; }
 
@@ -26,7 +28,9 @@ namespace Jerrycurl.Mvc.Projections
 
         IProjection Map(Func<IProjectionAttribute, IProjectionAttribute> mapperFunc);
 
-        IProjection With(ProjectionHeader header = null,
+        IProjection With(IProjectionMetadata metadata = null,
+                         IProjectionData data = null,
+                         IEnumerable<IProjectionAttribute> header = null,
                          IProjectionOptions options = null);
     }
 }

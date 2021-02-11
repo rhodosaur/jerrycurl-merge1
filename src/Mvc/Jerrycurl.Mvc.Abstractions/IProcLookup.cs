@@ -6,11 +6,11 @@ namespace Jerrycurl.Mvc
 {
     public interface IProcLookup
     {
-        string Parameter(IProjectionIdentity identity, IField field);
-        string Parameter(IProjectionIdentity identity, MetadataIdentity metadata);
-        string Variable(IProjectionIdentity identity, IField field);
-        string Table(IProjectionIdentity identity, MetadataIdentity metadata);
+        string Parameter(ProjectionIdentity identity, IField field);
+        string Parameter(ProjectionIdentity identity, MetadataIdentity metadata);
+        string Variable(ProjectionIdentity identity, IField field);
+        string Table(ProjectionIdentity identity, MetadataIdentity metadata);
 
-        string Custom(string prefix, IProjectionIdentity identity = null, MetadataIdentity metadata = null, IField field = null);
+        string Custom(string prefix, ProjectionIdentity identity = null, MetadataIdentity metadata = null, IField field = null);
     }
 }

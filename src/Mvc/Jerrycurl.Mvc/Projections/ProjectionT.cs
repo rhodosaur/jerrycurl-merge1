@@ -7,7 +7,7 @@ namespace Jerrycurl.Mvc.Projections
 {
     public class Projection<TModel> : Projection, IProjection<TModel>
     {
-        public Projection(IProjectionIdentity identity, IProcContext context)
+        public Projection(ProjectionIdentity identity, IProcContext context)
             : base(identity, context)
         {
 
@@ -19,17 +19,19 @@ namespace Jerrycurl.Mvc.Projections
 
         }
 
-        internal Projection(IProjectionIdentity identity, IProcContext context, IProjectionMetadata metadata)
+        internal Projection(ProjectionIdentity identity, IProcContext context, IProjectionMetadata metadata)
             : base(identity, context, metadata)
         {
 
         }
 
-        public new IProjection<TModel> Map(Func<IProjectionAttribute, IProjectionAttribute> m) => new Projection<TModel>(base.Map(m));
+        public new IProjection<TModel> Map(Func<IProjectionAttribute, IProjectionAttribute> m)
+            => new Projection<TModel>(base.Map(m));
 
         public new IProjection<TModel> With(IProjectionMetadata metadata = null,
-                                            IEnumerable<IProjectionAttribute> attributes = null,
-                                            IField field = null,
-                                            IProjectionOptions options = null) => new Projection<TModel>(base.With(metadata, attributes, field, options));
+                                            IProjectionData data = null,
+                                            IEnumerable<IProjectionAttribute> header = null,
+                                            IProjectionOptions options = null)
+            => new Projection<TModel>(base.With(metadata, data, header, options));
     }
 }

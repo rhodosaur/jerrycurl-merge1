@@ -17,7 +17,7 @@ namespace Jerrycurl.Mvc.Sql
             IJsonMetadata metadata = attribute.Metadata.Identity.Lookup<IJsonMetadata>();
 
             if (metadata == null)
-                throw ProjectionException.FromProjection(attribute, "JSON metadata not found.");
+                throw ProjectionException.JsonNotFound(attribute.Metadata);
 
             string literal = attribute.Context.Domain.Dialect.String(metadata.Path);
 

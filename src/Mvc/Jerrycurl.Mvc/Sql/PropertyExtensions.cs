@@ -19,14 +19,12 @@ namespace Jerrycurl.Mvc.Sql
         /// <returns>A new attribute containing the appended buffer.</returns>
         public static IProjectionAttribute Prop(this IProjectionAttribute attribute, string tblAlias = null, string propName = null)
         {
-            if (attribute.Metadata.HasFlag(RelationMetadataFlags.Model) && (propName == null || attribute.Field != null))
+            if (attribute.Metadata.HasFlag(RelationMetadataFlags.Model) && (propName == null || attribute.Data != null))
                 throw ProjectionException.PropertyNotFound(attribute.Metadata);
 
-            if (attribute.Field != null)
+            if (attribute.Data != null)
             {
-                IField field = attribute.Field();
-                
-                ColumnBinding binding = new ColumnBinding(field);
+                ColumnBinding binding = new ColumnBinding(attribute.Data.Source);
 
                 propName = attribute.Context.Domain.Dialect.Identifier(binding.ColumnName);
 

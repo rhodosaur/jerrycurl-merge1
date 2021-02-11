@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using Jerrycurl.Mvc.Projections;
 using Jerrycurl.Relations;
@@ -14,9 +15,7 @@ namespace Jerrycurl.Mvc.Sql
         /// <returns>A new attribute containing the appended buffer.</returns>
         public static IProjectionAttribute Lit(this IProjectionAttribute attribute)
         {
-            IField field = ProjectionHelper.GetFieldValue(attribute);
-
-            string literal = attribute.Context.Domain.Dialect.Literal(field?.Snapshot);
+            string literal = attribute.Context.Domain.Dialect.Literal(attribute.Data?.Source);
 
             if (literal == null)
                 return attribute.Par();
@@ -59,7 +58,7 @@ namespace Jerrycurl.Mvc.Sql
         ///// </summary>
         ///// <param name="projection">The current projection.</param>
         ///// <returns>A new attribute containing the appended buffer.</returns>
-        //public static IProjectionAttribute LitList(this IProjection projection) => projection.ValList(a => a.Lit());
+        public static IProjectionAttribute LitList(this IProjection projection) => projection.ValList(a => a.Lit());
 
         ///// <summary>
         ///// Appends a comma-separated list of safe literals, e.g. <c>1, 2, 3</c>, to a new attribute buffer. Parameters are used for unsafe literals.
@@ -67,7 +66,7 @@ namespace Jerrycurl.Mvc.Sql
         ///// <param name="projection">The current projection.</param>
         ///// <param name="expression">Expression selecting a specific attribute.</param>
         ///// <returns>A new attribute containing the appended buffer.</returns>
-        //public static IProjectionAttribute LitList<TModel, TItem>(this IProjection<TModel> projection, Expression<Func<TModel, IEnumerable<TItem>>> expression)
-        //    => projection.Open(expression).LitList();
+        public static IProjectionAttribute LitList<TModel, TItem>(this IProjection<TModel> projection, Expression<Func<TModel, IEnumerable<TItem>>> expression)
+            => projection.Open(expression).LitList();
     }
 }

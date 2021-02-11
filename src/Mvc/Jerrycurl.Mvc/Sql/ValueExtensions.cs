@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using Jerrycurl.Collections;
+using Jerrycurl.Mvc.Metadata;
 using Jerrycurl.Mvc.Projections;
 using Jerrycurl.Relations;
 using Jerrycurl.Relations.Metadata;
@@ -12,25 +14,23 @@ namespace Jerrycurl.Mvc.Sql
     {
         public static IProjectionValues<TModel> Vals<TModel>(this IProjection<TModel> projection)
         {
-            if (projection.Header.Source.Data.InputValue == null)
+            if (projection.Data == null)
                 return new ProjectionValues<TModel>(projection.Context, projection.Identity, Array.Empty<IProjection<TModel>>());
 
-            IEnumerable<IRelationMetadata> attributes = new[] { projection.Metadata.Relation }.Concat(projection.Attributes.Select(a => a.Metadata.Relation));
-            RelationHeader header = new RelationHeader(projection.Source.Identity.Schema, attributes.ToList());
+            IProjectionMetadata[] header = new[] { projection.Metadata }.Concat(projection.Header.Select(a => a.Metadata)).ToArray();
 
-            Relation relation = new Relation(projection.Source, header);
-            IProjectionAttribute[] attributes2 = projection.Attributes.ToArray();
+            return new ProjectionValues<TModel>(projection.Context, projection.Identity, innerReader());
 
-            return new ProjectionValues<TModel>(projection.Context, projection.Identity, InnerVals());
-
-            IEnumerable<IProjection<TModel>> InnerVals()
+            IEnumerable<IProjection<TModel>> innerReader()
             {
-                foreach (ITuple tuple in relation.Body)
-                {
-                    IField field = tuple[0];
-                    IProjectionAttribute[] newAttributes = attributes2.Select((a, i) => a.With(field: () => tuple[i + 1])).ToArray();
+                ProjectionReader reader = new ProjectionReader(projection.Data.Source, header);
 
-                    yield return projection.With(attributes: newAttributes, field: field);
+                while (reader.Read())
+                {
+                    IProjectionData[] data = reader.GetData().ToArray();
+                    IProjectionAttribute[] attributes = projection.Header.Zip(data).Select(t => t.First.With(data: t.Second)).ToArray();
+
+                    yield return projection.With(data: attributes[0].Data, header: attributes.Skip(1));
                 }
             }
         }
@@ -63,26 +63,33 @@ namespace Jerrycurl.Mvc.Sql
             IProjection value = projection.Vals().FirstOrDefault();
 
             if (value == null)
-                throw ProjectionException.ValueNotFound(projection);
+                throw ProjectionException.ValueNotFound(projection.Metadata);
 
             return value;
         }
 
         public static IProjectionAttribute ValList(this IProjection projection, Func<IProjectionAttribute, IProjectionAttribute> itemFactory)
         {
-            if (projection.Header.Source.Data.Value == null)
-                throw ProjectionException.ValueNotFound(projection.Header.Source.Data.Metadata);
+            if (projection.Data == null)
+                throw ProjectionException.ValueNotFound(projection.Metadata);
 
-            IField[] items = new Relation(projection.Source, projection.Metadata.Identity.Name).Column().ToArray();
+            ProjectionReader reader = new ProjectionReader(projection.Data.Source, new[] { projection.Metadata });
             IProjectionAttribute attribute = projection.Attr();
 
-            if (items.Length == 0)
-                return attribute;
+            if (reader.Read())
+            {
+                IProjectionData data = reader.GetData().First();
 
-            attribute = itemFactory(attribute.With(metadata: attribute.Metadata, field: () => items[0]));
+                attribute = itemFactory(attribute.With(data: data));
+            }
 
-            foreach (IField item in items.Skip(1))
-                attribute = itemFactory(attribute.With(field: () => item).Append(", "));
+            while (reader.Read())
+            {
+                IProjectionData data = reader.GetData().First();
+
+                attribute = attribute.Append(", ");
+                attribute = itemFactory(attribute.With(data: data));
+            }
 
             return attribute;
         }

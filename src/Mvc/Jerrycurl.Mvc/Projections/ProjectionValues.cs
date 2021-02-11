@@ -6,11 +6,11 @@ namespace Jerrycurl.Mvc.Projections
 {
     public class ProjectionValues<TItem> : IProjectionValues<TItem>
     {
-        public IProjectionIdentity Identity { get; }
+        public ProjectionIdentity Identity { get; }
         public IProcContext Context { get; }
         public IEnumerable<IProjection<TItem>> Items { get; }
 
-        public ProjectionValues(IProcContext context, IProjectionIdentity identity, IEnumerable<IProjection<TItem>> items)
+        public ProjectionValues(IProcContext context, ProjectionIdentity identity, IEnumerable<IProjection<TItem>> items)
         {
             this.Context = context ?? throw new ArgumentNullException(nameof(context));
             this.Identity = identity ?? throw new ArgumentNullException(nameof(identity));

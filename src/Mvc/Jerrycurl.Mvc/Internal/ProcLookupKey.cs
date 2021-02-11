@@ -10,12 +10,12 @@ namespace Jerrycurl.Mvc.Internal
     internal class ProcLookupKey : IEquatable<ProcLookupKey>
     {
         public string Prefix { get; }
-        public IProjectionIdentity Identity { get; }
+        public ProjectionIdentity Identity { get; }
         public MetadataIdentity Metadata { get; }
         public IField Field { get; }
         public bool HasValue { get; }
 
-        public ProcLookupKey(string prefix, IProjectionIdentity identity, MetadataIdentity metadata, IField field)
+        public ProcLookupKey(string prefix, ProjectionIdentity identity, MetadataIdentity metadata, IField field)
         {
             this.Prefix = prefix;
             this.Identity = identity;
