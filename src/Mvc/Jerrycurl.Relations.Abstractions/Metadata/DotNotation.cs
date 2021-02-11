@@ -24,13 +24,13 @@ namespace Jerrycurl.Relations.Metadata
         }
 
         public string Combine(params string[] parts)
-        {
-            return string.Join(this.Dot.ToString(), parts.Where(p => p.Length > 0));
-        }
+            => string.Join(this.Dot.ToString(), parts.Where(p => p.Length > 0));
 
         public string Combine(string part1, string part2)
         {
-            if (part1 == "")
+            if (part1 == null || part2 == null)
+                return null;
+            else if (part1 == "")
                 return part2;
             else if (part2 == "")
                 return part1;
@@ -39,32 +39,26 @@ namespace Jerrycurl.Relations.Metadata
         }
 
         public string Model() => "";
-        public string Index(string name, int index) => $"{name}[{index}]";
+        public string Index(string name, int index) => $"{name}{this.IndexBefore}{index}{this.IndexAfter}";
         public bool Equals(string name1, string name2) => this.Comparer.Equals(name1, name2);
 
         public string Lambda(LambdaExpression expression)
         {
             Stack<string> stack = new Stack<string>();
+            Expression current = expression?.Body;
 
-            Expression expr = expression.Body;
-
-            while (expr != null)
+            while (current != null)
             {
-                switch (expr.NodeType)
+                switch (current.NodeType)
                 {
-                    case ExpressionType.MemberAccess:
-                        {
-                            MemberExpression memberExpr = (MemberExpression)expr;
-
-                            stack.Push(memberExpr.Member.Name);
-
-                            expr = memberExpr.Expression;
-                        }
+                    case ExpressionType.MemberAccess when current is MemberExpression memberExpression:
+                        stack.Push(memberExpression.Member.Name);
+                        current = memberExpression.Expression;
                         break;
                     case ExpressionType.Parameter:
                         return this.Combine(stack.ToArray());
                     default:
-                        expr = null;
+                        current = null;
                         break;
                 }
             }
@@ -74,20 +68,21 @@ namespace Jerrycurl.Relations.Metadata
 
         public string Path(string from, string to)
         {
-            if (this.Comparer.Equals(from, to))
-                return this.Model();
+            if (from == null || to == null)
+                return null;
+            else if (this.Comparer.Equals(from, to))
+                return "";
             else if (this.Comparer.Equals(from, this.Model()))
                 return to;
-
-            if (to.Length <= from.Length + 2 || !this.Comparer.Equals(from, to.Substring(0, from.Length)) || to[from.Length] != this.Dot)
-                throw new InvalidOperationException();
+            else if (to.Length <= from.Length + 2 || !this.Comparer.Equals(from, to.Substring(0, from.Length)) || to[from.Length] != this.Dot)
+                return null;
 
             return to.Remove(0, from.Length + 1);
         }
 
         public string Parent(string name)
         {
-            if (this.Comparer.Equals(name, this.Model()))
+            if (this.Comparer.Equals(name, this.Model()) || name == null)
                 return null;
 
             string[] parts = name.Split(new[] { this.Dot });
@@ -97,9 +92,21 @@ namespace Jerrycurl.Relations.Metadata
 
         public string Member(string name)
         {
+            string[] parts = name?.Split(new[] { this.Dot });
+
+            return parts?.Last();
+        }
+
+        public int Depth(string name)
+        {
+            if (name == null)
+                return -1;
+            else if (this.Comparer.Equals(name, this.Model()))
+                return 0;
+
             string[] parts = name.Split(new[] { this.Dot });
 
-            return parts.Last();
+            return parts.Length;
         }
     }
 }

@@ -132,10 +132,20 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
         public AggregateReader Compile(AggregateTree tree)
         {
-            Expression block = this.GetBinderExpression(tree.Aggregate);
+            Expression body = this.GetBinderExpression(tree.Aggregate);
+
+            if (tree.Aggregate.Metadata.HasFlag(BindingMetadataFlags.Item))
+            {
+                ParameterExpression variable = Expression.Variable(tree.Aggregate.Metadata.Parent.Composition.Construct.Type);
+                Expression newList = tree.Aggregate.Metadata.Parent.Composition.Construct;
+                Expression assignList = Expression.Assign(variable, newList);
+                Expression callAdd = Expression.Call(variable, tree.Aggregate.Metadata.Parent.Composition.Add, body);
+
+                body = this.GetBlockOrExpression(new[] { assignList, callAdd, variable }, new[] { variable });
+            }
 
             ParameterExpression[] arguments = new[] { Arguments.Slots, Arguments.Aggregates, Arguments.SchemaType };
-            AggregateInternalReader reader = this.Compile<AggregateInternalReader>(block, arguments);
+            AggregateInternalReader reader = this.Compile<AggregateInternalReader>(body, arguments);
 
             Type schemaType = tree.Schema.Model;
 
@@ -200,35 +210,35 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             Expression value = this.GetBinderExpression(writer.Item);
             Expression writeItem;
 
-            if (writer.Metadata.HasFlag(BindingMetadataFlags.Model))
+            if (writer.JoinKey == null && writer.Metadata.HasFlag(BindingMetadataFlags.List))
+                writeItem = Expression.Call(writer.Slot, writer.Metadata.Composition.Add, value);
+            else if (writer.JoinKey == null)
             {
                 Expression arrayIndex = this.GetElasticIndexExpression(Arguments.Slots, writer.BufferIndex);
                 Expression objectValue = Expression.Convert(value, typeof(object));
 
                 writeItem = Expression.Assign(arrayIndex, objectValue);
             }
-            else if (writer.JoinKey == null)
-                writeItem = Expression.Call(writer.Slot, writer.Metadata.Composition.Add, value);
             else
             {
                 Expression arrayIsNotNull = Expression.ReferenceNotEqual(writer.JoinKey.Array, Expression.Constant(null));
                 Expression arrayIndex = this.GetElasticIndexExpression(writer.JoinKey.Array, writer.BufferIndex);
-                Expression arrayIndexIsNotNull = Expression.ReferenceNotEqual(arrayIndex, Expression.Constant(null));
 
-                if (writer.JoinKey.Metadata.List == null)
+                if (writer.Metadata.HasFlag(BindingMetadataFlags.List))
                 {
-                    Expression assignValue = Expression.Assign(arrayIndex, value);
-
-                    writeItem = Expression.IfThen(arrayIsNotNull, assignValue);
-                }
-                else
-                {
+                    Expression arrayIndexIsNotNull = Expression.ReferenceNotEqual(arrayIndex, Expression.Constant(null));
                     Expression assignIndex = Expression.Assign(arrayIndex, writer.Metadata.Composition.Construct);
                     Expression getOrAdd = Expression.Condition(arrayIndexIsNotNull, arrayIndex, assignIndex);
                     Expression listValue = Expression.Convert(getOrAdd, writer.Metadata.Composition.Construct.Type);
                     Expression callAdd = Expression.Call(listValue, writer.Metadata.Composition.Add, value);
 
                     writeItem = Expression.IfThen(arrayIsNotNull, callAdd);
+                }
+                else
+                {
+                    Expression assignValue = Expression.Assign(arrayIndex, value);
+
+                    writeItem = Expression.IfThen(arrayIsNotNull, assignValue);
                 }
             }
 

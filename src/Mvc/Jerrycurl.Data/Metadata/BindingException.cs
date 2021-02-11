@@ -67,8 +67,8 @@ namespace Jerrycurl.Data.Metadata
             return new BindingException($"Unable to bind to {metadata.Identity}: {innerException.Message}", innerException);
         }
 
-        internal static BindingException NoValidReference(MetadataIdentity metadata)
-            => throw new BindingException($"No valid reference found for {metadata}. Please specify matching [Key] and [Ref] annotations to map across one-to-many boundaries.");
+        internal static BindingException NoValidReference(MetadataIdentity from, MetadataIdentity to)
+            => throw new BindingException($"No valid reference found between {from} and {to}. Please specify matching [Key] and [Ref] annotations to map across one-to-many boundaries.");
 
         #endregion
     }

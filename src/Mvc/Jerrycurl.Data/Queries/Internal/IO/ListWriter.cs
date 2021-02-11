@@ -4,7 +4,7 @@ using Jerrycurl.Data.Metadata;
 
 namespace Jerrycurl.Data.Queries.Internal.IO
 {
-    [DebuggerDisplay("{GetType().Name,nq}: {Metadata.Identity.Name,nq}")]
+    [DebuggerDisplay("{GetType().Name,nq}: {Metadata.Identity,nq}")]
     internal class ListWriter
     {
         public ParameterExpression Slot { get; set; }
@@ -13,6 +13,7 @@ namespace Jerrycurl.Data.Queries.Internal.IO
         public KeyBinder PrimaryKey { get; set; }
         public KeyBinder JoinKey { get; set; }
         public IBindingMetadata Metadata { get; set; }
-        public int Depth => this.Item?.Metadata.Relation.Depth ?? 0;
+        public int Depth { get; set; }
+        public bool IsUnitList { get; set; }
     }
 }

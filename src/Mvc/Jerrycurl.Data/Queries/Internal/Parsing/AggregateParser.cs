@@ -21,9 +21,8 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         public AggregateTree Parse(IEnumerable<AggregateName> values)
         {
-            AggregateName modelValue = new AggregateName(this.Schema.Notation.Model(), useSlot: false);
-            NodeTree nodeTree = NodeParser.Parse(this.Schema, values.Concat(new[] { modelValue }));
-            Node modelNode = nodeTree.Items.FirstOrDefault(n => n.Metadata.HasFlag(BindingMetadataFlags.Model));
+            NodeTree nodeTree = NodeParser.Parse(this.Schema, values);
+            Node modelNode = nodeTree.Items.FirstOrDefault(n => BindingHelper.IsModelOrModelItem(n.Metadata));
 
             return new AggregateTree()
             {
@@ -38,12 +37,18 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
             if (value != null)
             {
-                return new AggregateBinder(node)
+                AggregateBinder binder = new AggregateBinder(node)
                 {
                     CanBeDbNull = true,
                     UseSlot = value.UseSlot,
-                    BufferIndex = value.UseSlot ? this.Buffer.GetListIndex(node.Identity) : this.Buffer.GetAggregateIndex(node.Identity),
                 };
+
+                if (value.UseSlot)
+                    binder.BufferIndex = this.Buffer.GetListIndex(node.Identity);
+                else
+                    binder.BufferIndex = this.Buffer.GetAggregateIndex(node.Identity);
+
+                return binder;
             }
 
             return null;

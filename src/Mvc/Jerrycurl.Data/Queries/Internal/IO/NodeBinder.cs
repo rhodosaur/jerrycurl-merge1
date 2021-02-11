@@ -5,7 +5,7 @@ using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Data.Queries.Internal.IO
 {
-    [DebuggerDisplay("{GetType().Name,nq}: {Metadata.Identity.ToString(),nq}")]
+    [DebuggerDisplay("{GetType().Name,nq}: {Metadata.Identity,nq}")]
     internal abstract class NodeBinder
     {
         public IBindingMetadata Metadata { get; protected set; }

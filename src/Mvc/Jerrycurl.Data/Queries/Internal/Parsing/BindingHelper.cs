@@ -14,6 +14,14 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 {
     internal static class BindingHelper
     {
+        public static bool IsModelOrModelItem(IBindingMetadata metadata)
+        {
+            if (metadata.HasFlag(BindingMetadataFlags.Model))
+                return true;
+
+            return (metadata.HasFlag(BindingMetadataFlags.Item) && metadata.Parent.HasFlag(BindingMetadataFlags.Model));
+        }
+
         public static ColumnBinder FindValue(Node node, IEnumerable<ColumnName> valueNames)
         {
             foreach (ColumnName value in valueNames)

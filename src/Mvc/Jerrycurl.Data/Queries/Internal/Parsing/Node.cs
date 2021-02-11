@@ -10,19 +10,22 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
         public Node(MetadataIdentity identity)
         {
             this.Identity = identity ?? throw new ArgumentNullException(nameof(identity));
-            this.Metadata = identity.Lookup<IBindingMetadata>() ?? throw new InvalidOperationException("Metadata not found.");
+            this.Metadata = identity.Require<IBindingMetadata>();
+            this.Depth = identity.Schema.Notation.Depth(identity.Name);
         }
 
         public Node(IBindingMetadata metadata)
         {
             this.Metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
-            this.Identity = metadata?.Identity;
+            this.Identity = metadata.Identity;
+            this.Depth = metadata.Identity.Schema.Notation.Depth(metadata.Identity.Name);
         }
 
         public Node(MetadataIdentity identity, IBindingMetadata metadata)
         {
             this.Identity = identity ?? throw new ArgumentNullException(nameof(identity));
             this.Metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
+            this.Depth = identity.Schema.Notation.Depth(identity.Name);
         }
 
         public MetadataIdentity Identity { get; }
@@ -30,6 +33,6 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
         public ISchema Schema => this.Metadata?.Identity.Schema ?? this.Identity?.Schema;
         public IList<Node> Properties { get; } = new List<Node>();
         public bool IsDynamic { get; set; }
-        public int Depth => this.Metadata.Relation.Depth;
+        public int Depth { get; }
     }
 }

@@ -43,7 +43,10 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         private void AddAggregates(BufferTree tree, NodeTree nodeTree, IEnumerable<ColumnName> valueNames)
         {
-            IEnumerable<Node> aggregateNodes = nodeTree.Nodes.Where(n => this.IsAggregateSet(n.Metadata));
+            if (this.Type != QueryType.Aggregate)
+                return;
+
+            IEnumerable<Node> aggregateNodes = nodeTree.Nodes.Where(IsAggregateNode);
 
             foreach (Node node in aggregateNodes)
             {
@@ -61,31 +64,56 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                     tree.AggregateNames.Add(new AggregateName(value.Identity.Name, useSlot: false));
                 }
             }
+
+            static bool IsAggregateNode(Node node)
+            {
+                if (node.Metadata.Relation.Depth == 0)
+                    return true;
+                else if (node.Metadata.Relation.Depth == 1 && node.Metadata.MemberOf.Parent.HasFlag(BindingMetadataFlags.Model))
+                    return true;
+
+                return false;
+            }
         }
 
         private void AddWriters(BufferTree tree, NodeTree nodeTree, IEnumerable<ColumnName> valueNames)
         {
-            IEnumerable<Node> itemNodes = nodeTree.Items.Where(n => !this.IsAggregateSet(n.Metadata));
-
-            foreach (Node node in itemNodes)
+            foreach (Node node in nodeTree.Items)
             {
                 ListWriter writer = new ListWriter()
                 {
                     Metadata = node.Metadata.Parent ?? node.Metadata,
                     Item = this.CreateBinder(tree, node, valueNames),
+                    IsUnitList = !node.Metadata.HasFlag(BindingMetadataFlags.Item),
+                    Depth = node.Metadata.Relation.Depth,
                 };
+
+                if (writer.IsUnitList && !node.Metadata.HasFlag(BindingMetadataFlags.Model))
+                    writer.Depth += 1;
 
                 this.AddPrimaryKey(writer);
                 this.AddChildKey(writer);
 
-                if (this.IsAggregateSet(writer.Metadata))
+                if (this.IsAggregateList(writer))
                     tree.AggregateNames.Add(new AggregateName(writer.Metadata.Identity.Name, useSlot: true));
 
-                if (!writer.Metadata.HasFlag(BindingMetadataFlags.Model))
-                    writer.Slot = this.AddSlot(tree, writer.Metadata, writer.JoinKey);
+                writer.Slot = this.AddSlot(tree, writer.Metadata, writer.JoinKey);
 
                 tree.Lists.Add(writer);
             }
+
+            tree.Lists = tree.Lists.OrderByDescending(w => w.Depth).ThenByDescending(GetNameDepth).ToList();
+
+            int GetNameDepth(ListWriter writer)
+                => tree.Schema.Notation.Depth(writer.Item.Metadata.Identity.Name);
+        }
+
+        private bool IsAggregateList(ListWriter writer)
+        {
+            if (this.Type != QueryType.Aggregate)
+                return false;
+
+            return (writer.JoinKey == null && !BindingHelper.IsModelOrModelItem(writer.Metadata));
         }
 
         private void AddPrimaryKey(ListWriter writer)
@@ -97,19 +125,6 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             }
         }
 
-        private bool IsAggregateSet(IBindingMetadata metadata)
-        {
-            if (this.Type != QueryType.Aggregate)
-                return false;
-
-            if (metadata.Relation.Depth == 0)
-                return true;
-            else if (metadata.Relation.Depth == 1 && metadata.MemberOf.Parent.HasFlag(BindingMetadataFlags.Model))
-                return true;
-
-            return false;
-        }
-
         private ParameterExpression AddSlot(BufferTree tree, IBindingMetadata metadata, KeyBinder joinKey)
         {
             int bufferIndex;
@@ -118,7 +133,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
             if (joinKey == null)
             {
-                bufferIndex = metadata.Relation.Depth == 0 ? this.Buffer.GetResultIndex() : this.Buffer.GetListIndex(metadata.Identity);
+                bufferIndex = BindingHelper.IsModelOrModelItem(metadata) ? this.Buffer.GetResultIndex() : this.Buffer.GetListIndex(metadata.Identity);
                 variableType = metadata.Composition.Construct.Type;
                 variableName = $"list_{bufferIndex}";
             }
@@ -251,24 +266,13 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 }
             }
 
-            if (this.Type == QueryType.List)
+            if (writer.JoinKey == null && references.Any())
             {
-                if (writer.Depth > 1 && writer.JoinKey == null)
-                    throw BindingException.NoValidReference(writer.Metadata.Identity);
-                else if (writer.Depth == 1 && writer.JoinKey == null && references.Any())
-                    throw BindingException.NoValidReference(writer.Metadata.Identity);
-                else if (writer.Depth < 1)
-                    writer.JoinKey = null;
+                IReference invalidRef = references.First();
+
+                throw BindingException.NoValidReference(invalidRef.Metadata.Identity, invalidRef.Other.Metadata.Identity);
             }
-            else
-            {
-                if (writer.Depth > 2 && writer.JoinKey == null)
-                    throw BindingException.NoValidReference(writer.Metadata.Identity);
-                if (writer.Depth == 2 && writer.Metadata.Parent.MemberOf.Parent.HasFlag(BindingMetadataFlags.Model) && writer.JoinKey == null && references.Any())
-                    throw BindingException.NoValidReference(writer.Metadata.Identity);
-                else if (writer.Depth < 2)
-                    writer.JoinKey = null;
-            }
+                
         }
 
         private IReference GetRecursiveReference(IBindingMetadata metadata)
@@ -289,7 +293,24 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
             return Array.Empty<IReference>();
 
-            static bool IsValid(IReference reference) => (reference.HasFlag(ReferenceFlags.Many) || reference.Other.HasFlag(ReferenceFlags.Many));
+            bool IsValid(IReference reference)
+            {
+                if (!reference.HasFlag(ReferenceFlags.Many) && !reference.Other.HasFlag(ReferenceFlags.Many))
+                    return false;
+
+                IReference parentRef = reference.Find(ReferenceFlags.Parent);
+                IReference childRef = reference.Find(ReferenceFlags.Child);
+
+                if (this.Type == QueryType.Aggregate)
+                {
+                    if (parentRef.Metadata.Relation.HasFlag(RelationMetadataFlags.Model))
+                        return false;
+                    else if (parentRef.Metadata.Relation.Parent.HasFlag(RelationMetadataFlags.Model))
+                        return false;
+                }
+
+                return true;
+            }
 
             static int GetPriority(IReference reference)
             {

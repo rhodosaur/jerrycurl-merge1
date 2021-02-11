@@ -9,11 +9,10 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
     {
         public ISchema Schema { get; set; }
         public QueryType QueryType { get; set; }
-        public IList<SlotWriter> Slots { get; } = new List<SlotWriter>();
-        public IList<AggregateWriter> Aggregates { get; } = new List<AggregateWriter>();
-        public IList<ListWriter> Lists { get; } = new List<ListWriter>();
-        public IList<HelperWriter> Helpers { get; } = new List<HelperWriter>();
-
-        public IList<AggregateName> AggregateNames { get; set; } = new List<AggregateName>();
+        public List<SlotWriter> Slots { get; set; } = new List<SlotWriter>();
+        public List<AggregateWriter> Aggregates { get; set; } = new List<AggregateWriter>();
+        public List<ListWriter> Lists { get; set; } = new List<ListWriter>();
+        public List<HelperWriter> Helpers { get; set; } = new List<HelperWriter>();
+        public List<AggregateName> AggregateNames { get; set; } = new List<AggregateName>();
     }
 }
