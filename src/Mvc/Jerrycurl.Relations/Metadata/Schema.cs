@@ -10,16 +10,16 @@ namespace Jerrycurl.Relations.Metadata
     internal class Schema : ISchema
     {
         private readonly ConcurrentDictionary<MetadataKey, object> entries = new ConcurrentDictionary<MetadataKey, object>();
-        private readonly SchemaStore store;
         private readonly ConcurrentDictionary<Type, ReaderWriterLockSlim> locks = new ConcurrentDictionary<Type, ReaderWriterLockSlim>();
 
         public Type Model { get; }
-        public IMetadataNotation Notation => this.store.Notation;
+        public SchemaStore Store { get; }
+        public DotNotation Notation => this.Store.Notation;
 
         public Schema(SchemaStore store, Type model)
         {
+            this.Store = store ?? throw new ArgumentNullException(nameof(store));
             this.Model = model ?? throw new ArgumentNullException(nameof(model));
-            this.store = store ?? throw new ArgumentNullException(nameof(store));
         }
 
         public void AddMetadata<TMetadata>(TMetadata metadata)
@@ -79,7 +79,7 @@ namespace Jerrycurl.Relations.Metadata
 
             try
             {
-                foreach (IMetadataBuilder<TMetadata> metadataBuilder in this.store.OfType<IMetadataBuilder<TMetadata>>())
+                foreach (IMetadataBuilder<TMetadata> metadataBuilder in this.Store.OfType<IMetadataBuilder<TMetadata>>())
                 {
                     MetadataIdentity identity = new MetadataIdentity(this, name);
                     MetadataBuilderContext context = new MetadataBuilderContext(identity, this);

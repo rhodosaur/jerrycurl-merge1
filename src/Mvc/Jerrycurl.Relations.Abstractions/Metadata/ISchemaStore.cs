@@ -5,7 +5,7 @@ namespace Jerrycurl.Relations.Metadata
 {
     public interface ISchemaStore : ICollection<IMetadataBuilder>
     {
-        IMetadataNotation Notation { get; }
+        DotNotation Notation { get; }
         ISchema GetSchema(Type modelType);
     }
 }

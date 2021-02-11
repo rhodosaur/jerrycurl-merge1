@@ -10,7 +10,7 @@ namespace Jerrycurl.Relations.Metadata
     {
         public string Name { get; }
         public ISchema Schema { get; }
-        public IMetadataNotation Notation => this.Schema.Notation;
+        public DotNotation Notation => this.Schema.Notation;
 
         public MetadataIdentity(ISchema schema, string name)
         {

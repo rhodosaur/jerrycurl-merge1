@@ -5,9 +5,12 @@ using System.Linq.Expressions;
 
 namespace Jerrycurl.Relations.Metadata
 {
-    public class DotNotation : IMetadataNotation
+    public class DotNotation
     {
         public virtual IEqualityComparer<string> Comparer { get; }
+        public virtual char IndexBefore { get; } = '[';
+        public virtual char IndexAfter { get; } = ']';
+        public virtual char Dot { get; } = '.';
 
         public DotNotation()
             : this(StringComparer.OrdinalIgnoreCase)
@@ -22,7 +25,7 @@ namespace Jerrycurl.Relations.Metadata
 
         public string Combine(params string[] parts)
         {
-            return string.Join(".", parts.Where(p => p.Length > 0));
+            return string.Join(this.Dot.ToString(), parts.Where(p => p.Length > 0));
         }
 
         public string Combine(string part1, string part2)
@@ -32,7 +35,7 @@ namespace Jerrycurl.Relations.Metadata
             else if (part2 == "")
                 return part1;
 
-            return part1 + "." + part2;
+            return $"{part1}{this.Dot}{part2}";
         }
 
         public string Model() => "";
@@ -76,7 +79,7 @@ namespace Jerrycurl.Relations.Metadata
             else if (this.Comparer.Equals(from, this.Model()))
                 return to;
 
-            if (to.Length <= from.Length + 2 || !this.Comparer.Equals(from, to.Substring(0, from.Length)) || to[from.Length] != '.')
+            if (to.Length <= from.Length + 2 || !this.Comparer.Equals(from, to.Substring(0, from.Length)) || to[from.Length] != this.Dot)
                 throw new InvalidOperationException();
 
             return to.Remove(0, from.Length + 1);
@@ -87,14 +90,14 @@ namespace Jerrycurl.Relations.Metadata
             if (this.Comparer.Equals(name, this.Model()))
                 return null;
 
-            string[] parts = name.Split(new[] { '.' });
+            string[] parts = name.Split(new[] { this.Dot });
 
             return this.Combine(parts.Take(parts.Length - 1).ToArray());
         }
 
         public string Member(string name)
         {
-            string[] parts = name.Split(new[] { '.' });
+            string[] parts = name.Split(new[] { this.Dot });
 
             return parts.Last();
         }

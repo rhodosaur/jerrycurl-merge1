@@ -1,20 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Relations.Internal.Queues
 {
     internal class NameBuffer
     {
         private readonly StringBuilder buffer;
-        private readonly DotNotation2 notation;
+        private readonly DotNotation notation;
         private int bufferStart;
         private int bufferEnd;
 
         public int Index { get; private set; } = -1;
         public string NamePart { get; }
 
-        public NameBuffer(string namePart, DotNotation2 notation)
+        public NameBuffer(string namePart, DotNotation notation)
         {
             this.buffer = new StringBuilder(namePart);
             this.bufferStart = this.buffer.Length;
@@ -50,8 +51,12 @@ namespace Jerrycurl.Relations.Internal.Queues
         public string CombineWith(string namePart)
         {
             this.buffer.Length = this.bufferEnd;
-            this.buffer.Append(this.notation.Dot);
-            this.buffer.Append(namePart);
+
+            if (namePart.Length > 0)
+            {
+                this.buffer.Append(this.notation.Dot);
+                this.buffer.Append(namePart);
+            }
 
             return this.buffer.ToString();
         }

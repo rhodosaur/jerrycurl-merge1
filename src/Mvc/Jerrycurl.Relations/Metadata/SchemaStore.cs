@@ -10,7 +10,7 @@ namespace Jerrycurl.Relations.Metadata
     {
         private readonly ConcurrentDictionary<Type, ISchema> entries = new ConcurrentDictionary<Type, ISchema>();
 
-        public IMetadataNotation Notation { get; }
+        public DotNotation Notation { get; }
 
         public SchemaStore()
             : this(new DotNotation())
@@ -18,18 +18,18 @@ namespace Jerrycurl.Relations.Metadata
 
         }
 
-        public SchemaStore(IMetadataNotation notation)
+        public SchemaStore(DotNotation notation)
         {
             this.Notation = notation ?? throw new ArgumentNullException(nameof(notation));
         }
 
-        public SchemaStore(IMetadataNotation notation, params IMetadataBuilder[] builders)
+        public SchemaStore(DotNotation notation, params IMetadataBuilder[] builders)
             : this(notation, (IEnumerable<IMetadataBuilder>)builders)
         {
 
         }
 
-        public SchemaStore(IMetadataNotation notation, IEnumerable<IMetadataBuilder> builders)
+        public SchemaStore(DotNotation notation, IEnumerable<IMetadataBuilder> builders)
             : this(notation)
         {
             foreach (IMetadataBuilder builder in builders?.NotNull() ?? Array.Empty<IMetadataBuilder>())

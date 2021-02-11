@@ -21,11 +21,11 @@ namespace Jerrycurl.Relations.Internal.Compilation
 {
     internal class RelationCompiler
     {
-        private delegate void BufferInternalWriter(IField2[] fields, IRelationQueue[] queues, IField2 source, IField2 model, DotNotation2 notation, Delegate[] binders, IRelationMetadata[] metadata);
+        private delegate void BufferInternalWriter(IField2[] fields, IRelationQueue[] queues, IField2 source, IField2 model, DotNotation notation, Delegate[] binders, IRelationMetadata[] metadata);
 
         public BufferWriter Compile(BufferTree tree)
         {
-            DotNotation2 notation = tree.Notation;
+            DotNotation notation = tree.Notation;
             Delegate[] binders = this.GetBindersArgument(tree);
             IRelationMetadata[] metadata = this.GetMetadataArgument(tree);
 
@@ -39,7 +39,7 @@ namespace Jerrycurl.Relations.Internal.Compilation
             };
         }
 
-        private Action<RelationBuffer> Recompile(BufferInternalWriter writer, DotNotation2 notation, Delegate[] binders, IRelationMetadata[] metadata)
+        private Action<RelationBuffer> Recompile(BufferInternalWriter writer, DotNotation notation, Delegate[] binders, IRelationMetadata[] metadata)
             => buf => writer(buf.Fields, buf.Queues, buf.Source, buf.Model, notation, binders, metadata);
 
         private BufferInternalWriter Compile(SourceReader reader, IList<QueueReader> queueReaders, int metadataOffset)
@@ -305,7 +305,7 @@ namespace Jerrycurl.Relations.Internal.Compilation
             }
             else
             {
-                MethodInfo combineMethod = typeof(DotNotation2).GetMethod(nameof(DotNotation2.Combine), new[] { typeof(string), typeof(string) });
+                MethodInfo combineMethod = typeof(DotNotation).GetMethod(nameof(DotNotation.Combine), new[] { typeof(string), typeof(string) });
 
                 Expression sourceName = this.GetSourceNameExpression();
 
@@ -448,7 +448,7 @@ namespace Jerrycurl.Relations.Internal.Compilation
             public static ParameterExpression Model { get; } = Expression.Parameter(typeof(IField2), "model");
             public static ParameterExpression Source { get; } = Expression.Parameter(typeof(IField2), "source");
             public static ParameterExpression Metadata { get; } = Expression.Parameter(typeof(IRelationMetadata[]), "metadata");
-            public static ParameterExpression Notation { get; } = Expression.Parameter(typeof(DotNotation2), "notation");
+            public static ParameterExpression Notation { get; } = Expression.Parameter(typeof(DotNotation), "notation");
             public static ParameterExpression Binders { get; } = Expression.Parameter(typeof(Delegate[]), "binders");
             public static ParameterExpression Queues { get; } = Expression.Parameter(typeof(IRelationQueue[]), "queues");
 

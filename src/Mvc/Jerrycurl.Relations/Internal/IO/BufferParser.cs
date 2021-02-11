@@ -18,7 +18,7 @@ namespace Jerrycurl.Relations.Internal.IO
             NodeTree nodeTree = NodeParser.Parse(source, header);
             BufferTree tree = new BufferTree()
             {
-                Notation = new DotNotation2(),
+                Notation = new DotNotation(),
             };
 
             this.CreateSource(nodeTree.Source, tree);
@@ -132,7 +132,7 @@ namespace Jerrycurl.Relations.Internal.IO
         private string GetNamePart(Node node, QueueIndex queue, BufferTree tree)
         {
             if (queue != null)
-                return tree.Notation.Path(queue.List.Identity.Name, node.Metadata.Identity.Name);
+                return tree.Notation.Path(queue.Item.Identity.Name, node.Metadata.Identity.Name);
             else
                 return tree.Notation.Path(tree.Source.Metadata.Identity.Name, node.Metadata.Identity.Name);
         }
