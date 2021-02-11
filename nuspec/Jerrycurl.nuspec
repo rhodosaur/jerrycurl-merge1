@@ -14,7 +14,7 @@
         <tags>$PackageTags$</tags>
         <repository type="git" url="$RepositoryUrl$" commit="$GitCommitId$" />
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Jerrycurl is a powerful ORM, MVC framework and Razor SQL engine for .NET.</description>
+        <description>Jerrycurl is a powerful ORM, MVC framework and Razor SQL language for .NET.</description>
         <dependencies>
             <group>
                 <dependency id="Jerrycurl.Build.Razor" version="$PackageVersion$" />
