@@ -1,5 +1,9 @@
 ﻿using Jerrycurl.Tools.Info;
+#if NET20_BASE
+using System.Data.SqlClient;
+#else
 using Microsoft.Data.SqlClient;
+#endif
 
 namespace Jerrycurl.Tools.Vendors.SqlServer
 {

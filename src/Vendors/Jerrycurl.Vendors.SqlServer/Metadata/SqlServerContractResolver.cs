@@ -2,7 +2,11 @@
 using System.Data;
 using System.Reflection;
 using Jerrycurl.Data.Metadata;
+#if NET20_BASE
+using System.Data.SqlClient;
+#else
 using Microsoft.Data.SqlClient;
+#endif
 
 namespace Jerrycurl.Vendors.SqlServer.Metadata
 {

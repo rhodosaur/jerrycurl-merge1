@@ -1,5 +1,9 @@
 ﻿using Jerrycurl.Vendors.SqlServer.Metadata;
+#if NET20_BASE
+using System.Data.SqlClient;
+#else
 using Microsoft.Data.SqlClient;
+#endif
 
 namespace Jerrycurl.Mvc
 {

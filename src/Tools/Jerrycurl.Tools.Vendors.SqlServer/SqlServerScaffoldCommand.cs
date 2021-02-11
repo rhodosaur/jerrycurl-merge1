@@ -2,9 +2,13 @@
 using Jerrycurl.Tools.Scaffolding.Model;
 using System.Collections.Generic;
 using System.Data.Common;
-using Microsoft.Data.SqlClient;
 using System.Threading;
 using System.Threading.Tasks;
+#if NET20_BASE
+using System.Data.SqlClient;
+#else
+using Microsoft.Data.SqlClient;
+#endif
 
 namespace Jerrycurl.Tools.Vendors.SqlServer
 {
