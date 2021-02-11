@@ -9,7 +9,7 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Test
 {
     public class EntityTests
     {
-        public void EnsureJoins_AreWorkingCorrectly()
+        public void Test_Query_OneToMany_FromEfMetadata()
         {
             Runnable<object, Order> table = new Runnable<object, Order>();
 
