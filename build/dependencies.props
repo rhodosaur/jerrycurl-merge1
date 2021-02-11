@@ -23,7 +23,7 @@
 
     <PropertyGroup Label="NuGet Package Versions (.NET Standard 2.0)">
 		<SqlServerPackageId_net20>System.Data.SqlClient</SqlServerPackageId_net20>
-		<SqlServerPackageVersion_net20>4.6.1</SqlServerPackageVersion_net20>
+		<SqlServerPackageVersion_net20>4.8.2</SqlServerPackageVersion_net20>
 		<SqlitePackageVersion_net20>2.2.6</SqlitePackageVersion_net20>
 		<EntityFrameworkCorePackageVersion_net20>2.2.6</EntityFrameworkCorePackageVersion_net20>
     </PropertyGroup>
