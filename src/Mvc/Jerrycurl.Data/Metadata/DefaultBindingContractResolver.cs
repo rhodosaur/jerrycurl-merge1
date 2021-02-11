@@ -261,8 +261,8 @@ namespace Jerrycurl.Data.Metadata
 
                 foreach (Type numberType in testTypes)
                 {
-                    Expression unboxedValue = this.GetConvertExpression(value, numberType);
-                    Expression castValue = this.GetConvertExpression(unboxedValue, valueInfo.Metadata.Type);
+                    Expression unboxedValue = this.GetConvertExpression(valueInfo.Metadata, value, numberType);
+                    Expression castValue = this.GetConvertExpression(valueInfo.Metadata, unboxedValue, valueInfo.Metadata.Type);
 
                     AddTypeIsExpression(numberType, castValue);
                 }
@@ -275,7 +275,7 @@ namespace Jerrycurl.Data.Metadata
 
                 foreach (Type numberType in this.GetNumberTypes())
                 {
-                    Expression unboxedValue = this.GetConvertExpression(value, numberType);
+                    Expression unboxedValue = this.GetConvertExpression(valueInfo.Metadata, value, numberType);
                     Expression boolValue = Expression.NotEqual(unboxedValue, Expression.Default(numberType));
 
                     AddTypeIsExpression(numberType, boolValue);
@@ -291,13 +291,13 @@ namespace Jerrycurl.Data.Metadata
                 Expression defaultValue = Expression.Default(valueInfo.Metadata.Type);
 
                 if (valueInfo.Metadata.Type.IsValueType && Nullable.GetUnderlyingType(valueInfo.Metadata.Type) == null)
-                    defaultValue = this.GetConvertExpression(defaultValue, typeof(object));
+                    defaultValue = this.GetConvertExpression(valueInfo.Metadata, defaultValue, typeof(object));
 
                 value = Expression.Condition(isNull, defaultValue, value, typeof(object));
             }
 
             if (!valueInfo.Metadata.Type.IsAssignableFrom(value.Type))
-                value = this.GetConvertExpression(value, valueInfo.Metadata.Type);
+                value = this.GetConvertExpression(valueInfo.Metadata, value, valueInfo.Metadata.Type);
 
             return value;
 
@@ -306,7 +306,7 @@ namespace Jerrycurl.Data.Metadata
                 Expression typeIs = Expression.TypeIs(value, testType);
 
                 if (newValue.Type.IsValueType)
-                    newValue = this.GetConvertExpression(newValue, typeof(object));
+                    newValue = this.GetConvertExpression(valueInfo.Metadata, newValue, typeof(object));
 
                 conditions.Push(Expression.Condition(typeIs, newValue, value));
             }
@@ -340,18 +340,18 @@ namespace Jerrycurl.Data.Metadata
             Expression value = valueInfo.Value;
 
             if (valueInfo.Value.Type == typeof(object) && sourceType != typeof(object))
-                value = this.GetConvertExpression(value, sourceType);
+                value = this.GetConvertExpression(valueInfo.Metadata, value, sourceType);
 
             Type structLeft = targetType.IsValueType ? Nullable.GetUnderlyingType(targetType) ?? targetType : null;
             Type structRight = value.Type.IsValueType ? Nullable.GetUnderlyingType(value.Type) ?? value.Type : null;
 
             if (this.IsNumberType(structLeft) && this.IsNumberType(structRight) && structLeft != structRight)
-                value = this.GetConvertCheckedExpression(value, targetType);
+                value = this.GetConvertCheckedExpression(valueInfo.Metadata, value, targetType);
             else if (structLeft == typeof(bool) && this.IsNumberType(structRight))
                 value = Expression.NotEqual(valueInfo.Value, Expression.Default(value.Type));
 
             if (targetType != value.Type)
-                value = this.GetConvertExpression(value, valueInfo.Metadata.Type);
+                value = this.GetConvertExpression(valueInfo.Metadata, value, valueInfo.Metadata.Type);
 
             if (valueInfo.CanBeDbNull || (valueInfo.CanBeNull && this.IsNotNullableValueType(targetType)))
             {
@@ -362,12 +362,12 @@ namespace Jerrycurl.Data.Metadata
             }
 
             if (!targetType.IsAssignableFrom(value.Type))
-                value = this.GetConvertExpression(value, targetType);
+                value = this.GetConvertExpression(valueInfo.Metadata, value, targetType);
 
             return value;
         }
 
-        private Expression GetConvertCheckedExpression(Expression value, Type type)
+        private Expression GetConvertCheckedExpression(IBindingMetadata metadata, Expression value, Type type)
         {
             try
             {
@@ -375,11 +375,11 @@ namespace Jerrycurl.Data.Metadata
             }
             catch (Exception ex)
             {
-                throw new BindingException($"Cannot convert type '{value.Type.Name}' to '{type.Name}'.", ex);
+                throw BindingException.InvalidCast(metadata, value.Type, type, ex);
             }
         }
 
-        private Expression GetConvertExpression(Expression value, Type type)
+        private Expression GetConvertExpression(IBindingMetadata metadata, Expression value, Type type)
         {
             try
             {
@@ -387,7 +387,7 @@ namespace Jerrycurl.Data.Metadata
             }
             catch (Exception ex)
             {
-                throw new BindingException($"Cannot convert type '{value.Type.Name}' to '{type.Name}'.", ex);
+                throw BindingException.InvalidCast(metadata, value.Type, type, ex);
             }
         }
 

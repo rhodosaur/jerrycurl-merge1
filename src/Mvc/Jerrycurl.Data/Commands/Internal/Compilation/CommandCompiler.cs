@@ -133,9 +133,9 @@ namespace Jerrycurl.Data.Commands.Internal.Compilation
         {
             MethodInfo writeMethod = typeof(FieldBuffer).GetMethod(nameof(FieldBuffer.Write));
 
-            Expression pipeIndex = Expression.ArrayAccess(Arguments.Buffers, Expression.Constant(index));
+            Expression bufferIndex = Expression.ArrayAccess(Arguments.Buffers, Expression.Constant(index));
 
-            return Expression.Call(pipeIndex, writeMethod, value);
+            return Expression.Call(bufferIndex, writeMethod, value);
         }
 
         private MethodInfo GetValueReaderMethod(IBindingMetadata metadata, ColumnMetadata columnInfo)

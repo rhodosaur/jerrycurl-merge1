@@ -37,7 +37,7 @@ namespace Jerrycurl.Extensions.Json.Metadata
             Expression value = valueInfo.Value;
 
             if (value.Type != typeof(object) && value.Type != typeof(string))
-                throw BindingException.Create(valueInfo.Metadata.Identity, $"Cannot deserialize JSON from type '{value.Type.GetSanitizedName()}'.");
+                throw BindingException.Create(valueInfo.Metadata, $"Cannot deserialize JSON from type '{value.Type.GetSanitizedName()}'.");
 
             Expression nullCheck = null;
 

@@ -121,12 +121,14 @@ namespace Jerrycurl.Vendors.SqlServer
             return dataRecord;
         }
 
-        [Obsolete("Use Snapshot or Data.Value?")]
         private static void SetSqlBufferValues(SqlDataRecord buffer, ITuple tuple, BindingParameterConverter[] converters)
         {
             for (int i = 0; i < buffer.FieldCount; i++)
             {
-                object value = converters[i]?.Invoke(tuple[i].Snapshot) ?? tuple[i].Snapshot;
+                object value = tuple[i].Snapshot;
+
+                if (converters[i] != null)
+                    value = converters[i](value);
 
                 buffer.SetValue(i, value);
             }

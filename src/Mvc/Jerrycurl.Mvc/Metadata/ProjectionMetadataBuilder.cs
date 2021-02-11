@@ -72,7 +72,7 @@ namespace Jerrycurl.Mvc.Metadata
             {
                 IReferenceMetadata referenceMetadata = parent.Identity.Lookup<IReferenceMetadata>();
 
-                foreach (IReference reference in referenceMetadata.References.Where(r => r.HasFlag(ReferenceFlags.Foreign)))
+                foreach (IReference reference in referenceMetadata.References.Where(r => r.HasFlag(ReferenceFlags.Foreign) && !r.HasFlag(ReferenceFlags.Self)))
                 {
                     int valueIndex = reference.Key.Properties.IndexOf(m => m.Identity.Equals(metadata.Identity));
 

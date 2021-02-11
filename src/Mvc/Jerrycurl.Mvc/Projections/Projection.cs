@@ -28,7 +28,7 @@ namespace Jerrycurl.Mvc.Projections
             this.Metadata = metadata;
             this.Data = ProjectionData.Resolve(identity);
             this.Options = ProjectionOptions.Default;
-            this.Header = this.CreateDefaultHeader(metadata);
+            this.Header = this.CreateDefaultHeader(metadata).ToArray();
         }
 
         protected Projection(IProjection projection)
@@ -127,7 +127,7 @@ namespace Jerrycurl.Mvc.Projections
             IProjectionMetadata newMetadata = metadata ?? this.Metadata;
             IProjectionData newData = data ?? this.Data;
             
-            IEnumerable<IProjectionAttribute> newHeader = header ?? (newMetadata != this.Metadata ? this.CreateDefaultHeader(newMetadata) : this.Header);
+            IEnumerable<IProjectionAttribute> newHeader = header ?? (newMetadata != this.Metadata ? this.CreateDefaultHeader(newMetadata).ToArray() : this.Header);
             IProjectionOptions newOptions = options ?? this.Options;
 
             return new Projection(this, newMetadata, newData, newHeader, newOptions);
