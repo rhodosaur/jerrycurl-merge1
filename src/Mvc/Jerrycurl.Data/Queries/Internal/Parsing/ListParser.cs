@@ -139,10 +139,14 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             {
                 Type dictType = typeof(Dictionary<,>).MakeGenericType(joinKey.Variable.Type, typeof(ElasticArray));
 
-                return Expression.Variable(dictType);
+                return this.GetNamedVariable(dictType, metadata.Identity);
             }
             else if (metadata.HasFlag(BindingMetadataFlags.Item))
-                return Expression.Variable(metadata.Parent.Composition.Construct.Type);
+            {
+                Type listType = metadata.Parent.Composition?.Construct?.Type ?? throw BindingException.InvalidConstructor(metadata.Parent);
+
+                return this.GetNamedVariable(listType, metadata.Identity);
+            }
 
             return null;
         }
@@ -203,7 +207,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         private void AddParentKeys(ListResult result, NewReader reader)
         {
-            foreach (IReference reference in this.GetParentReferences(reader.Metadata))
+            foreach (IReference reference in this.GetParentReferences(reader.Metadata).DistinctBy(r => r.Other.Metadata.Identity))
             {
                 KeyReader joinKey = this.FindParentKey(reader, reference);
 
@@ -262,8 +266,8 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
             foreach (DataReader value in key.Values)
             {
-                value.IsDbNull ??= this.GetValueVariable(typeof(bool), value);
-                value.Variable ??= this.GetValueVariable(value.KeyType, value);
+                value.IsDbNull ??= this.GetNamedVariable(typeof(bool), value);
+                value.Variable ??= this.GetNamedVariable(value.KeyType, value);
 
                 if (key.Reference.HasFlag(ReferenceFlags.Child))
                     value.CanBeDbNull = false;
@@ -271,8 +275,11 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         }
 
-        private ParameterExpression GetValueVariable(Type type, DataReader reader)
-            => Expression.Variable(type, "_" + reader.Identity.Name.ToLower());
+        private ParameterExpression GetNamedVariable(Type type, MetadataIdentity identity)
+            => Expression.Variable(type, "_" + identity.Name.ToLower());
+
+        private ParameterExpression GetNamedVariable(Type type, BaseReader reader)
+            => this.GetNamedVariable(type, reader.Identity);
 
         private bool IsValidJoinType(KeyReader joinKey, bool throwOnInvalid = false)
         {
@@ -295,7 +302,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         private IReference GetRecursiveReference(IReference reference)
         {
-            //return reference.Find(ReferenceFlags.Parent).Metadata.References.FirstOrDefault(r => r.HasFlag(ReferenceFlags.Child));
+            return reference.Find(ReferenceFlags.Parent).Metadata.References.FirstOrDefault(r => r.HasFlag(ReferenceFlags.Child));
             var x = reference.Find(ReferenceFlags.Parent).Metadata.References.Where(r => r.Key.Equals(reference.Key)).ToList();
 
             return reference; // somehow locate the other reference through reference.Find(Parent).References.HasFlag(Child).Other

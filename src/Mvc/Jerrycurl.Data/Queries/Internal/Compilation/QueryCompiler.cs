@@ -185,14 +185,8 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
         }
 
         private Expression GetPrepareBufferExpression(ListTarget target)
-        {
-            if (target.NewTarget == null)
-                throw new InvalidOperationException();
+            => this.GetElasticGetOrSetExpression(Arguments.Lists, target.Index, target.NewTarget, convertValue: false);
 
-            Expression bufferIndex = this.GetElasticIndexExpression(Arguments.Lists, target.Index);
-
-            return this.GetGetOrSetDefaultExpression(bufferIndex, target.NewTarget);
-        }
         #endregion
 
         #region " Writers "
@@ -226,7 +220,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 body = Expression.Call(writer.List.Variable, writer.List.AddMethod, value);
             else
             {
-                Expression listValue = this.GetGetOrSetDefaultExpression(bufferIndex, writer.Join.NewList);
+                Expression listValue = this.GetElasticGetOrSetExpression(bufferIndex, writer.Join.NewList);
                 Expression addValue = Expression.Call(listValue, writer.Join.AddMethod, value);
 
                 body = Expression.IfThen(bufferNotNull, addValue);
@@ -378,7 +372,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             }
             else
             {
-                Expression list = this.GetGetOrSetDefaultExpression(bufferIndex, reader.Target.NewList);
+                Expression list = this.GetElasticGetOrSetExpression(bufferIndex, reader.Target.NewList);
 
                 return Expression.Condition(bufferNotNull, list, Expression.Default(list.Type));
             }
@@ -589,14 +583,6 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
         #region " Helpers "
 
-        private Expression GetGetOrSetDefaultExpression(Expression target, Expression defaultValue)
-        {
-            Expression assignValue = Expression.Assign(target, defaultValue);
-            Expression notNull = this.GetIsNotNullExpression(target);
-            Expression ifValue = Expression.Condition(notNull, target, assignValue);
-
-            return Expression.Convert(ifValue, defaultValue.Type);
-        }
         private Expression GetConvertOrExpression(Expression expression, Type type)
         {
             if (!expression.Type.IsValueType && type.IsValueType)
@@ -700,6 +686,20 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
             return Expression.New(dictType);
         }
+
+        private Expression GetElasticGetOrSetExpression(Expression arrayIndex, Expression setExpression, bool convertValue = true)
+        {
+            Expression setIndex = Expression.Assign(arrayIndex, setExpression);
+            Expression notNull = this.GetIsNotNullExpression(arrayIndex);
+            Expression getOrSet = Expression.Condition(notNull, arrayIndex, setIndex);
+
+            if (convertValue)
+                return this.GetConvertOrExpression(getOrSet, setExpression.Type);
+
+            return getOrSet;
+        }
+        private Expression GetElasticGetOrSetExpression(Expression arrayExpression, int index, Expression setExpression, bool convertValue = true)
+            => this.GetElasticGetOrSetExpression(this.GetElasticIndexExpression(arrayExpression, index), setExpression, convertValue);
 
         private Expression GetElasticIndexExpression(Expression arrayExpression, int index)
         {
