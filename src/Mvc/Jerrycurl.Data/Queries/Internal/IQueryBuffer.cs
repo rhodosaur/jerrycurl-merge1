@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Jerrycurl.Data.Queries.Internal;
 using Jerrycurl.Relations.Metadata;
 
-namespace Jerrycurl.Data.Queries
+namespace Jerrycurl.Data.Queries.Internal
 {
-    public interface IQueryBuffer
+    internal interface IQueryBuffer
     {
         ISchemaStore Store { get; }
         ISchema Schema { get; }

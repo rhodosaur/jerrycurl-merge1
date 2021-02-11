@@ -29,7 +29,7 @@ namespace Jerrycurl.Data.Queries
 
         }
 
-        internal static QueryException InvalidQueryType(QueryType2 queryType)
+        internal static QueryException InvalidQueryType(QueryType queryType)
             => new QueryException($"Invalid query type '{queryType}': Only List and Aggregate types are supported.");
     }
 }

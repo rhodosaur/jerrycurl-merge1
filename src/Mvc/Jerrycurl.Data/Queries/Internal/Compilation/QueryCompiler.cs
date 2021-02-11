@@ -13,7 +13,6 @@ using Jerrycurl.Reflection;
 using Jerrycurl.Data.Queries.Internal.IO;
 using Jerrycurl.Data.Queries.Internal.Caching;
 using System.Collections;
-using Jerrycurl.Data.Buf2;
 
 namespace Jerrycurl.Data.Queries.Internal.Compilation
 {
@@ -116,18 +115,6 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             Expression writeAll = this.GetBlockOrExpression(allList, variables);
 
             return this.CompileBuffer(tree, initialize, writeOne, writeAll);
-        }
-
-        public AggregateReader<TItem> Compile<TItem>(AggregateTree tree)
-        {
-            Expression block = this.GetBinderExpression(tree.Aggregate);
-
-            ParameterExpression[] arguments = new[] { Arguments.Slots, Arguments.Aggregates, Arguments.SchemaType };
-            AggregateInternalReader<TItem> reader = this.Compile<AggregateInternalReader<TItem>>(block, arguments);
-
-            Type schemaType = tree.Schema.Model;
-
-            return buf => reader(buf.Slots, buf.Aggregate.Values, schemaType);
         }
 
         public AggregateReader Compile(AggregateTree tree)

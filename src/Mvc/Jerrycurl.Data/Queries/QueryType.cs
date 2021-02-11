@@ -1,6 +1,6 @@
 ﻿namespace Jerrycurl.Data.Queries
 {
-    internal enum QueryType
+    public enum QueryType
     {
         List = 0,
         Aggregate = 1,

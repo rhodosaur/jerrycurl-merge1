@@ -8,7 +8,6 @@ using System.Data.Common;
 using System.Threading;
 using System.Runtime.CompilerServices;
 using Jerrycurl.Data.Sessions;
-using Jerrycurl.Data.Buf2;
 using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Data.Queries
@@ -22,11 +21,8 @@ namespace Jerrycurl.Data.Queries
             this.Options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
-        #region " Execute (v1.1) "
-        public TResult Execute<TResult>(Query query, QueryType2 queryType)
-            => this.Execute<TResult>(new[] { query }, queryType);
-
-        public TResult Execute<TResult>(IEnumerable<Query> queries, QueryType2 queryType)
+        #region " Execute "
+        public TResult Execute<TResult>(IEnumerable<Query> queries, QueryType queryType)
         {
             if (queries == null)
                 throw new ArgumentNullException(nameof(queries));
@@ -48,10 +44,10 @@ namespace Jerrycurl.Data.Queries
             return (TResult)buffer.Commit();
         }
 
-        public Task<TResult> ExecuteAsync<TResult>(Query query, QueryType2 queryType, CancellationToken cancellationToken = default)
+        public Task<TResult> ExecuteAsync<TResult>(Query query, QueryType queryType, CancellationToken cancellationToken = default)
             => this.ExecuteAsync<TResult>(new[] { query }, queryType, cancellationToken);
 
-        public async Task<TResult> ExecuteAsync<TResult>(IEnumerable<Query> queries, QueryType2 queryType, CancellationToken cancellationToken = default)
+        public async Task<TResult> ExecuteAsync<TResult>(IEnumerable<Query> queries, QueryType queryType, CancellationToken cancellationToken = default)
         {
             if (queries == null)
                 throw new ArgumentNullException(nameof(queries));
@@ -72,104 +68,6 @@ namespace Jerrycurl.Data.Queries
 
             return (TResult)buffer.Commit();
         }
-        #endregion
-
-        #region " Aggregate "
-
-        public T Aggregate<T>(Query query) => this.Aggregate<T>(new[] { query });
-        public T Aggregate<T>(IEnumerable<Query> queries)
-        {
-            if (queries == null)
-                throw new ArgumentNullException(nameof(queries));
-
-            if (this.Options.Schemas == null)
-                throw new InvalidOperationException("No schema store found.");
-
-            AggregateBuffer<T> buffer = new AggregateBuffer<T>(this.Options.Schemas);
-
-            using ISyncSession connection = this.Options.GetSyncSession();
-
-            foreach (IBatch batch in this.FilterBatches(queries))
-            {
-                foreach (IDataReader dataReader in connection.Execute(batch))
-                    buffer.Insert(dataReader);
-            }
-
-            return (T)buffer.Commit();
-        }
-
-        public Task<T> AggregateAsync<T>(Query query, CancellationToken cancellationToken = default) => this.AggregateAsync<T>(new[] { query }, cancellationToken);
-
-        public async Task<T> AggregateAsync<T>(IEnumerable<Query> queries, CancellationToken cancellationToken = default)
-        {
-            if (queries == null)
-                throw new ArgumentNullException(nameof(queries));
-
-            if (this.Options.Schemas == null)
-                throw new InvalidOperationException("No schema builder found.");
-
-            AggregateBuffer<T> buffer = new AggregateBuffer<T>(this.Options.Schemas);
-
-            await using IAsyncSession connection = this.Options.GetAsyncSession();
-
-            foreach (IBatch batch in this.FilterBatches(queries))
-            {
-                await foreach (DbDataReader dataReader in connection.ExecuteAsync(batch, cancellationToken).ConfigureAwait(false))
-                    await buffer.InsertAsync(dataReader, cancellationToken).ConfigureAwait(false);
-            }
-
-            return (T)buffer.Commit();
-        }
-
-        #endregion
-
-        #region " List "
-
-        public IList<T> List<T>(Query query) => this.List<T>(new[] { query });
-        public IList<T> List<T>(IEnumerable<Query> queries)
-        {
-            if (queries == null)
-                throw new ArgumentNullException(nameof(queries));
-
-            if (this.Options.Schemas == null)
-                throw new InvalidOperationException("No schema store found.");
-
-            ListBuffer<T> buffer = new ListBuffer<T>(this.Options.Schemas);
-
-            using ISyncSession connection = this.Options.GetSyncSession();
-
-            foreach (IBatch batch in this.FilterBatches(queries))
-            { 
-                foreach (IDataReader dataReader in connection.Execute(batch))
-                    buffer.Insert(dataReader);
-            }
-
-            return (List<T>)buffer.Commit();
-        }
-
-        public Task<IList<T>> ListAsync<T>(Query query, CancellationToken cancellationToken = default) => this.ListAsync<T>(new[] { query }, cancellationToken);
-
-        public async Task<IList<T>> ListAsync<T>(IEnumerable<Query> queries, CancellationToken cancellationToken = default)
-        {
-            if (queries == null)
-                throw new ArgumentNullException(nameof(queries));
-
-            if (this.Options.Schemas == null)
-                throw new InvalidOperationException("No schema builder found.");
-
-            ListBuffer<T> buffer = new ListBuffer<T>(this.Options.Schemas);
-
-            await using IAsyncSession connection = this.Options.GetAsyncSession();
-
-            foreach (IBatch batch in this.FilterBatches(queries))
-            {
-                await foreach (DbDataReader dataReader in connection.ExecuteAsync(batch, cancellationToken).ConfigureAwait(false))
-                    await buffer.InsertAsync(dataReader, cancellationToken).ConfigureAwait(false);
-            }
-
-            return (List<T>)buffer.Commit();
-        }
-
         #endregion
 
         #region " Enumerate "

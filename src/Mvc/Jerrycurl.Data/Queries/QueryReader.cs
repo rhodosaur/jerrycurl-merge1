@@ -29,7 +29,7 @@ namespace Jerrycurl.Data.Queries
             if (this.asyncReader == null)
                 throw new QueryException("Async not available. To use async operations, instantiate with a DbDataReader instance.");
 
-            EnumerateReader<TItem> reader = QueryCache<TItem>.GetEnumerateReader(this.Schemas, this.asyncReader);
+            EnumerateReader<TItem> reader = QueryCache.GetEnumerateReader<TItem>(this.Schemas, this.asyncReader);
 
             while (await this.asyncReader.ReadAsync(cancellationToken).ConfigureAwait(false))
                 yield return reader(this.asyncReader);
@@ -37,7 +37,7 @@ namespace Jerrycurl.Data.Queries
 
         public IEnumerable<TItem> Read<TItem>()
         {
-            EnumerateReader<TItem> reader = QueryCache<TItem>.GetEnumerateReader(this.Schemas, this.syncReader);
+            EnumerateReader<TItem> reader = QueryCache.GetEnumerateReader<TItem>(this.Schemas, this.syncReader);
 
             while (this.syncReader.Read())
                 yield return reader(this.syncReader);

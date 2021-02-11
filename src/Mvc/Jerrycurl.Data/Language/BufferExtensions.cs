@@ -7,26 +7,30 @@ using System.Threading.Tasks;
 using Jerrycurl.Data.Queries;
 using Jerrycurl.Relations;
 using Jerrycurl.Relations.Language;
+using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Data.Language
 {
     public static class BufferExtensions
     {
-        #region " Insert "
-        public static void Insert(this IQueryBuffer buffer, IRelation relation, params string[] insertHeader)
-            => buffer.Insert(relation, (IEnumerable<string>)insertHeader);
+        public static T Commit<T>(this QueryBuffer buffer)
+            => (T)buffer.Commit();
 
-        public static void Insert(this IQueryBuffer buffer, IRelation relation, IEnumerable<string> insertHeader)
+        #region " Insert "
+        public static void Insert(this QueryBuffer buffer, IRelation relation, params string[] targetHeader)
+            => buffer.Insert(relation, (IEnumerable<string>)targetHeader);
+
+        public static void Insert(this QueryBuffer buffer, IRelation relation, IEnumerable<string> targetHeader)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
 
-            using IDataReader dataReader = relation.GetDataReader(insertHeader);
+            using IDataReader dataReader = relation.GetDataReader(targetHeader);
 
             buffer.Insert(dataReader);
         }
 
-        public static void Insert(this IQueryBuffer buffer, IRelation relation)
+        public static void Insert(this QueryBuffer buffer, IRelation relation)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
@@ -39,56 +43,66 @@ namespace Jerrycurl.Data.Language
             buffer.Insert(dataReader);
         }
 
-        public static void Insert<TSource>(this IQueryBuffer buffer, IEnumerable<TSource> data, params string[] selectHeader)
-            => buffer.Insert(data, (IEnumerable<string>)selectHeader);
+        public static void Insert<TSource>(this QueryBuffer buffer, TSource source, params string[] sourceHeader)
+            => buffer.Insert(source, (IEnumerable<string>)sourceHeader);
 
-        public static void Insert<TSource>(this IQueryBuffer buffer, IEnumerable<TSource> data, IEnumerable<string> selectHeader)
+        public static void Insert<TSource>(this QueryBuffer buffer, TSource source, IEnumerable<string> sourceHeader)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
 
-            IRelation relation = buffer.Store.From(data).Select(selectHeader);
+            ISchema schema = buffer.Store.GetSchema(typeof(TSource));
+
+            buffer.Insert(source, schema.Select(sourceHeader));
+        }
+
+        public static void Insert<TSource>(this QueryBuffer buffer, TSource source, RelationHeader sourceHeader)
+        {
+            if (buffer == null)
+                throw new ArgumentNullException(nameof(buffer));
+
+            IRelation relation = new Relation(buffer.Store.From(source), sourceHeader);
 
             buffer.Insert(relation);
         }
 
-        public static void Insert<TSource>(this IQueryBuffer buffer, IEnumerable<TSource> data, params (string Select, string Insert)[] mappingHeader)
+        public static void Insert<TSource>(this QueryBuffer buffer, TSource source, params (string Source, string Target)[] mappingHeader)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
 
-            IEnumerable<string> selectHeader = mappingHeader.Select(t => t.Select);
-            IEnumerable<string> insertHeader = mappingHeader.Select(t => t.Insert);
+            IEnumerable<string> sourceHeader = mappingHeader.Select(t => t.Source);
+            IEnumerable<string> targetHeader = mappingHeader.Select(t => t.Target);
 
-            buffer.Insert(data, selectHeader, insertHeader);
+            buffer.Insert(source, sourceHeader, targetHeader);
         }
 
-        public static void Insert<TSource>(this IQueryBuffer buffer, IEnumerable<TSource> data, IEnumerable<string> selectHeader, IEnumerable<string> insertHeader)
+        public static void Insert<TSource>(this QueryBuffer buffer, TSource source, IEnumerable<string> sourceHeader, IEnumerable<string> targetHeader)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
 
-            IRelation relation = buffer.Store.From(data).Select(selectHeader);
+            IRelation relation = buffer.Store.From(source).Select(sourceHeader);
 
-            buffer.Insert(relation, insertHeader);
+            buffer.Insert(relation, targetHeader);
         }
         #endregion
 
         #region " InsertAsync "
-        public static Task InsertAsync(this IQueryBuffer buffer, IRelation relation, params string[] insertHeader)
-            => buffer.InsertAsync(relation, (IEnumerable<string>)insertHeader);
+        public static Task InsertAsync(this QueryBuffer buffer, IRelation relation, params string[] targetHeader)
+            => buffer.InsertAsync(relation, (IEnumerable<string>)targetHeader);
 
-        public static async Task InsertAsync(this IQueryBuffer buffer, IRelation relation, IEnumerable<string> insertHeader)
+        public static async Task InsertAsync(this QueryBuffer buffer, IRelation relation, IEnumerable<string> targetHeader)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
 
-            using DbDataReader dataReader = relation.GetDataReader(insertHeader);
+            using DbDataReader dataReader = relation.GetDataReader(targetHeader);
 
             await buffer.InsertAsync(dataReader);
         }
 
-        public static async Task InsertAsync(this IQueryBuffer buffer, IRelation relation)
+        public static async Task InsertAsync(this QueryBuffer buffer, IRelation relation)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
@@ -101,38 +115,48 @@ namespace Jerrycurl.Data.Language
             await buffer.InsertAsync(dataReader);
         }
 
-        public static Task InsertAsync<TSource>(this IQueryBuffer buffer, IEnumerable<TSource> data, params string[] selectHeader)
-            => buffer.InsertAsync(data, (IEnumerable<string>)selectHeader);
+        public static Task InsertAsync<TSource>(this QueryBuffer buffer, TSource source, params string[] sourceHeader)
+            => buffer.InsertAsync(source, (IEnumerable<string>)sourceHeader);
 
-        public static async Task InsertAsync<TSource>(this IQueryBuffer buffer, IEnumerable<TSource> data, IEnumerable<string> selectHeader)
+        public static async Task InsertAsync<TSource>(this QueryBuffer buffer, TSource source, IEnumerable<string> sourceHeader)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
 
-            IRelation relation = buffer.Store.From(data).Select(selectHeader);
+            ISchema schema = buffer.Store.GetSchema(typeof(TSource));
+
+            await buffer.InsertAsync(source, schema.Select(sourceHeader));
+        }
+
+        public static async Task InsertAsync<TSource>(this QueryBuffer buffer, TSource source, RelationHeader sourceHeader)
+        {
+            if (buffer == null)
+                throw new ArgumentNullException(nameof(buffer));
+
+            IRelation relation = new Relation(buffer.Store.From(source), sourceHeader);
 
             await buffer.InsertAsync(relation);
         }
 
-        public static async Task InsertAsync<TSource>(this IQueryBuffer buffer, IEnumerable<TSource> data, params (string Select, string Insert)[] mappingHeader)
+        public static async Task InsertAsync<TSource>(this QueryBuffer buffer, TSource source, params (string Source, string Target)[] mappingHeader)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
 
-            IEnumerable<string> selectHeader = mappingHeader.Select(t => t.Select);
-            IEnumerable<string> insertHeader = mappingHeader.Select(t => t.Insert);
+            IEnumerable<string> sourceHeader = mappingHeader.Select(t => t.Source);
+            IEnumerable<string> targetHeader = mappingHeader.Select(t => t.Target);
 
-            await buffer.InsertAsync(data, selectHeader, insertHeader);
+            await buffer.InsertAsync(source, sourceHeader, targetHeader);
         }
 
-        public static async Task InsertAsync<TSource>(this IQueryBuffer buffer, IEnumerable<TSource> data, IEnumerable<string> selectHeader, IEnumerable<string> insertHeader)
+        public static async Task InsertAsync<TSource>(this QueryBuffer buffer, TSource source, IEnumerable<string> sourceHeader, IEnumerable<string> targetHeader)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
 
-            IRelation relation = buffer.Store.From(data).Select(selectHeader);
+            IRelation relation = buffer.Store.From(source).Select(sourceHeader);
 
-            await buffer.InsertAsync(relation, insertHeader);
+            await buffer.InsertAsync(relation, targetHeader);
         }
         #endregion
     }

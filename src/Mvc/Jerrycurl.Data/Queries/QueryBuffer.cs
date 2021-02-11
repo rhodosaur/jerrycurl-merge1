@@ -10,13 +10,13 @@ using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Jerrycurl.Data.Buf2
+namespace Jerrycurl.Data.Queries
 {
     public sealed class QueryBuffer : IQueryBuffer
     {
         public ISchemaStore Store => this.Schema.Store;
         public ISchema Schema { get; }
-        public QueryType2 Type { get; }
+        public QueryType Type { get; }
 
         AggregateBuffer IQueryBuffer.Aggregate => this.aggregate;
         ElasticArray IQueryBuffer.Slots => this.slots;
@@ -28,7 +28,7 @@ namespace Jerrycurl.Data.Buf2
         private Func<DbDataReader, CancellationToken, Task> innerInsertAsync;
         private Func<object> innerCommit;
 
-        public QueryBuffer(ISchema schema, QueryType2 type)
+        public QueryBuffer(ISchema schema, QueryType type)
         {
             this.Schema = schema ?? throw new ArgumentNullException(nameof(schema));
             this.Type = type;
@@ -41,7 +41,7 @@ namespace Jerrycurl.Data.Buf2
         {
             this.slots = new ElasticArray();
 
-            if (this.Type == QueryType2.Aggregate)
+            if (this.Type == QueryType.Aggregate)
                 this.aggregate = new AggregateBuffer(this.Schema);
         }
 
@@ -49,12 +49,12 @@ namespace Jerrycurl.Data.Buf2
         {
             switch (this.Type)
             {
-                case QueryType2.List:
+                case QueryType.List:
                     this.innerInsert = this.ListInsert;
                     this.innerInsertAsync = this.ListInsertAsync;
                     this.innerCommit = this.ListCommit;
                     break;
-                case QueryType2.Aggregate:
+                case QueryType.Aggregate:
                     this.innerInsert = this.AggregateInsert;
                     this.innerInsertAsync = this.AggregateInsertAsync;
                     this.innerCommit = this.AggregateCommit;
@@ -71,14 +71,14 @@ namespace Jerrycurl.Data.Buf2
         #region " Aggregate "
         private void AggregateInsert(IDataReader dataReader)
         {
-            BufferWriter writer = QueryCache2.GetAggregateWriter(this.Schema, dataReader);
+            BufferWriter writer = QueryCache.GetAggregateWriter(this.Schema, dataReader);
 
             writer.WriteAll(this, dataReader);
         }
 
         private async Task AggregateInsertAsync(DbDataReader dataReader, CancellationToken cancellationToken)
         {
-            BufferWriter writer = QueryCache2.GetAggregateWriter(this.Schema, dataReader);
+            BufferWriter writer = QueryCache.GetAggregateWriter(this.Schema, dataReader);
 
             writer.Initialize(this);
 
@@ -92,7 +92,7 @@ namespace Jerrycurl.Data.Buf2
             try
             {
                 QueryCacheKey<AggregateName> cacheKey = this.aggregate.ToCacheKey();
-                AggregateReader reader = QueryCache2.GetAggregateReader(cacheKey);
+                AggregateReader reader = QueryCache.GetAggregateReader(cacheKey);
 
                 return reader(this);
             }
@@ -107,14 +107,14 @@ namespace Jerrycurl.Data.Buf2
 
         private void ListInsert(IDataReader dataReader)
         {
-            BufferWriter writer = QueryCache2.GetListWriter(this.Schema, dataReader);
+            BufferWriter writer = QueryCache.GetListWriter(this.Schema, dataReader);
 
             writer.WriteAll(this, dataReader);
         }
 
         private async Task ListInsertAsync(DbDataReader dataReader, CancellationToken cancellationToken)
         {
-            BufferWriter writer = QueryCache2.GetListWriter(this.Schema, dataReader);
+            BufferWriter writer = QueryCache.GetListWriter(this.Schema, dataReader);
 
             writer.Initialize(this);
 

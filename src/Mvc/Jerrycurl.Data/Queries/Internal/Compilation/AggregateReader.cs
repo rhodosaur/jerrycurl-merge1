@@ -1,4 +1,9 @@
-﻿namespace Jerrycurl.Data.Queries.Internal.Compilation
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Jerrycurl.Data.Queries;
+
+namespace Jerrycurl.Data.Queries.Internal.Compilation
 {
-    internal delegate T AggregateReader<T>(IQueryBuffer buffer);
+    internal delegate object AggregateReader(IQueryBuffer buffer);
 }

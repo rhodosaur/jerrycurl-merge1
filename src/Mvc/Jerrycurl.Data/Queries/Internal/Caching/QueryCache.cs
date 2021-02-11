@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using Jerrycurl.Data.Metadata;
+using Jerrycurl.Data.Queries;
+using Jerrycurl.Data.Queries.Internal.Caching;
 using Jerrycurl.Data.Queries.Internal.Compilation;
 using Jerrycurl.Data.Queries.Internal.Parsing;
 using Jerrycurl.Relations.Metadata;
@@ -11,19 +13,19 @@ using ColumnCacheKey = Jerrycurl.Data.Queries.Internal.Caching.QueryCacheKey<Jer
 
 namespace Jerrycurl.Data.Queries.Internal.Caching
 {
-    internal class QueryCache<TItem>
+    internal class QueryCache
     {
-        private static readonly ConcurrentDictionary<ColumnCacheKey, EnumerateReader<TItem>> enumerateReaders = new ConcurrentDictionary<ColumnCacheKey, EnumerateReader<TItem>>();
+        private static readonly ConcurrentDictionary<ColumnCacheKey, object> enumerateReaders = new ConcurrentDictionary<ColumnCacheKey, object>();
         private static readonly ConcurrentDictionary<ColumnCacheKey, BufferWriter> listWriters = new ConcurrentDictionary<ColumnCacheKey, BufferWriter>();
         private static readonly ConcurrentDictionary<ColumnCacheKey, BufferWriter> aggregrateWriters = new ConcurrentDictionary<ColumnCacheKey, BufferWriter>();
-        private static readonly ConcurrentDictionary<AggregateCacheKey, AggregateReader<TItem>> aggregateReaders = new ConcurrentDictionary<AggregateCacheKey, AggregateReader<TItem>>();
+        private static readonly ConcurrentDictionary<AggregateCacheKey, object> aggregateReaders = new ConcurrentDictionary<AggregateCacheKey, object>();
         private static readonly ConcurrentDictionary<ISchema, BufferCache> buffers = new ConcurrentDictionary<ISchema, BufferCache>();
 
         private static BufferCache GetBuffer(ISchema schema) => buffers.GetOrAdd(schema, s => new BufferCache(s));
 
-        public static AggregateReader<TItem> GetAggregateReader(AggregateCacheKey cacheKey)
+        public static AggregateReader GetAggregateReader(AggregateCacheKey cacheKey)
         {
-            return aggregateReaders.GetOrAdd(cacheKey, k =>
+            return (AggregateReader)aggregateReaders.GetOrAdd(cacheKey, k =>
             {
                 BufferCache buffer = GetBuffer(k.Schema);
                 AggregateParser parser = new AggregateParser(buffer);
@@ -31,16 +33,16 @@ namespace Jerrycurl.Data.Queries.Internal.Caching
 
                 QueryCompiler compiler = new QueryCompiler();
 
-                return compiler.Compile<TItem>(tree);
+                return compiler.Compile(tree);
             });
         }
 
-        public static EnumerateReader<TItem> GetEnumerateReader(ISchemaStore schemas, IDataRecord dataRecord)
+        public static EnumerateReader<TItem> GetEnumerateReader<TItem>(ISchemaStore schemas, IDataRecord dataRecord)
         {
             ISchema schema = schemas.GetSchema(typeof(IList<TItem>));
             ColumnCacheKey cacheKey = GetCacheKey(schema, dataRecord);
 
-            return enumerateReaders.GetOrAdd(cacheKey, k =>
+            return (EnumerateReader<TItem>)enumerateReaders.GetOrAdd(cacheKey, k =>
             {
                 EnumerateParser parser = new EnumerateParser(schema);
                 EnumerateTree tree = parser.Parse(k.Items);

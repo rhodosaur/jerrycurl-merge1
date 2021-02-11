@@ -7,11 +7,18 @@ using Jerrycurl.Data.Queries;
 using Jerrycurl.Data.Sessions;
 using Jerrycurl.Relations;
 using Jerrycurl.Relations.Language;
+using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Data.Language
 {
     public static class RelationExtensions
     {
+        public static ISchema Describe<T>(this ISchemaStore store)
+            => store.GetSchema(typeof(T));
+
+        public static QueryBuffer AsBuffer(this ISchema schema, QueryType type)
+            => new QueryBuffer(schema, type);
+
         public static Query ToQuery(this IRelation relation, string queryText)
         {
             return new Query()

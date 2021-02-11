@@ -194,8 +194,7 @@ namespace Jerrycurl.Mvc
 
             QueryEngine engine = new QueryEngine(queryOptions);
 
-            return engine.Execute<IList<TItem>>(queries, QueryType2.List);
-            //return engine.List<TItem>(queries);
+            return engine.Execute<IList<TItem>>(queries, QueryType.List);
         }
 
         /// <summary>
@@ -242,7 +241,7 @@ namespace Jerrycurl.Mvc
 
             QueryEngine engine = new QueryEngine(queryOptions);
 
-            return await engine.ListAsync<TItem>(queries, cancellationToken).ConfigureAwait(false);
+            return await engine.ExecuteAsync<IList<TItem>>(queries, QueryType.List, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -384,7 +383,7 @@ namespace Jerrycurl.Mvc
 
             QueryEngine engine = new QueryEngine(queryOptions);
 
-            return engine.Aggregate<T>(queries);
+            return engine.Execute<IList<T>>(queries, QueryType.Aggregate).FirstOrDefault() ?? default;
         }
 
         /// <summary>
@@ -419,7 +418,7 @@ namespace Jerrycurl.Mvc
 
             QueryEngine engine = new QueryEngine(queryOptions);
 
-            return await engine.AggregateAsync<T>(queries, cancellationToken).ConfigureAwait(false);
+            return (await engine.ExecuteAsync<IList<T>>(queries, QueryType.Aggregate, cancellationToken).ConfigureAwait(false)).FirstOrDefault() ?? default;
         }
         #endregion
     }
