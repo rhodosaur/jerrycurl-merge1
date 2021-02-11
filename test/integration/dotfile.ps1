@@ -7,7 +7,7 @@ function Test-Integration
         [String] $ConnectionString,
         [String] $UserConnectionString,
         [String] $Version,
-        [String] $TargetFramework = "netcoreapp3.0",
+        [String] $TargetFramework = "netcoreapp3.1",
         [Parameter(Mandatory=$true)]
         [String] $PackageSource,
         [String] $Verbosity = "minimal",
@@ -83,7 +83,7 @@ function Test-Integration
     }
 }
 
-function Get-Target-Frameworks { @("netcoreapp2.2", "netcoreapp3.0") }
+function Get-Target-Frameworks { @("netcoreapp2.1", "netcoreapp3.1") }
 
 function Verify-Integration
 {
