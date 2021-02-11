@@ -115,7 +115,7 @@ namespace Jerrycurl.Data.Commands
         public void Flush()
         {
             this.paramHeader.Clear();
-            this.columnHeader.Clear();
+            //this.columnHeader.Clear();
         }
 
         private int GetFieldCount(IDataReader dataReader)

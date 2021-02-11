@@ -16,47 +16,48 @@ namespace Jerrycurl.Mvc.Sql
             if (projection.Source == null)
                 return new ProjectionValues<TModel>(projection.Context, projection.Identity, Array.Empty<IProjection<TModel>>());
 
-            IEnumerable<MetadataIdentity> heading = new[] { projection.Attr().Metadata.Identity }.Concat(projection.Attributes.Select(a => a.Metadata.Identity));
+            IEnumerable<RelationAttribute> attributes = new[] { projection.Metadata.Relation }.Concat(projection.Attributes.Select(a => a.Metadata.Relation)).Select(m => new RelationAttribute(m));
+            RelationHeader header = new RelationHeader(projection.Source.Identity.Schema, attributes.ToList());
 
-            Relation relation = new Relation(projection.Source, heading);
-            IProjectionAttribute[] attributes = projection.Attributes.ToArray();
+            Relation2 relation = new Relation2(projection.Source, header);
+            IProjectionAttribute[] attributes2 = projection.Attributes.ToArray();
 
             return new ProjectionValues<TModel>(projection.Context, projection.Identity, InnerVals());
 
             IEnumerable<IProjection<TModel>> InnerVals()
             {
-                foreach (ITuple tuple in relation)
+                foreach (ITuple2 tuple in relation.Body)
                 {
-                    IField field = tuple[0];
-                    IProjectionAttribute[] newAttributes = attributes.Select((a, i) => a.With(field: () => tuple[i + 1])).ToArray();
+                    IField2 field = tuple[0];
+                    IProjectionAttribute[] newAttributes = attributes2.Select((a, i) => a.With(field: () => tuple[i + 1])).ToArray();
 
                     yield return projection.With(attributes: newAttributes, field: field);
                 }
             }
         }
 
-        public static IProjectionValues<TModel> Desc<TModel>(this IProjectionValues<TModel> projections)
-            => new ProjectionValues<TModel>(projections.Context, projections.Identity, projections.Items.Reverse());
+        //public static IProjectionValues<TModel> Desc<TModel>(this IProjectionValues<TModel> projections)
+        //    => new ProjectionValues<TModel>(projections.Context, projections.Identity, projections.Items.Reverse());
 
-        public static IProjectionValues<TModel> Union<TModel>(this IProjectionValues<TModel> projections, Expression<Func<TModel, IEnumerable<TModel>>> expression)
-        {
-            return new ProjectionValues<TModel>(projections.Context, projections.Identity, InnerUnion());
+        //public static IProjectionValues<TModel> Union<TModel>(this IProjectionValues<TModel> projections, Expression<Func<TModel, IEnumerable<TModel>>> expression)
+        //{
+        //    return new ProjectionValues<TModel>(projections.Context, projections.Identity, InnerUnion());
 
-            IEnumerable<IProjection<TModel>> InnerUnion()
-            {
-                List<IProjection<TModel>> valueList = new List<IProjection<TModel>>();
+        //    IEnumerable<IProjection<TModel>> InnerUnion()
+        //    {
+        //        List<IProjection<TModel>> valueList = new List<IProjection<TModel>>();
 
-                foreach (IProjection<TModel> projection in projections)
-                {
-                    valueList.Add(projection);
+        //        foreach (IProjection<TModel> projection in projections)
+        //        {
+        //            valueList.Add(projection);
 
-                    yield return projection;
-                }
+        //            yield return projection;
+        //        }
 
-                foreach (IProjection<TModel> projection in valueList.SelectMany(p => p.Vals(expression)))
-                    yield return projection;
-            }
-        }
+        //        foreach (IProjection<TModel> projection in valueList.SelectMany(p => p.Vals(expression)))
+        //            yield return projection;
+        //    }
+        //}
 
         public static IProjection Val(this IProjection projection)
         {
@@ -68,24 +69,24 @@ namespace Jerrycurl.Mvc.Sql
             return value;
         }
 
-        public static IProjectionAttribute ValList(this IProjection projection, Func<IProjectionAttribute, IProjectionAttribute> itemFactory)
-        {
-            if (projection.Source == null)
-                throw ProjectionException.ValueNotFound(projection);
+        //public static IProjectionAttribute ValList(this IProjection projection, Func<IProjectionAttribute, IProjectionAttribute> itemFactory)
+        //{
+        //    if (projection.Source == null)
+        //        throw ProjectionException.ValueNotFound(projection);
 
-            IField[] items = new Relation(projection.Source, projection.Metadata.Identity.Name).Column().ToArray();
-            IProjectionAttribute attribute = projection.Attr();
+        //    IField[] items = new Relation(projection.Source, projection.Metadata.Identity.Name).Column().ToArray();
+        //    IProjectionAttribute attribute = projection.Attr();
 
-            if (items.Length == 0)
-                return attribute;
+        //    if (items.Length == 0)
+        //        return attribute;
 
-            attribute = itemFactory(attribute.With(metadata: attribute.Metadata, field: () => items[0]));
+        //    attribute = itemFactory(attribute.With(metadata: attribute.Metadata, field: () => items[0]));
 
-            foreach (IField item in items.Skip(1))
-                attribute = itemFactory(attribute.With(field: () => item).Append(", "));
+        //    foreach (IField item in items.Skip(1))
+        //        attribute = itemFactory(attribute.With(field: () => item).Append(", "));
 
-            return attribute;
-        }
+        //    return attribute;
+        //}
 
         public static IEnumerable<IProjection> Vals(this IProjection projection) => projection.Cast<object>().Vals();
         public static IProjectionValues<TItem> Vals<TModel, TItem>(this IProjection<TModel> projection, Expression<Func<TModel, IEnumerable<TItem>>> expression) => projection.Open(expression).Vals();

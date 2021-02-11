@@ -300,16 +300,16 @@ namespace Jerrycurl.Relations.Test
             string valueAttr = "Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item.Sub6.Item.Value";
 
             IRelation2 rel1 = DatabaseHelper.Default.Relation(model, valueAttr);
-            IRelation2 rel2 = rel1.Source.Select("Sub1").Scalar().Select(valueAttr);
-            IRelation2 rel3 = rel2.Source.Select("Sub1.Sub2").Scalar().Select(valueAttr);
-            IRelation2 rel4 = rel3.Source.Select("Sub1.Sub2.Sub3").Scalar().Select(valueAttr);
-            IRelation2 rel5 = rel4.Source.Select("Sub1.Sub2.Sub3.Item").Scalar().Select(valueAttr);
-            IRelation2 rel6 = rel5.Source.Select("Sub1.Sub2.Sub3.Item.Sub4").Scalar().Select(valueAttr);
-            IRelation2 rel7 = rel6.Source.Select("Sub1.Sub2.Sub3.Item.Sub4.Sub5").Scalar().Select(valueAttr);
-            IRelation2 rel8 = rel7.Source.Select("Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item").Scalar().Select(valueAttr);
-            IRelation2 rel9 = rel8.Source.Select("Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item.Sub6").Scalar().Select(valueAttr);
-            IRelation2 rel10 = rel9.Source.Select("Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item.Sub6.Item").Scalar().Select(valueAttr);
-            IRelation2 rel11 = rel10.Source.Select("Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item.Sub6.Item.Value").Scalar().Select(valueAttr);
+            IRelation2 rel2 = rel1.Source.Lookup("Sub1").Select(valueAttr);
+            IRelation2 rel3 = rel2.Source.Lookup("Sub1.Sub2").Select(valueAttr);
+            IRelation2 rel4 = rel3.Source.Lookup("Sub1.Sub2.Sub3").Select(valueAttr);
+            IRelation2 rel5 = rel4.Source.Lookup("Sub1.Sub2.Sub3.Item").Select(valueAttr);
+            IRelation2 rel6 = rel5.Source.Lookup("Sub1.Sub2.Sub3.Item.Sub4").Select(valueAttr);
+            IRelation2 rel7 = rel6.Source.Lookup("Sub1.Sub2.Sub3.Item.Sub4.Sub5").Select(valueAttr);
+            IRelation2 rel8 = rel7.Source.Lookup("Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item").Select(valueAttr);
+            IRelation2 rel9 = rel8.Source.Lookup("Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item.Sub6").Select(valueAttr);
+            IRelation2 rel10 = rel9.Source.Lookup("Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item.Sub6.Item").Select(valueAttr);
+            IRelation2 rel11 = rel10.Source.Lookup("Sub1.Sub2.Sub3.Item.Sub4.Sub5.Item.Sub6.Item.Value").Select(valueAttr);
 
             rel1.Column().Select(f => (int?)f.Snapshot).ShouldBe(new int?[] { 1, 2, 3, 4, 5, 6, 7, 8, null, 9 });
             rel2.Column().Select(f => (int?)f.Snapshot).ShouldBe(new int?[] { 1, 2, 3, 4, 5, 6, 7, 8, null, 9 });

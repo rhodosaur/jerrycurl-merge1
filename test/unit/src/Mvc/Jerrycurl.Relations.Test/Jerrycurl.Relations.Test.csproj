@@ -4,7 +4,6 @@
     <ProjectReference Include="..\..\..\..\..\src\Mvc\Jerrycurl.Data\Jerrycurl.Data.csproj" />
     <ProjectReference Include="..\..\..\..\..\src\Mvc\Jerrycurl.Relations.Abstractions\Jerrycurl.Relations.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\..\..\src\Mvc\Jerrycurl.Relations\Jerrycurl.Relations.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\Vendors\Jerrycurl.Vendors.Sqlite\Jerrycurl.Vendors.Sqlite.csproj" />
     <ProjectReference Include="..\..\Shared\Jerrycurl.Test.Common\Jerrycurl.Test.Common.csproj" />
   </ItemGroup>
 

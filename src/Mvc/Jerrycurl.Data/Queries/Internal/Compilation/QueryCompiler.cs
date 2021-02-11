@@ -136,6 +136,9 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
         {
             List<Expression> body = new List<Expression>();
 
+            if (tree.Item == null)
+                return _ => default;
+
             foreach (HelperWriter writer in tree.Helpers)
                 body.Add(this.GetWriterExpression(writer));
 
@@ -366,6 +369,9 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 value = this.GetValueExpression(binder);
                 value = this.GetConvertExpression(value, binder);
             }
+
+            if (value.Type != binder.Metadata.Type)
+                value = Expression.Convert(value, binder.Metadata.Type);
 
             if (canBeDbNull)
                 return Expression.Condition(isDbNull, Expression.Default(binder.Metadata.Type), value);

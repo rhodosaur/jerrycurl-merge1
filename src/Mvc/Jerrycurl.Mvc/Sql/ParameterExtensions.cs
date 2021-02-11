@@ -108,20 +108,20 @@ namespace Jerrycurl.Mvc.Sql
         public static IProjection Pars<TModel, TProperty>(this IProjection<TModel> projection, Expression<Func<TModel, TProperty>> expression)
             => projection.For(expression).Pars();
 
-        /// <summary>
-        /// Appends a comma-separated list of parameter names and values, e.g. <c>@P0, @P1, @P2</c>, to a new attribute buffer.
-        /// </summary>
-        /// <param name="projection">The current projection.</param>
-        /// <returns>A new attribute containing the appended buffer.</returns>
-        public static IProjectionAttribute ParList(this IProjection projection) => projection.ValList(a => a.Par());
+        ///// <summary>
+        ///// Appends a comma-separated list of parameter names and values, e.g. <c>@P0, @P1, @P2</c>, to a new attribute buffer.
+        ///// </summary>
+        ///// <param name="projection">The current projection.</param>
+        ///// <returns>A new attribute containing the appended buffer.</returns>
+        //public static IProjectionAttribute ParList(this IProjection projection) => projection.ValList(a => a.Par());
 
-        /// <summary>
-        /// Appends a comma-separated list of parameter names and values, e.g. <c>@P0, @P1, @P2</c>, to a new attribute buffer.
-        /// </summary>
-        /// <param name="projection">The current projection.</param>
-        /// /// <param name="expression">Expression selecting a projection target.</param>
-        /// <returns>A new attribute containing the appended buffer.</returns>
-        public static IProjectionAttribute ParList<TModel, TItem>(this IProjection<TModel> projection, Expression<Func<TModel, IEnumerable<TItem>>> expression)
-            => projection.Open(expression).ParList();
+        ///// <summary>
+        ///// Appends a comma-separated list of parameter names and values, e.g. <c>@P0, @P1, @P2</c>, to a new attribute buffer.
+        ///// </summary>
+        ///// <param name="projection">The current projection.</param>
+        ///// /// <param name="expression">Expression selecting a projection target.</param>
+        ///// <returns>A new attribute containing the appended buffer.</returns>
+        //public static IProjectionAttribute ParList<TModel, TItem>(this IProjection<TModel> projection, Expression<Func<TModel, IEnumerable<TItem>>> expression)
+        //    => projection.Open(expression).ParList();
     }
 }

@@ -99,9 +99,9 @@ namespace Jerrycurl.Data.Test
                               ORDER BY `Item`",
                 Parameters = new IParameter[]
                 {
-                    new Parameter("P0", DatabaseHelper.Default.Field<int?>(0)),
-                    new Parameter("P1", DatabaseHelper.Default.Field<int?>()),
-                    new Parameter("P2", DatabaseHelper.Default.Field<int?>(1)),
+                    new Parameter("P0", DatabaseHelper.Default.Model<int?>(0)),
+                    new Parameter("P1", DatabaseHelper.Default.Model<int?>()),
+                    new Parameter("P2", DatabaseHelper.Default.Model<int?>(1)),
                 }
             };
 

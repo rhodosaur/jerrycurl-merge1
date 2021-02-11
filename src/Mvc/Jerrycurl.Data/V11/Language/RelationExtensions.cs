@@ -6,6 +6,7 @@ using Jerrycurl.Data.Queries;
 using Jerrycurl.Data.Sessions;
 using Jerrycurl.Data.V11;
 using Jerrycurl.Relations;
+using Jerrycurl.Relations.Language;
 
 namespace Jerrycurl.Data.V11.Language
 {
@@ -50,7 +51,19 @@ namespace Jerrycurl.Data.V11.Language
             return command;
         }
 
+        public static IList<IParameter> ToParameters(this IField2 source, params string[] header)
+            => source.Select(header).ToParameters();
+
+        public static IList<IParameter> ToParameters(this IField2 source, IEnumerable<string> header)
+            => source.Select(header).ToParameters();
+
+        public static IList<IParameter> ToParameters(this ITuple2 tuple)
+            => new ParameterStore2().Add(tuple);
+
         public static IList<IParameter> ToParameters(this IRelation2 relation)
             => new ParameterStore2().Add(relation);
+
+        public static IParameter ToParameter(this IField2 field, string parameterName)
+            => new Parameter(parameterName, field);
     }
 }

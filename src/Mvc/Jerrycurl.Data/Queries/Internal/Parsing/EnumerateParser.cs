@@ -31,6 +31,9 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
         private NodeBinder CreateBinder(Node node, IEnumerable<ColumnName> valueNames)
         {
+            if (node == null)
+                return null;
+
             ColumnBinder value = BindingHelper.FindValue(node, valueNames);
 
             if (value != null)

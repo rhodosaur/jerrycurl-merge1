@@ -89,7 +89,9 @@ namespace Jerrycurl.Mvc.Projections
             {
                 Lazy<ITuple2> tuple = new Lazy<ITuple2>(() =>
                 {
-                    Relation relation = new Relation(source, attributes.Select(m => m.Identity));
+                    IReadOnlyList<RelationAttribute> relationAttributes = attributes.Select(m => new RelationAttribute(m.Relation)).ToList();
+                    RelationHeader relationHeader = new RelationHeader(source.Identity.Schema, relationAttributes);
+                    Relation2 relation = new Relation2(source, relationHeader);
 
                     return relation.Row();
                 });

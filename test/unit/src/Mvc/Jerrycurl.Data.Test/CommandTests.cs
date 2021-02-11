@@ -16,7 +16,7 @@ namespace Jerrycurl.Data.Test
         {
             IList<int> personIds = new List<int>() { 0 };
 
-            IField field = DatabaseHelper.Default.Relation(personIds, "Item").Scalar();
+            IField2 field = DatabaseHelper.Default.Relation(personIds, "Item").Scalar();
 
             Command command = new Command()
             {
@@ -42,7 +42,7 @@ namespace Jerrycurl.Data.Test
         {
             IList<int> personIds = new List<int>() { 0, 0 };
 
-            IField[] fields = DatabaseHelper.Default.Relation(personIds, "Item").Column().ToArray();
+            IField2[] fields = DatabaseHelper.Default.Relation(personIds, "Item").Column().ToArray();
 
             Command[] commands = new Command[]
             {
@@ -88,7 +88,7 @@ namespace Jerrycurl.Data.Test
         {
             BigModel model = new BigModel();
 
-            IField field = DatabaseHelper.Default.Relation(model, "OneToOne.Value").Scalar();
+            IField2 field = DatabaseHelper.Default.Relation(model, "OneToOne.Value").Scalar();
 
             Command command = new Command()
             {
@@ -99,8 +99,8 @@ namespace Jerrycurl.Data.Test
                 }
             };
 
-            Should.Throw<Relations.BindingException>(() => DatabaseHelper.Default.Execute(command));
-            await Should.ThrowAsync<Relations.BindingException>(async () => await DatabaseHelper.Default.ExecuteAsync(command));
+            Should.Throw<Relations.BindingException2>(() => DatabaseHelper.Default.Execute(command));
+            await Should.ThrowAsync<Relations.BindingException2>(async () => await DatabaseHelper.Default.ExecuteAsync(command));
         }
 
         public async Task Test_Execute_WithColumnBindingToProperty()
@@ -108,8 +108,8 @@ namespace Jerrycurl.Data.Test
             BigModel model1 = new BigModel() { Value = 1, Value2 = "banana" };
             BigModel model2 = new BigModel() { Value = 1, Value2 = "banana" };
 
-            ITuple tuple1 = DatabaseHelper.Default.Relation(model1, "Value", "Value2").Row();
-            ITuple tuple2 = DatabaseHelper.Default.Relation(model2, "Value", "Value2").Row();
+            ITuple2 tuple1 = DatabaseHelper.Default.Relation(model1, "Value", "Value2").Row();
+            ITuple2 tuple2 = DatabaseHelper.Default.Relation(model2, "Value", "Value2").Row();
 
             Command command1 = new Command()
             {
@@ -133,14 +133,14 @@ namespace Jerrycurl.Data.Test
             DatabaseHelper.Default.Execute(command1);
             await DatabaseHelper.Default.ExecuteAsync(command2);
 
-            tuple1[0].Value.ShouldBe(2);
-            tuple2[0].Value.ShouldBe(2);
+            tuple1[0].Snapshot.ShouldBe(2);
+            tuple2[0].Snapshot.ShouldBe(2);
 
             model1.Value.ShouldBe(2);
             model2.Value.ShouldBe(2);
 
-            tuple1[1].Value.ShouldBe("apple");
-            tuple2[1].Value.ShouldBe("apple");
+            tuple1[1].Snapshot.ShouldBe("apple");
+            tuple2[1].Snapshot.ShouldBe("apple");
 
             model1.Value2.ShouldBe("apple");
             model2.Value2.ShouldBe("apple");
@@ -151,8 +151,8 @@ namespace Jerrycurl.Data.Test
             IList<int> model1 = new List<int>() { 0, 0 };
             IList<int> model2 = new List<int>() { 0, 0 };
 
-            IField[] fields1 = DatabaseHelper.Default.Relation(model1, "Item").Column().ToArray();
-            IField[] fields2 = DatabaseHelper.Default.Relation(model2, "Item").Column().ToArray();
+            IField2[] fields1 = DatabaseHelper.Default.Relation(model1, "Item").Column().ToArray();
+            IField2[] fields2 = DatabaseHelper.Default.Relation(model2, "Item").Column().ToArray();
 
             Command command1 = new Command()
             {
@@ -178,8 +178,8 @@ namespace Jerrycurl.Data.Test
             DatabaseHelper.Default.Execute(command1);
             await DatabaseHelper.Default.ExecuteAsync(command2);
 
-            fields1.Select(f => (int)f.Value).ShouldBe(new[] { 1, 2 });
-            fields2.Select(f => (int)f.Value).ShouldBe(new[] { 1, 2 });
+            fields1.Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 2 });
+            fields2.Select(f => (int)f.Snapshot).ShouldBe(new[] { 1, 2 });
 
             model1.ShouldBe(new[] { 1, 2 });
             model2.ShouldBe(new[] { 1, 2 });

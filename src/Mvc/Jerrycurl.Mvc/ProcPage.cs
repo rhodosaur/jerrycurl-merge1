@@ -22,7 +22,7 @@ namespace Jerrycurl.Mvc
             this.M = model?.Cast<TModel>() ?? throw new ArgumentNullException(nameof(model));
             this.R = result?.Cast<TResult>() ?? throw new ArgumentNullException(nameof(result));
             this.Context = model.Context;
-            this.Model = (TModel)this.M.Attr().Field?.Invoke()?.Value;
+            this.Model = (TModel)this.M.Attr().Field?.Invoke()?.Snapshot;
         }
 
         public virtual void Execute() { }
@@ -33,9 +33,9 @@ namespace Jerrycurl.Mvc
                 w.WriteTo(this.Context.Execution.Buffer);
             else
             {
-                IField2 field = this.Context.Domain.Schemas.From(value);
+                IField2 model = this.Context.Domain.Schemas.From(value);
 
-                ProjectionIdentity identity = new ProjectionIdentity(field);
+                ProjectionIdentity identity = new ProjectionIdentity(model);
                 Projection projection = new Projection(identity, this.Context);
 
                 this.Write(projection.Par());

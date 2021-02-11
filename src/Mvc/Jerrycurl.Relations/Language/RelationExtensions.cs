@@ -31,6 +31,24 @@ namespace Jerrycurl.Relations.Language
         public static IRelation2 Select(this IField2 source, params string[] header)
             => new Relation2(source, source.Identity.Schema.Select(header));
 
+        public static ITuple2 Lookup(this IField2 source, IEnumerable<string> header)
+            => source.Select(header).Body.FirstOrDefault();
+
+        public static ITuple2 Lookup(this IField2 source, params string[] header)
+            => source.Select(header).Body.FirstOrDefault();
+
+        public static IField2 Lookup(this IField2 source, string attributeName)
+        {
+            IRelation2 relation = source.Select(attributeName);
+
+            using IRelationReader reader = relation.GetReader();
+
+            if (reader.Read())
+                return reader[0];
+
+            return null;
+        }
+
         public static IRelation2 From(this RelationHeader header, object model)
             => header.From(new Model2(header.Schema, model));
 
