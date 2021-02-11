@@ -24,7 +24,7 @@ namespace Jerrycurl.Mvc.Projections
 
         public static void ValidateIdentity(IProjectionIdentity identity)
         {
-            if (identity.Field != null && !identity.Schema.Equals(identity.Field.Identity.Schema))
+            if (identity.Source != null && !identity.Schema.Equals(identity.Source.Identity.Schema))
                 throw new ProjectionException("Unable to create projection identity. Field schema mismatch.");
 
         }

@@ -1,19 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Jerrycurl.Data.Commands;
 using Jerrycurl.Data.Sessions;
 using Jerrycurl.Mvc.Metadata;
+using Jerrycurl.Mvc.Projections;
 using Jerrycurl.Relations;
 
 namespace Jerrycurl.Mvc.Projections
 {
     public interface IProjectionAttribute : ISqlWritable
     {
-        IProjectionIdentity Identity { get; }
+        ProjectionIdentity Identity { get; }
+        IProjectionData Data { get; }
         IProcContext Context { get; }
-        IProjectionMetadata Metadata { get; }
         ISqlContent Content { get; }
-        Func<IField> Field { get; }
 
         IProjectionAttribute Append(IEnumerable<IParameter> parameters);
         IProjectionAttribute Append(IEnumerable<IUpdateBinding> bindings);
@@ -22,7 +21,7 @@ namespace Jerrycurl.Mvc.Projections
         IProjectionAttribute Append(params IUpdateBinding[] bindings);
 
         IProjectionAttribute With(IProjectionMetadata metadata = null,
-                                  ISqlContent content = null,
-                                  Func<IField> field = null);
+                                  IProjectionData data = null,
+                                  ISqlContent content = null);
     }
 }

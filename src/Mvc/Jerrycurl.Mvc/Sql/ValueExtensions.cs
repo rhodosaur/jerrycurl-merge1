@@ -12,7 +12,7 @@ namespace Jerrycurl.Mvc.Sql
     {
         public static IProjectionValues<TModel> Vals<TModel>(this IProjection<TModel> projection)
         {
-            if (projection.Source == null)
+            if (projection.Header.Source.Data.InputValue == null)
                 return new ProjectionValues<TModel>(projection.Context, projection.Identity, Array.Empty<IProjection<TModel>>());
 
             IEnumerable<IRelationMetadata> attributes = new[] { projection.Metadata.Relation }.Concat(projection.Attributes.Select(a => a.Metadata.Relation));
@@ -68,24 +68,24 @@ namespace Jerrycurl.Mvc.Sql
             return value;
         }
 
-        //public static IProjectionAttribute ValList(this IProjection projection, Func<IProjectionAttribute, IProjectionAttribute> itemFactory)
-        //{
-        //    if (projection.Source == null)
-        //        throw ProjectionException.ValueNotFound(projection);
+        public static IProjectionAttribute ValList(this IProjection projection, Func<IProjectionAttribute, IProjectionAttribute> itemFactory)
+        {
+            if (projection.Header.Source.Data.Value == null)
+                throw ProjectionException.ValueNotFound(projection.Header.Source.Data.Metadata);
 
-        //    IField[] items = new Relation(projection.Source, projection.Metadata.Identity.Name).Column().ToArray();
-        //    IProjectionAttribute attribute = projection.Attr();
+            IField[] items = new Relation(projection.Source, projection.Metadata.Identity.Name).Column().ToArray();
+            IProjectionAttribute attribute = projection.Attr();
 
-        //    if (items.Length == 0)
-        //        return attribute;
+            if (items.Length == 0)
+                return attribute;
 
-        //    attribute = itemFactory(attribute.With(metadata: attribute.Metadata, field: () => items[0]));
+            attribute = itemFactory(attribute.With(metadata: attribute.Metadata, field: () => items[0]));
 
-        //    foreach (IField item in items.Skip(1))
-        //        attribute = itemFactory(attribute.With(field: () => item).Append(", "));
+            foreach (IField item in items.Skip(1))
+                attribute = itemFactory(attribute.With(field: () => item).Append(", "));
 
-        //    return attribute;
-        //}
+            return attribute;
+        }
 
         public static IEnumerable<IProjection> Vals(this IProjection projection) => projection.Cast<object>().Vals();
         public static IProjectionValues<TItem> Vals<TModel, TItem>(this IProjection<TModel> projection, Expression<Func<TModel, IEnumerable<TItem>>> expression) => projection.Open(expression).Vals();

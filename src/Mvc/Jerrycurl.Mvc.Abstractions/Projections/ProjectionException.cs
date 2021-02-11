@@ -53,21 +53,30 @@ namespace Jerrycurl.Mvc.Projections
             return new ProjectionException(message, innerException);
         }
 
-        public static ProjectionException FromProjection(IProjection projection, string message = null, Exception innerException = null) => FromAttribute(projection.Metadata?.Identity.Schema.Model.Type, projection.Metadata?.Identity.Name, message, innerException);
+        public static ProjectionException FromProjection(IProjection projection, string message = null, Exception innerException = null)
+            => FromAttribute(projection.Header.Source.Data.Metadata?.Identity.Schema.Model.Type, projection.Header.Source.Data.Metadata?.Identity.Name, message, innerException);
+
         public static ProjectionException FromProjection(IProjectionAttribute attribute, string message = null, Exception innerException = null) => FromAttribute(attribute.Metadata?.Identity.Schema.Model.Type, attribute.Metadata?.Identity.Name, message, innerException);
         public static ProjectionException FromAttribute(string attributeName, string message = null, Exception innerException = null) => FromAttribute(null, attributeName, message, innerException);
 
         public static ProjectionException ArgumentNull(string argumentName, IProjection projection = null) => FromProjection(projection, innerException: new ArgumentNullException(argumentName));
         public static ProjectionException ArgumentNull(string argumentName, IProjectionAttribute attribute) => FromProjection(attribute, innerException: new ArgumentNullException(argumentName));
 
-        public static ProjectionException ValueNotFound(IProjection projection) => FromProjection(projection, "Value not found.");
-        public static ProjectionException ValueNotFound(IProjectionAttribute attribute) => FromProjection(attribute, "Value not found.");
+
+        internal static ProjectionException InvalidProjection(IProjectionMetadata metadata, string message)
+            => new ProjectionException($"Cannot create projection from {metadata.Identity}: {message}");
+
+        internal static ProjectionException ValueNotFound(IProjectionMetadata metadata)
+            => new ProjectionException($"No value information found for {metadata.Identity}.");
 
         internal static ProjectionException TableNotFound(IProjectionMetadata metadata)
             => new ProjectionException($"No table information found for {metadata.Identity}.");
 
         internal static ProjectionException ColumnNotFound(IProjectionMetadata metadata)
             => new ProjectionException($"No column information found for {metadata.Identity}.");
+
+        internal static ProjectionException ParametersNotSupported(IProjectionAttribute attribute)
+            => new ProjectionException($"Cannot create parameter for {attribute.Data.Metadata.Identity}: {attribute.Context.Domain.Dialect.GetType().Name} does not support input parameters.");
 
         internal static ProjectionException PropertyNotFound(IProjectionMetadata metadata)
             => new ProjectionException($"No property information found for {metadata.Identity}.");

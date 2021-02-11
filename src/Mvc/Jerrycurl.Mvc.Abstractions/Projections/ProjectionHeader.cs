@@ -7,33 +7,33 @@ using Jerrycurl.Relations;
 using Jerrycurl.Relations.Metadata;
 using HashCode = Jerrycurl.Diagnostics.HashCode;
 
-namespace Jerrycurl.Mvc.V11.Projections
+namespace Jerrycurl.Mvc.Projections
 {
     public class ProjectionHeader : IRelationHeader
     {
         private Lazy<HeaderMetadata> innerHeader;
 
         IReadOnlyList<IRelationMetadata> IRelationHeader.Attributes => this.innerHeader.Value.Relation;
-        public IReadOnlyList<IProjectionAttribute2> Attributes => this.innerHeader.Value.Projection;
-        public IProjectionAttribute2 Source { get; }
+        public IReadOnlyList<IProjectionAttribute> Attributes => this.innerHeader.Value.Projection;
+        public IProjectionAttribute Source { get; }
         public ISchema Schema => this.Source.Metadata.Identity.Schema;
         public int Degree => this.Attributes.Count;
 
-        public ProjectionHeader(IProjectionAttribute2 source, IEnumerable<IProjectionAttribute2> attributes)
+        public ProjectionHeader(IProjectionAttribute source, IEnumerable<IProjectionAttribute> attributes)
         {
             this.Source = source ?? throw new ArgumentNullException(nameof(source));
             this.innerHeader = new Lazy<HeaderMetadata>(() => this.GetHeaderMetadata(attributes), LazyThreadSafetyMode.None);
         }
 
-        private HeaderMetadata GetHeaderMetadata(IEnumerable<IProjectionAttribute2> attributes)
+        private HeaderMetadata GetHeaderMetadata(IEnumerable<IProjectionAttribute> attributes)
         {
-            List<IProjectionAttribute2> projection = new List<IProjectionAttribute2>();
+            List<IProjectionAttribute> projection = new List<IProjectionAttribute>();
             List<IRelationMetadata> relation = new List<IRelationMetadata>();
 
-            foreach (IProjectionAttribute2 attribute in attributes)
+            foreach (IProjectionAttribute attribute in attributes)
             {
                 projection.Add(attribute);
-                relation.Add(attribute.Metadata.Relation);
+                relation.Add(attribute.Data.Metadata.Relation);
             }
 
             return new HeaderMetadata()
@@ -50,7 +50,7 @@ namespace Jerrycurl.Mvc.V11.Projections
         private class HeaderMetadata
         {
             public IReadOnlyList<IRelationMetadata> Relation { get; set; }
-            public IReadOnlyList<IProjectionAttribute2> Projection { get; set; }
+            public IReadOnlyList<IProjectionAttribute> Projection { get; set; }
 
         }
     }

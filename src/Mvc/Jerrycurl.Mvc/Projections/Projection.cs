@@ -6,6 +6,7 @@ using Jerrycurl.Data.Commands;
 using Jerrycurl.Data.Metadata;
 using Jerrycurl.Data.Sessions;
 using Jerrycurl.Mvc.Metadata;
+using Jerrycurl.Mvc.Projections;
 using Jerrycurl.Relations;
 using Jerrycurl.Relations.Metadata;
 
@@ -13,31 +14,23 @@ namespace Jerrycurl.Mvc.Projections
 {
     public class Projection : IProjection
     {
-        public IProjectionMetadata Metadata { get; }
-        public IProjectionIdentity Identity { get; }
+        public ProjectionIdentity Identity { get; }
+        public ProjectionHeader Header { get; }
         public IProcContext Context { get; }
-        public IEnumerable<IProjectionAttribute> Attributes { get; }
         public IProjectionOptions Options { get; }
-        public IField Source { get; }
 
-        public Projection(IProjectionIdentity identity, IProcContext context)
+        public Projection(ProjectionIdentity identity, IProcContext context)
+            : this(identity, context, identity.Schema.Require<IProjectionMetadata>())
         {
-            this.Identity = identity ?? throw ProjectionException.ArgumentNull(nameof(identity));
-            this.Context = context ?? throw ProjectionException.ArgumentNull(nameof(context));
-            this.Metadata = identity.Schema?.Require<IProjectionMetadata>() ?? throw ProjectionException.FromAttribute(identity.Schema.Model.Type, null, message: "Projection metadata not found.");
-            this.Source = identity.Field;
-            this.Options = new ProjectionOptions();
-            this.Attributes = this.CreateDefaultAttributes(this.Metadata);
+
         }
 
-        internal Projection(IProjectionIdentity identity, IProcContext context, IProjectionMetadata metadata)
+        internal Projection(ProjectionIdentity identity, IProcContext context, IProjectionMetadata metadata)
         {
             this.Identity = identity ?? throw ProjectionException.ArgumentNull(nameof(identity));
             this.Context = context ?? throw ProjectionException.ArgumentNull(nameof(context));
-            this.Metadata = metadata ?? throw ProjectionException.FromAttribute(identity.Schema.Model.Type, null, message: "Projection metadata not found.");
-            this.Source = identity.Field;
-            this.Options = new ProjectionOptions();
-            this.Attributes = this.CreateDefaultAttributes(this.Metadata);
+            this.Options = ProjectionOptions.Default;
+            this.Header = this.CreateDefaultHeader(metadata);
         }
 
         protected Projection(IProjection projection)
@@ -47,23 +40,19 @@ namespace Jerrycurl.Mvc.Projections
 
             this.Identity = projection.Identity;
             this.Context = projection.Context;
-            this.Metadata = projection.Metadata;
-            this.Attributes = projection.Attributes;
+            this.Header = projection.Header;
             this.Options = projection.Options;
-            this.Source = projection.Source;
         }
 
-        protected Projection(IProjection projection, IProjectionMetadata metadata, IEnumerable<IProjectionAttribute> attributes, IField field, IProjectionOptions options)
+        protected Projection(IProjection projection, ProjectionHeader header, IProjectionOptions options)
         {
             if (projection == null)
                 throw ProjectionException.ArgumentNull(nameof(projection));
 
             this.Identity = projection.Identity;
             this.Context = projection.Context;
-            this.Metadata = metadata ?? throw ProjectionException.ArgumentNull(nameof(projection));
-            this.Attributes = attributes ?? throw ProjectionException.ArgumentNull(nameof(attributes));
+            this.Header = header ?? throw ProjectionException.ArgumentNull(nameof(header));
             this.Options = options ?? throw ProjectionException.ArgumentNull(nameof(options));
-            this.Source = field;
         }
 
         private IEnumerable<IProjectionMetadata> SelectAttributes(IProjectionMetadata metadata)
@@ -78,32 +67,51 @@ namespace Jerrycurl.Mvc.Projections
             return metadata.Properties;
         }
 
-
-        private IEnumerable<IProjectionAttribute> CreateDefaultAttributes(IProjectionMetadata metadata)
+        private ProjectionHeader CreateDefaultHeader(IProjectionMetadata metadata)
         {
-            IEnumerable<IProjectionMetadata> attributes = this.SelectAttributes(metadata);
-            IEnumerable<Func<IField>> fields = attributes.Select(_ => (Func<IField>)null);
-            IField source = this.Source;
-
-            if (source != null)
+            if (this.Header.Source.Data != null)
             {
-                Lazy<ITuple> tuple = new Lazy<ITuple>(() =>
+                ProjectionIdentity identity = this.Identity;
+                IProcContext context = this.Context;
+
+                Relation body = new Relation(this.Header.Source.Data.Value, this.Header);
+
+                return new ProjectionHeader(this.Header.Source, headerFactory());
+
+                IEnumerable<ProjectionAttribute> headerFactory()
                 {
-                    IRelationMetadata[] headerAttributes = attributes.Select(m => m.Relation).ToArray();
-                    RelationHeader relationHeader = new RelationHeader(source.Identity.Schema, headerAttributes);
-                    Relation relation = new Relation(source, relationHeader);
+                    using RelationReader reader = body.GetReader();
 
-                    return relation.Row();
-                });
-
-                fields = attributes.Select((_, i) => new Func<IField>(() => tuple.Value[i]));
+                    if (reader.Read())
+                    {
+                        foreach (var ((metadata, value), index) in this.SelectAttributes(metadata).Zip(reader).Select((e, i) => (e, i)))
+                            yield return new ProjectionAttribute(identity, context, metadata, new ProjectionData(metadata.Input, value));
+                    }
+                }
             }
+            else
+            {
+                ProjectionIdentity identity = this.Identity;
+                IProcContext context = this.Context;
 
-            foreach (var (m, f) in attributes.Zip(fields))
-                yield return new ProjectionAttribute(this).With(metadata: m, field: f);
+                return new ProjectionHeader(this.Header.Source, headerFactory());
+
+                IEnumerable<ProjectionAttribute> headerFactory()
+                {
+                    foreach (IProjectionMetadata metadata in this.SelectAttributes(metadata))
+                        yield return new ProjectionAttribute(identity, context, metadata, data: null);
+                }
+            }
         }
 
-        public IProjection Map(Func<IProjectionAttribute, IProjectionAttribute> m) => this.With(attributes: this.Attributes.Select(a => m(a)));
+        public IProjection Map(Func<IProjectionAttribute, IProjectionAttribute> mapperFunc)
+        {
+            ProjectionIdentity identity = this.Identity;
+            IProcContext context = this.Context;
+            IEnumerable<IProjectionAttribute> attributes = this.Header.Attributes.Select(mapperFunc);
+
+            return this.With(header: new ProjectionHeader(this.Header.Source, attributes));
+        }
 
         public IProjection Append(IEnumerable<IParameter> parameters) => this.Map(a => a.Append(parameters));
         public IProjection Append(IEnumerable<IUpdateBinding> bindings) => this.Map(a => a.Append(bindings));
@@ -113,32 +121,26 @@ namespace Jerrycurl.Mvc.Projections
 
         public void WriteTo(ISqlBuffer buffer)
         {
-            IProjectionAttribute[] attributes = this.Attributes.ToArray();
-
-            if (attributes.Length > 0)
+            if (this.Header.Degree > 0)
             {
-                attributes[0].WriteTo(buffer);
+                this.Header.Attributes[0].WriteTo(buffer);
 
-                foreach (IProjectionAttribute attr in attributes.Skip(1))
+                foreach (IProjectionAttribute attribute in this.Header.Attributes.Skip(1))
                 {
                     buffer.Append(this.Options.Separator);
 
-                    attr.WriteTo(buffer);
+                    attribute.WriteTo(buffer);
                 }
             }
         }
 
-        public IProjection With(IProjectionMetadata metadata = null,
-                                IEnumerable<IProjectionAttribute> attributes = null,
-                                IField field = null,
+        public IProjection With(ProjectionHeader header = null,
                                 IProjectionOptions options = null)
         {
-            IProjectionMetadata newMetadata = metadata ?? this.Metadata;
-            IEnumerable<IProjectionAttribute> newAttributes = attributes ?? (newMetadata != this.Metadata ? this.CreateDefaultAttributes(newMetadata) : this.Attributes);
-            IField newField = field ?? this.Source;
+            ProjectionHeader newHeader = header ?? this.Header;
             IProjectionOptions newOptions = options ?? this.Options;
 
-            return new Projection(this, newMetadata, newAttributes, newField, newOptions);
+            return new Projection(this, newHeader, newOptions);
         }
     }
 }

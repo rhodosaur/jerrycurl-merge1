@@ -4,10 +4,10 @@ using System;
 
 namespace Jerrycurl.Mvc.Projections
 {
-    public class ProjectionIdentity : IProjectionIdentity
+    public class ProjectionIdentity : IEquatable<ProjectionIdentity>
     {
-        public IField Field { get; }
         public ISchema Schema { get; }
+        public IField Source { get; }
 
         public ProjectionIdentity(ISchema schema)
         {
@@ -16,12 +16,10 @@ namespace Jerrycurl.Mvc.Projections
 
         public ProjectionIdentity(IField field)
         {
-            this.Field = field ?? throw new ArgumentNullException(nameof(field));
+            this.Source = field ?? throw new ArgumentNullException(nameof(field));
             this.Schema = field.Metadata.Identity.Schema;
-
-            ProjectionValidator.ValidateIdentity(this);
         }
 
-        public virtual bool Equals(IProjectionIdentity other) => base.Equals(other);
+        public virtual bool Equals(ProjectionIdentity other) => base.Equals(other);
     }
 }

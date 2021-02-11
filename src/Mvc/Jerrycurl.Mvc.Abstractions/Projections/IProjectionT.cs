@@ -8,9 +8,7 @@ namespace Jerrycurl.Mvc.Projections
     public interface IProjection<out TModel> : IProjection
     {
         new IProjection<TModel> Map(Func<IProjectionAttribute, IProjectionAttribute> m);
-        new IProjection<TModel> With(IProjectionMetadata metadata = null,
-                                     IEnumerable<IProjectionAttribute> attributes = null,
-                                     IField field = null,
+        new IProjection<TModel> With(ProjectionHeader header = null,
                                      IProjectionOptions options = null);
     }
 }

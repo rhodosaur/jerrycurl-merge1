@@ -45,20 +45,24 @@ namespace Jerrycurl.Mvc.Sql
         public static IProjectionAttribute Par(this IProjectionAttribute attribute)
         {
             if (!attribute.Context.Domain.Dialect.Support.HasFlag(DialectSupport.InputParameters))
-                throw ProjectionException.FromProjection(attribute, $"Dialect '{attribute.Context.Domain.Dialect.GetType().Name}' does not support input parameters.");
+                throw ProjectionException.ParametersNotSupported(attribute);
 
-            IField value = attribute.Field?.Invoke();
-
-            if (value != null)
+            if (attribute.Data.InputValue != null)
             {
-                string paramName = attribute.Context.Lookup.Parameter(attribute.Identity, value);
+                string paramName = attribute.Context.Lookup.Parameter(attribute.Identity, attribute.Data.InputValue);
                 string dialectName = attribute.Context.Domain.Dialect.Parameter(paramName);
 
-                Parameter param = new Parameter(paramName, value);
+                Parameter param = new Parameter(paramName, attribute.Data.InputValue);
 
                 IProjectionAttribute result = attribute.Append(dialectName).Append(param);
 
-                if (attribute.Metadata.HasFlag(ProjectionMetadataFlags.Output) && attribute.Context.Domain.Dialect.Support.HasFlag(DialectSupport.OutputParameters))
+                if (attribute.Data.Metadata.HasFlag(ProjectionMetadataFlags.Output | ProjectionMetadataFlags.Cascade))
+                {
+                    CascadeBinding binding = new CascadeBinding(attribute.Data.OutputValue, attribute.Data.InputValue);
+
+                    result = result.Append(binding);
+                }
+                else if (attribute.Data.Metadata.HasFlag(ProjectionMetadataFlags.Output) && attribute.Context.Domain.Dialect.Support.HasFlag(DialectSupport.OutputParameters))
                 {
                     ParameterBinding binding = new ParameterBinding(param);
 
@@ -69,7 +73,7 @@ namespace Jerrycurl.Mvc.Sql
             }
             else
             {
-                string paramName = attribute.Context.Lookup.Parameter(attribute.Identity, attribute.Metadata.Identity);
+                string paramName = attribute.Context.Lookup.Parameter(attribute.Identity, attribute.Data.Metadata.Identity);
                 string dialectName = attribute.Context.Domain.Dialect.Parameter(paramName);
 
                 return attribute.Append(dialectName);
@@ -113,7 +117,7 @@ namespace Jerrycurl.Mvc.Sql
         ///// </summary>
         ///// <param name="projection">The current projection.</param>
         ///// <returns>A new attribute containing the appended buffer.</returns>
-        //public static IProjectionAttribute ParList(this IProjection projection) => projection.ValList(a => a.Par());
+        public static IProjectionAttribute ParList(this IProjection projection) => projection.ValList(a => a.Par());
 
         ///// <summary>
         ///// Appends a comma-separated list of parameter names and values, e.g. <c>@P0, @P1, @P2</c>, to a new attribute buffer.
@@ -121,7 +125,7 @@ namespace Jerrycurl.Mvc.Sql
         ///// <param name="projection">The current projection.</param>
         ///// /// <param name="expression">Expression selecting a projection target.</param>
         ///// <returns>A new attribute containing the appended buffer.</returns>
-        //public static IProjectionAttribute ParList<TModel, TItem>(this IProjection<TModel> projection, Expression<Func<TModel, IEnumerable<TItem>>> expression)
-        //    => projection.Open(expression).ParList();
+        public static IProjectionAttribute ParList<TModel, TItem>(this IProjection<TModel> projection, Expression<Func<TModel, IEnumerable<TItem>>> expression)
+            => projection.Open(expression).ParList();
     }
 }

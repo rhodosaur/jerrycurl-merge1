@@ -16,6 +16,8 @@ namespace Jerrycurl.Mvc.Metadata
         ProjectionMetadataFlags Flags { get; }
 
         IProjectionMetadata Input { get; }
+        IProjectionMetadata Output { get; }
+
         IProjectionMetadata Item { get; }
         IProjectionMetadata List { get; }
     }
