@@ -15,6 +15,7 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Test
         {
             modelBuilder.Entity<Address>(entity =>
             {
+                entity.ToTable("Address");
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Street)

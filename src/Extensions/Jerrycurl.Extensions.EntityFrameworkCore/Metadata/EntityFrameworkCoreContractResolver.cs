@@ -30,8 +30,8 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Metadata
 
         public IEnumerable<Attribute> GetAnnotations(IRelationMetadata metadata)
         {
-            IEntityType entity = this.entities.FirstOrDefault(e => e.ClrType == metadata.Type);
-            IEntityType parentEntity = this.entities.FirstOrDefault(e => e.ClrType == metadata.Parent?.Type);
+            IEntityType entity = this.entities.FirstOrDefault(e => e.ClrType.IsAssignableFrom(metadata.Type));
+            IEntityType parentEntity = this.entities.FirstOrDefault(e => metadata.Parent != null && e.ClrType.IsAssignableFrom(metadata.Parent.Type));
             IProperty property = parentEntity?.GetProperties().FirstOrDefault(p => p.Name == metadata.Member?.Name);
             IAnnotation[] propertyAnnotations = property?.GetAnnotations().ToArray() ?? new IAnnotation[0];
 #if NET20_BASE
@@ -46,7 +46,7 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Metadata
                 return null;
 
 #if NET20_BASE
-            string tableName = entity?.Relational()?.TableName;
+            string tableName = entity?.Relational()?.TableName ?? entity?.ClrType.Name;
             string schemaName = entity?.Relational()?.Schema;
             string columnName = property?.Relational()?.ColumnName;
             string keyName = primaryKey?.Relational()?.Name;
