@@ -36,6 +36,45 @@ namespace Jerrycurl.Data.Test
             result2.ShouldBeNull();
         }
 
+        public void Test_Insert_NullableKeys()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(IList<Blog>));
+            var buffer1 = new QueryBuffer(schema, QueryType.List);
+            var buffer2 = new QueryBuffer(schema, QueryType.List);
+
+            // primary
+            buffer1.Insert(1, ("", "Item.Id4"));
+            buffer1.Insert((int?)null, ("", "Item.Id4"));
+
+            buffer1.Insert(1, ("", "Item.Posts.Item.BlogId4"));
+            buffer1.Insert((int?)null, ("", "Item.Posts.Item.BlogId4"));
+
+            // non-primary
+            buffer2.Insert(2, ("", "Item.Id5"));
+            buffer2.Insert((int?)null, ("", "Item.Id5"));
+
+            buffer2.Insert(2, ("", "Item.Posts.Item.BlogId5"));
+            buffer2.Insert((int?)null, ("", "Item.Posts.Item.BlogId5"));
+
+            var result1 = buffer1.Commit<IList<Blog>>();
+            var result2 = buffer2.Commit<IList<Blog>>();
+
+            result1.Count.ShouldBe(1);
+            result1[0].Id4.ShouldBe(1);
+            result1[0].Posts.ShouldNotBeNull();
+            result1[0].Posts.Count.ShouldBe(1);
+            result1[0].Posts[0].BlogId4.ShouldBe(1);
+
+            result2.Count.ShouldBe(2);
+            result2[0].Id5.ShouldBe(2);
+            result2[0].Posts.ShouldNotBeNull();
+            result2[0].Posts.Count.ShouldBe(1);
+            result2[0].Posts[0].BlogId5.ShouldBe(2);
+            result2[1].Id5.ShouldBeNull();
+            result2[1].Posts.ShouldBeNull();
+        }
+
         public void Test_Read_NullableSet()
         {
             var store = DatabaseHelper.Default.Store;
@@ -506,9 +545,35 @@ namespace Jerrycurl.Data.Test
             throw new NotImplementedException();
         }
 
+        public void Test_Aggregate_Result_Priority()
+        {
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(List<int>));
+            var buffer = new QueryBuffer(schema, QueryType.Aggregate);
+
+            buffer.Insert(10, ("", "Capacity"));
+            buffer.Insert(15, ("", "Item"));
+
+            var result = buffer.Commit<List<int>>();
+
+            result.ShouldNotBeNull();
+            result.Count.ShouldBe(1);
+            result[0].ShouldBe(15);
+        }
+
         public void Test_Insert_Result_Priority()
         {
-            throw new NotImplementedException();
+            var store = DatabaseHelper.Default.Store;
+            var schema = store.GetSchema(typeof(List<int>));
+            var buffer = new QueryBuffer(schema, QueryType.List);
+
+            buffer.Insert(10, ("", "Item"), ("", "Capacity"));
+
+            var result = buffer.Commit<List<int>>();
+
+            result.ShouldNotBeNull();
+            result.Count.ShouldBe(1);
+            result[0].ShouldBe(15);
         }
 
         public void Test_Insert_Missing_ChildKey()
@@ -533,6 +598,11 @@ namespace Jerrycurl.Data.Test
             {
                 buffer.Insert(10, ("", "Posts.Item.BlogId3"));
             });
+        }
+
+        public void Test_Insert_CompositeKey()
+        {
+            throw new NotImplementedException();
         }
 
         public void Test_Insert_CaseInsensitive()

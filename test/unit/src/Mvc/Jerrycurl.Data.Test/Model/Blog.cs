@@ -14,6 +14,12 @@ namespace Jerrycurl.Data.Test.Model
         [Key("PK_Blog_3")]
         public int Id3 { get; set; }
 
+        [Key("PK_Blog_4")]
+        public int? Id4 { get; set; }
+
+        [Key("PK_Blog_5", IsPrimary = false)]
+        public int? Id5 { get; set; }
+
         public IList<BlogTag> Tags { get; set; }
         public IList<BlogPost> Posts { get; set; }
 
