@@ -33,24 +33,27 @@ namespace Jerrycurl.Data.Metadata
         }
 
 
-        public static BindingException Create(MetadataIdentity metadata, string message = null, Exception innerException = null)
+        public static BindingException Create(IBindingMetadata metadata, string message = null, Exception innerException = null)
         {
             message ??= innerException?.Message;
 
             if (message != null)
-                return new BindingException($"Cannot bind to {metadata}: {message}", innerException);
+                return new BindingException($"Cannot bind to {metadata.Identity}: {message}", innerException);
 
-            return new BindingException($"Cannot bind to {metadata}.", innerException);
+            return new BindingException($"Cannot bind to {metadata.Identity}.", innerException);
         }
 
         internal static BindingException IsReadOnly(IBindingMetadata metadata)
-            => Create(metadata.Identity, message: "Data is read-only.");
+            => Create(metadata, message: "Data is read-only.");
 
         internal static BindingException InvalidCast(IBindingMetadata metadata, Exception innerException)
-            => Create(metadata.Identity, innerException: innerException);
+            => Create(metadata, innerException: innerException);
+
+        internal static BindingException InvalidCast(IBindingMetadata metadata, Type sourceType, Type targetType, Exception innerException)
+            => Create(metadata, message: $"Cannot convert type '{sourceType.GetSanitizedName()}' to '{targetType.GetSanitizedName()}'.", innerException: innerException);
 
         internal static BindingException InvalidConstructor(IBindingMetadata metadata)
-            => Create(metadata.Identity, message: "No valid constructor found.");
+            => Create(metadata, message: "No valid constructor found.");
 
         internal static BindingException NoReferenceFound(MetadataIdentity from, MetadataIdentity to)
             => new BindingException($"No valid reference found between {from} and {to}. Please select matching [Key] and [Ref] values to map across one-to-many boundaries.");

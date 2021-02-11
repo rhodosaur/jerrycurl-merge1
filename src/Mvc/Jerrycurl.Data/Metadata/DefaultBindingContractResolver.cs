@@ -340,18 +340,18 @@ namespace Jerrycurl.Data.Metadata
             Expression value = valueInfo.Value;
 
             if (valueInfo.Value.Type == typeof(object) && sourceType != typeof(object))
-                value = this.GetConvertExpression(value, sourceType);
+                value = this.GetConvertExpression(valueInfo.Metadata, value, sourceType);
 
             Type structLeft = targetType.IsValueType ? Nullable.GetUnderlyingType(targetType) ?? targetType : null;
             Type structRight = value.Type.IsValueType ? Nullable.GetUnderlyingType(value.Type) ?? value.Type : null;
 
             if (this.IsNumberType(structLeft) && this.IsNumberType(structRight) && structLeft != structRight)
-                value = this.GetConvertCheckedExpression(value, targetType);
+                value = this.GetConvertCheckedExpression(valueInfo.Metadata, value, targetType);
             else if (structLeft == typeof(bool) && this.IsNumberType(structRight))
                 value = Expression.NotEqual(valueInfo.Value, Expression.Default(value.Type));
 
             if (targetType != value.Type)
-                value = this.GetConvertExpression(value, valueInfo.Metadata.Type);
+                value = this.GetConvertExpression(valueInfo.Metadata, value, valueInfo.Metadata.Type);
 
             if (valueInfo.CanBeDbNull || (valueInfo.CanBeNull && this.IsNotNullableValueType(targetType)))
             {
@@ -362,12 +362,12 @@ namespace Jerrycurl.Data.Metadata
             }
 
             if (!targetType.IsAssignableFrom(value.Type))
-                value = this.GetConvertExpression(value, targetType);
+                value = this.GetConvertExpression(valueInfo.Metadata, value, targetType);
 
             return value;
         }
 
-        private Expression GetConvertCheckedExpression(Expression value, Type type)
+        private Expression GetConvertCheckedExpression(IBindingMetadata metadata, Expression value, Type type)
         {
             try
             {
@@ -375,11 +375,11 @@ namespace Jerrycurl.Data.Metadata
             }
             catch (Exception ex)
             {
-                throw new BindingException($"Cannot convert type '{value.Type.Name}' to '{type.Name}'.", ex);
+                throw BindingException.InvalidCast(metadata, value.Type, type, ex);
             }
         }
 
-        private Expression GetConvertExpression(Expression value, Type type)
+        private Expression GetConvertExpression(IBindingMetadata metadata, Expression value, Type type)
         {
             try
             {
@@ -387,7 +387,7 @@ namespace Jerrycurl.Data.Metadata
             }
             catch (Exception ex)
             {
-                throw new BindingException($"Cannot convert type '{value.Type.Name}' to '{type.Name}'.", ex);
+                throw BindingException.InvalidCast(metadata, value.Type, type, ex);
             }
         }
 
