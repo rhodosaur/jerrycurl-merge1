@@ -9,13 +9,23 @@ namespace Jerrycurl.Mvc.V11
 {
     public class ProjectionData : IProjectionData
     {
-        public IProjectionMetadata Metadata { get; }
-        public IField Value { get; }
+        public IProjectionMetadata InputMetadata { get; }
+        public IProjectionMetadata OutputMetadata { get; }
+        public IField InputValue { get; }
+        public IField OutputValue { get; }
 
         public ProjectionData(IProjectionMetadata metadata, IField value)
         {
-            this.Metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
-            this.Value = value ?? throw new ArgumentNullException(nameof(value));
+            this.InputMetadata = this.OutputMetadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
+            this.InputValue = this.OutputValue = value;
+        }
+
+        public ProjectionData(IProjectionMetadata inputMetadata, IProjectionMetadata outputMetadata, IField inputValue, IField outputValue)
+        {
+            this.InputMetadata = inputMetadata ?? throw new ArgumentNullException(nameof(inputMetadata));
+            this.OutputMetadata = outputMetadata ?? throw new ArgumentNullException(nameof(outputMetadata));
+            this.InputValue = inputValue;
+            this.OutputValue = outputValue;
         }
     }
 }

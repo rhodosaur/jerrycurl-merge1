@@ -86,7 +86,7 @@ namespace Jerrycurl.Mvc.V11.Projections
                     if (reader.Read())
                     {
                         foreach (var ((metadata, value), index) in this.SelectAttributes(metadata).Zip(reader).Select((e, i) => (e, i)))
-                            yield return new ProjectionAttribute2(identity, context, metadata, new ProjectionData(metadata.Value, value));
+                            yield return new ProjectionAttribute2(identity, context, metadata, new ProjectionData(metadata.Input, value));
                     }
                 }
             }

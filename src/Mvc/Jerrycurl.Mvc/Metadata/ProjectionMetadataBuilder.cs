@@ -58,7 +58,7 @@ namespace Jerrycurl.Mvc.Metadata
 
             context.AddMetadata<IProjectionMetadata>(metadata);
 
-            metadata.Value = this.CreateValueMetadata(context, metadata, parent);
+            this.CreateInputMetadata(context, metadata, parent);
 
             return metadata;
         }
@@ -76,26 +76,29 @@ namespace Jerrycurl.Mvc.Metadata
             return metadata;
         }
 
-        private IProjectionMetadata CreateValueMetadata(IMetadataBuilderContext context, IProjectionMetadata metadata, IProjectionMetadata parent)
+        private void CreateInputMetadata(IMetadataBuilderContext context, ProjectionMetadata metadata, IProjectionMetadata parent)
         {
-            if (parent == null)
-                return metadata;
-
-            IReferenceMetadata referenceMetadata = parent.Identity.Lookup<IReferenceMetadata>();
-
-            foreach (IReference reference in referenceMetadata.References.Where(r => r.HasFlag(ReferenceFlags.Foreign)))
+            if (parent != null)
             {
-                int valueIndex = reference.Key.Properties.IndexOf(m => m.Identity.Equals(metadata.Identity));
+                IReferenceMetadata referenceMetadata = parent.Identity.Lookup<IReferenceMetadata>();
 
-                if (valueIndex > -1)
+                foreach (IReference reference in referenceMetadata.References.Where(r => r.HasFlag(ReferenceFlags.Foreign)))
                 {
-                    IReferenceMetadata valueMetadata = reference.Other.Key.Properties[valueIndex];
+                    int valueIndex = reference.Key.Properties.IndexOf(m => m.Identity.Equals(metadata.Identity));
 
-                    return this.GetMetadata(context, valueMetadata.Relation);
+                    if (valueIndex > -1)
+                    {
+                        IReferenceMetadata valueMetadata = reference.Other.Key.Properties[valueIndex];
+
+                        metadata.Input = this.GetMetadata(context, valueMetadata.Relation);
+                        metadata.Flags |= ProjectionMetadataFlags.Cascade;
+
+                        return;
+                    }
                 }
             }
 
-            return metadata;
+            metadata.Input = metadata;
         }
 
         private void CreateTableMetadata(ProjectionMetadata metadata)
