@@ -83,7 +83,17 @@ function Test-Integration
     }
 }
 
-function Get-Target-Frameworks { @("netcoreapp2.1", "netcoreapp3.1") }
+function Get-Target-Frameworks
+{
+    $tfm = @("netcoreapp2.1", "netcoreapp3.1")
+    
+    if ($IsWindows)
+    {
+        $tfm += , "net472"
+    }
+    
+    return $tfm
+}
 
 function Verify-Integration
 {
