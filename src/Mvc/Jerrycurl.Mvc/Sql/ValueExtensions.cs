@@ -16,7 +16,13 @@ namespace Jerrycurl.Mvc.Sql
         {
             if (projection.Data == null)
                 throw ProjectionException.ValueNotFound(projection.Metadata);
+            else if (projection.Data.Source.Snapshot == null)
+            {
+                IEnumerable<IProjection<TModel>> emptyItems = Array.Empty<IProjection<TModel>>();
 
+                return new ProjectionValues<TModel>(projection.Context, projection.Identity, emptyItems, batchIndex);
+            }
+                
             IProjectionMetadata[] header = new[] { projection.Metadata }.Concat(projection.Header.Select(a => a.Metadata)).ToArray();
             IProjectionAttribute[] attributes = header.Skip(1).Select(m => new ProjectionAttribute(projection.Identity, projection.Context, m, data: null)).ToArray();
 

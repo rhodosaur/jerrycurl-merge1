@@ -12,6 +12,7 @@ namespace Jerrycurl.Mvc.Test.Conventions.Accessors
         public void Update<T>(IEnumerable<T> model) => this.Execute(model);
         public void Delete<T>(IEnumerable<T> model) => this.Execute(model);
 
-        public void Sql(string sql) => this.Execute(model: sql);
+        public void Run(Runnable runnable) => this.Execute(runnable);
+        public void Run(string sql) => this.Run(new Runnable(sql));
     }
 }
