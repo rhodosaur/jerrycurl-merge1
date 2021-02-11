@@ -16,7 +16,7 @@
         <SignAssembly>false</SignAssembly>
         <UseCodeAnalysis>false</UseCodeAnalysis>
         <RepositoryType>git</RepositoryType>
-        <RepositoryUrl>https://github.com/rwredding/jerrycurl</RepositoryUrl>
+        <RepositoryUrl>https://github.com/rhodosaur/jerrycurl</RepositoryUrl>
         <DebugSymbols>true</DebugSymbols>
         <DebugType>portable</DebugType>
         <DefaultLanguage>en-US</DefaultLanguage>
@@ -32,7 +32,7 @@
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <PackageProjectUrl>https://jerrycurl.net</PackageProjectUrl>
-        <PackageIconUrl>https://raw.githubusercontent.com/rwredding/jerrycurl/master/gfx/icon.png</PackageIconUrl>
+        <PackageIconUrl>https://raw.githubusercontent.com/rhodosaur/jerrycurl/master/gfx/icon.png</PackageIconUrl>
         <PackageIconFile>icon.png</PackageIconFile>
         <PackageId>$(MSBuildProjectName)</PackageId>
         <PackageLicense>MIT</PackageLicense>

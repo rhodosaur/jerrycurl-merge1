@@ -28,7 +28,6 @@ namespace Jerrycurl.Relations.Metadata
         IRelationMetadata IRelationMetadata.Recursor => this.Recursor?.Value;
         IRelationMetadata IRelationMetadata.MemberOf => this.MemberOf;
 
-
         public RelationMetadata(MetadataIdentity identity)
         {
             this.Identity = identity ?? throw new ArgumentNullException(nameof(identity));
