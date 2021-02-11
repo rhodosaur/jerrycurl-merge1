@@ -9,10 +9,10 @@ namespace Jerrycurl.Data.Commands
         public string ParameterName { get; }
         public IField2 Target { get; }
 
-        public ParameterBinding(string parameterName, IField2 target)
+        public ParameterBinding(IField2 target, string parameterName)
         {
-            this.ParameterName = parameterName ?? throw new ArgumentNullException(nameof(parameterName));
             this.Target = target ?? throw new ArgumentNullException(nameof(target));
+            this.ParameterName = parameterName ?? throw new ArgumentNullException(nameof(parameterName));
         }
 
         public ParameterBinding(IParameter parameter)
@@ -21,9 +21,9 @@ namespace Jerrycurl.Data.Commands
                 throw new ArgumentNullException(nameof(parameter));
 
             this.ParameterName = parameter.Name;
-            this.Target = parameter.Field;
+            this.Target = parameter.Source;
         }
 
-        public override string ToString() => $"ParameterBinding: {this.ParameterName} -> {this.Target.Identity.Name}";
+        public override string ToString() => $"ParameterBinding: {this.ParameterName} -> {this.Target.Identity}";
     }
 }

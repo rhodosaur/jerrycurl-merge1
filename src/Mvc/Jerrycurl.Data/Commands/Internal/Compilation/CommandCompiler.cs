@@ -15,17 +15,19 @@ namespace Jerrycurl.Data.Commands.Internal.Compilation
 {
     internal class CommandCompiler
     {
-        private delegate void BufferInternalWriter(IDataReader dataReader, FieldBuffer[] buffers, ElasticArray helpers, Type schemaType);
-        private delegate void BufferInternalConverter(IField2 field, object value, ElasticArray helpers, Type schemaType);
+        private delegate object BufferInternalConverter(object value, object helper);
 
         public BufferConverter Compile(MetadataIdentity metadata, ColumnMetadata columnInfo)
         {
             IBindingMetadata binding = metadata.Lookup<IBindingMetadata>();
 
             ParameterExpression inputParam = Expression.Parameter(typeof(object));
+            ParameterExpression helperParam = Expression.Parameter(typeof(object));
+            ParameterExpression helperVariable = this.GetHelperVariable(binding);
+
             Expression value = inputParam;
 
-            if (metadata != null)
+            if (binding != null)
             {
                 Type sourceType = null;
 
@@ -49,6 +51,7 @@ namespace Jerrycurl.Data.Commands.Internal.Compilation
                     Value = value,
                     SourceType = sourceType,
                     TargetType = binding.Type,
+                    Helper = helperVariable,
                 };
 
                 value = binding.Value?.Convert?.Invoke(valueInfo) ?? inputParam;
@@ -56,7 +59,19 @@ namespace Jerrycurl.Data.Commands.Internal.Compilation
 
             value = this.GetObjectExpression(value);
 
-            return Expression.Lambda<BufferConverter>(value, inputParam).Compile();
+            if (helperVariable != null)
+            {
+                Expression typedParam = Expression.Convert(helperParam, helperVariable.Type);
+                Expression assignHelper = Expression.Assign(helperVariable, typedParam);
+
+                value = Expression.Block(new[] { helperVariable }, assignHelper, value);
+            }
+
+            BufferInternalConverter innerFunc = Expression.Lambda<BufferInternalConverter>(value, inputParam, helperParam).Compile();
+
+            object helperObject = binding?.Helper?.Object;
+
+            return value => innerFunc(value, helperObject);
         }
 
         public BufferWriter Compile(IEnumerable<ColumnName> columnNames)
@@ -75,15 +90,14 @@ namespace Jerrycurl.Data.Commands.Internal.Compilation
                 body.Add(writer);
             }
 
-            ParameterExpression[] arguments = new[] { Arguments.DataReader, Arguments.Pipes, Arguments.Helpers, Arguments.SchemaType };
+            ParameterExpression[] arguments = new[] { Arguments.DataReader, Arguments.Buffers };
             Expression block = Expression.Block(body);
 
-            BufferInternalWriter writerFunc = Expression.Lambda<BufferInternalWriter>(block, arguments).Compile();
-
-            ElasticArray helpers = new ElasticArray();
-
-            return (dr, ps) => writerFunc(dr, ps, helpers, null);
+            return Expression.Lambda<BufferWriter>(block, arguments).Compile();
         }
+
+        private ParameterExpression GetHelperVariable(IBindingMetadata metadata)
+            => metadata?.Helper?.Type != null ? Expression.Variable(metadata.Helper.Type) : null;
 
         private Expression GetValueExpression(IBindingMetadata metadata, ColumnMetadata columnInfo)
         {
@@ -110,7 +124,7 @@ namespace Jerrycurl.Data.Commands.Internal.Compilation
         {
             MethodInfo writeMethod = typeof(FieldBuffer).GetMethod(nameof(FieldBuffer.Write));
 
-            Expression pipeIndex = Expression.ArrayAccess(Arguments.Pipes, Expression.Constant(index));
+            Expression pipeIndex = Expression.ArrayAccess(Arguments.Buffers, Expression.Constant(index));
 
             return Expression.Call(pipeIndex, writeMethod, value);
         }
@@ -142,9 +156,8 @@ namespace Jerrycurl.Data.Commands.Internal.Compilation
         private static class Arguments
         {
             public static ParameterExpression DataReader { get; } = Expression.Parameter(typeof(IDataReader), "dataReader");
-            public static ParameterExpression Pipes { get; } = Expression.Parameter(typeof(FieldBuffer[]), "pipes");
+            public static ParameterExpression Buffers { get; } = Expression.Parameter(typeof(FieldBuffer[]), "buffers");
             public static ParameterExpression Helpers { get; } = Expression.Parameter(typeof(ElasticArray), "helpers");
-            public static ParameterExpression SchemaType { get; } = Expression.Parameter(typeof(Type), "schemaType");
         }
     }
 }

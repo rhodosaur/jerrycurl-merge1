@@ -8,7 +8,7 @@ namespace Jerrycurl.Data.Commands
         public string ColumnName { get; }
         public IField2 Target { get; }
 
-        public ColumnBinding(string columnName, IField2 target)
+        public ColumnBinding(IField2 target, string columnName)
         {
             this.ColumnName = columnName ?? throw new ArgumentNullException(nameof(columnName));
             this.Target = target ?? throw new ArgumentNullException(nameof(target));
@@ -20,6 +20,6 @@ namespace Jerrycurl.Data.Commands
             this.ColumnName = this.Target.Identity.Name;
         }
 
-        public override string ToString() => $"ColumnBinding: {this.ColumnName} -> {this.Target.Identity.Name}";
+        public override string ToString() => $"ColumnBinding: {this.ColumnName} -> {this.Target.Identity}";
     }
 }

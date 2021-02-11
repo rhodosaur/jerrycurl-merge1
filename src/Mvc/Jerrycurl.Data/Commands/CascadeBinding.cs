@@ -8,12 +8,12 @@ namespace Jerrycurl.Data.Commands
         public IField2 Source { get; }
         public IField2 Target { get; }
 
-        public CascadeBinding(IField2 source, IField2 target)
+        public CascadeBinding(IField2 target, IField2 source)
         {
-            this.Source = source ?? throw new ArgumentNullException(nameof(source));
             this.Target = target ?? throw new ArgumentNullException(nameof(target));
+            this.Source = source ?? throw new ArgumentNullException(nameof(source));
         }
 
-        public override string ToString() => $"ParameterBinding: {this.Source.Identity.Name} -> {this.Target.Identity.Name}";
+        public override string ToString() => $"CascadeBinding: {this.Source.Identity} -> {this.Target.Identity}";
     }
 }

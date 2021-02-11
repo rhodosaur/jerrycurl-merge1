@@ -27,10 +27,26 @@ namespace Jerrycurl.Data.Commands
         private readonly Dictionary<string, FieldBuffer> columnHeader = new Dictionary<string, FieldBuffer>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, FieldBuffer> paramHeader = new Dictionary<string, FieldBuffer>(StringComparer.OrdinalIgnoreCase);
 
+        public async Task UpdateAsync(DbDataReader dataReader, CancellationToken cancellationToken = default)
+        {
+            Action<IDataReader> updateAction = this.GetUpdateAction(dataReader);
+
+            while (await dataReader.ReadAsync(cancellationToken))
+                updateAction(dataReader);
+        }
+
         public void Update(IDataReader dataReader)
         {
+            Action<IDataReader> updateAction = this.GetUpdateAction(dataReader);
+
+            while (dataReader.Read())
+                updateAction(dataReader);
+        }
+
+        private Action<IDataReader> GetUpdateAction(IDataReader dataReader)
+        {
             List<ColumnName> names = new List<ColumnName>();
-            List<FieldBuffer> buffers = new List<FieldBuffer>();
+            List<FieldBuffer> bufferList = new List<FieldBuffer>();
 
             for (int i = 0; i < this.GetFieldCount(dataReader); i++)
             {
@@ -42,26 +58,32 @@ namespace Jerrycurl.Data.Commands
                     ColumnMetadata columnInfo = GetColumnInfo(i);
 
                     names.Add(new ColumnName(metadata, columnInfo));
-                    buffers.Add(buffer);
+                    bufferList.Add(buffer);
 
                     buffer.Column.Info = columnInfo;
                 }
             }
 
             BufferWriter writer = CommandCache.GetWriter(names);
+            FieldBuffer[] buffers = bufferList.ToArray();
 
-            writer(dataReader, buffers.ToArray());
-
-            this.Flush();
+            return dr => writer(dr, buffers);
 
             ColumnMetadata GetColumnInfo(int i) => new ColumnMetadata(dataReader.GetName(i), dataReader.GetFieldType(i), dataReader.GetDataTypeName(i), i);
         }
 
-        public IEnumerable<IDbDataParameter> Prepare(IDbCommand adoCommand)
+        private void FlushParameters()
+        {
+            this.paramHeader.Clear();
+        }
+
+        public IList<IDbDataParameter> Prepare(IDbCommand adoCommand)
             => this.Prepare(() => adoCommand.CreateParameter());
 
-        public IEnumerable<IDbDataParameter> Prepare(Func<IDbDataParameter> parameterFactory)
+        public IList<IDbDataParameter> Prepare(Func<IDbDataParameter> parameterFactory)
         {
+            List<IDbDataParameter> parameters = new List<IDbDataParameter>();
+
             foreach (FieldBuffer buffer in this.paramHeader.Values)
             {
                 IDbDataParameter adoParam = parameterFactory();
@@ -78,13 +100,17 @@ namespace Jerrycurl.Data.Commands
                     SetParameterDirection(adoParam, ParameterDirection.InputOutput);
                 }
 
-                if (this.TryReadValue(buffer.Parameter.Parameter.Field, out object newValue))
+                if (this.TryReadValue(buffer.Parameter.Parameter.Source, out object newValue))
                     adoParam.Value = newValue;
 
                 buffer.Parameter.AdoParameter = adoParam;
 
-                yield return adoParam;
+                parameters.Add(adoParam);
             }
+
+            this.FlushParameters();
+
+            return parameters;
 
             static void SetParameterDirection(IDbDataParameter adoParameter, ParameterDirection direction)
             {
@@ -112,12 +138,6 @@ namespace Jerrycurl.Data.Commands
         internal IEnumerable<IFieldSource> GetSources(IField2 target) => this.GetBuffer(target)?.GetSources() ?? Array.Empty<IFieldSource>();
         internal IEnumerable<IFieldSource> GetChanges(IField2 target) => this.GetBuffer(target)?.GetChanges() ?? Array.Empty<IFieldSource>();
 
-        public void Flush()
-        {
-            this.paramHeader.Clear();
-            //this.columnHeader.Clear();
-        }
-
         private int GetFieldCount(IDataReader dataReader)
         {
             try { return dataReader.FieldCount; }
@@ -128,6 +148,12 @@ namespace Jerrycurl.Data.Commands
         {
             foreach (FieldBuffer buffer in this.fieldBuffers.Values)
                 buffer.Bind();
+        }
+
+        public void Add(IParameter parameter, IField2 target)
+        {
+            this.Add(parameter);
+            this.Add(new ParameterBinding(target, parameter.Name));
         }
 
         public void Add(IParameter parameter)
@@ -192,13 +218,15 @@ namespace Jerrycurl.Data.Commands
             if (binding == null)
                 throw new ArgumentNullException(nameof(binding));
 
-            FieldBuffer buffer = this.paramHeader.GetOrAdd(binding.ParameterName, () => this.fieldBuffers.GetOrAdd(binding.Target));
+            FieldBuffer buffer = this.fieldBuffers.GetOrAdd(binding.Target);
+            FieldBuffer paramBuffer = this.paramHeader.GetOrAdd(binding.ParameterName);
 
-            buffer.Parameter ??= new ParameterSource();
+            if (buffer != paramBuffer)
+                this.paramHeader[binding.ParameterName] = buffer;
+
+            buffer.Parameter = paramBuffer.Parameter ?? new ParameterSource();
             buffer.Parameter.HasTarget = true;
             buffer.Target = binding.Target;
-
-            this.paramHeader.TryAdd(binding.ParameterName, buffer);
         }
     }
 }

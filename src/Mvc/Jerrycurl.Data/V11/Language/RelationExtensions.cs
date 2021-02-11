@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
 using Jerrycurl.Data.Commands;
 using Jerrycurl.Data.Queries;
@@ -50,6 +51,12 @@ namespace Jerrycurl.Data.V11.Language
 
             return command;
         }
+
+        public static IDataReader As(this IRelation2 relation, IEnumerable<string> header)
+            => relation.GetDataReader(header);
+
+        public static IDataReader As(this IRelation2 relation, params string[] header)
+            => relation.GetDataReader(header);
 
         public static IList<IParameter> ToParameters(this IField2 source, params string[] header)
             => source.Select(header).ToParameters();
