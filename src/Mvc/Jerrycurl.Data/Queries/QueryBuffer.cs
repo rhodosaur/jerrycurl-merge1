@@ -43,6 +43,8 @@ namespace Jerrycurl.Data.Queries
                 this.aggregateData = new ElasticArray();
                 this.aggregateHeader = new List<AggregateAttribute>();
             }
+            else if (this.Type != QueryType.List)
+                throw QueryException.InvalidQueryType(this.Type);
         }
 
         public object Commit()

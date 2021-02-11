@@ -20,9 +20,9 @@ namespace Jerrycurl.Data.Queries.Internal.Caching
         private static readonly ConcurrentDictionary<ColumnCacheKey, object> enumerateMap = new ConcurrentDictionary<ColumnCacheKey, object>();
         private static readonly ConcurrentDictionary<ColumnCacheKey, ListFactory> listMap = new ConcurrentDictionary<ColumnCacheKey, ListFactory>();
         private static readonly ConcurrentDictionary<AggregateCacheKey, object> aggregateMap = new ConcurrentDictionary<AggregateCacheKey, object>();
-        private static readonly ConcurrentDictionary<ISchema, BufferCache> buffers = new ConcurrentDictionary<ISchema, BufferCache>();
+        private static readonly ConcurrentDictionary<ISchema, BufferCache2> buffers = new ConcurrentDictionary<ISchema, BufferCache2>();
 
-        private static BufferCache GetBuffer(ISchema schema) => buffers.GetOrAdd(schema, s => new BufferCache(s));
+        private static BufferCache2 GetBuffer(ISchema schema) => buffers.GetOrAdd(schema, s => new BufferCache2(s));
 
         public static AggregateFactory GetAggregateFactory(ISchema schema, IEnumerable<AggregateAttribute> header)
         {
@@ -45,7 +45,7 @@ namespace Jerrycurl.Data.Queries.Internal.Caching
 
             return listMap.GetOrAdd(cacheKey, k =>
             {
-                BufferCache buffer = GetBuffer(k.Schema);
+                BufferCache2 buffer = GetBuffer(k.Schema);
                 ListParser parser = new ListParser(buffer, queryType);
                 ListResult result = parser.Parse(k.Header);
 

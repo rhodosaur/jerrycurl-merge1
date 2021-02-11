@@ -1,9 +1,36 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Jerrycurl.Diagnostics;
 using HashCode = Jerrycurl.Diagnostics.HashCode;
 
 namespace Jerrycurl.Data.Queries.Internal
 {
+    internal static class CompositeKey
+    {
+        public static Type Create(IEnumerable<Type> types)
+        {
+            Type[] typeArray = types.ToArray();
+
+            if (typeArray.Length == 0)
+                return null;
+            else if (typeArray.Length == 1)
+                return typeArray[0];
+            else if (typeArray.Length == 2)
+                return typeof(CompositeKey<,>).MakeGenericType(typeArray[0], typeArray[1]);
+            else if (typeArray.Length == 3)
+                return typeof(CompositeKey<,,>).MakeGenericType(typeArray[0], typeArray[1], typeArray[2]);
+            else if (typeArray.Length == 4)
+                return typeof(CompositeKey<,,,>).MakeGenericType(typeArray[0], typeArray[1], typeArray[2], typeArray[3]);
+            else
+            {
+                Type restType = Create(types.Skip(4));
+
+                return typeof(CompositeKey<,,,,>).MakeGenericType(typeArray[0], typeArray[1], typeArray[2], typeArray[3], restType);
+            }
+        }
+    }
+
     internal struct CompositeKey<T1> : IEquatable<CompositeKey<T1>>
     {
         private readonly T1 item1;

@@ -160,28 +160,36 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             return dr => reader(dr, helpers, schema);
         }
 
-        #region " Initialize "
-        private Expression GetInitializeExpression(ListIndex index, Expression newExpression)
+        private Expression GetBufferGetOrSetExpression(ListIndex index, Expression buffer, Expression defaultExpression)
         {
-            Expression bufferIndex = this.GetElasticIndexExpression(Arguments.Lists, index.BufferIndex);
-            Expression assignNew = Expression.Assign(bufferIndex, Expression.Assign(index.Variable, newExpression));
-            Expression assignOld = Expression.Assign(index.Variable, Expression.Convert(bufferIndex, newExpression.Type));
-            Expression indexIsNull = Expression.ReferenceEqual(bufferIndex, Expression.Constant(null));
+            Expression assignNew = Expression.Assign(buffer, Expression.Assign(index.Variable, defaultExpression));
+            Expression assignOld = Expression.Assign(index.Variable, Expression.Convert(buffer, defaultExpression.Type));
+            Expression indexIsNull = Expression.ReferenceEqual(buffer, Expression.Constant(null));
 
             return Expression.IfThenElse(indexIsNull, assignNew, assignOld);
         }
-        private Expression GetInitializeExpression(ListIndex index)
-        {
-            Expression newList = this.GetBinderExpression(index.List);
 
-            return this.GetInitializeExpression(index, newList);
-        }
-        private Expression GetInitializeExpression(JoinIndex index)
-        {
-            Expression newDictionary = Expression.New(this.GetDictionaryType(null));
 
-            return this.GetInitializeExpression(index.List, newDictionary);
+        #region " Prepare "
+        private Expression GetPrepareExpresssion(ListIndex index)
+        {
+            Expression newList;
+
+            if (index.Join == null)
+                newList = this.GetBinderExpression(index.NewList);
+            else
+                newList = Expression.New(this.GetDictionaryType(index.Join.Key));
+
+            Expression buffer = this.GetElasticIndexExpression(Arguments.Lists, index.BufferIndex);
+            Expression assignNew = Expression.Assign(buffer, Expression.Assign(index.Variable, newList));
+            Expression assignOld = Expression.Assign(index.Variable, Expression.Convert(buffer, newList.Type));
+            Expression indexIsNull = Expression.ReferenceEqual(buffer, Expression.Constant(null));
+
+            return Expression.IfThenElse(indexIsNull, assignNew, assignOld);
         }
+        #endregion
+        #region " Initialize "
+
         private Expression GetInitializeExpression(JoinWriter writer)
         {
             return null;
@@ -347,8 +355,8 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
         private Expression GetBinderExpression(ListReader reader)
         {
-            Expression arrayIsNull = Expression.ReferenceNotEqual(reader.Index.Buffer, Expression.Constant(null));
-            Expression arrayIndex = this.GetElasticIndexExpression(reader.Index.Buffer, reader.Index.BufferIndex);
+            Expression arrayIsNull = Expression.ReferenceNotEqual(reader.Index.Join.Buffer, Expression.Constant(null));
+            Expression arrayIndex = this.GetElasticIndexExpression(reader.Index.Join.Buffer, reader.Index.Join.BufferIndex);
 
             if (reader.List == null)
             {

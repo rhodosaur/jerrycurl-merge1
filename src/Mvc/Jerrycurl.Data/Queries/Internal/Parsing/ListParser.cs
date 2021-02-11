@@ -18,10 +18,10 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 {
     internal class ListParser : BaseParser
     {
-        public BufferCache Buffer { get; }
+        public BufferCache2 Buffer { get; }
         public QueryType QueryType { get; }
 
-        public ListParser(BufferCache cache, QueryType queryType)
+        public ListParser(BufferCache2 cache, QueryType queryType)
             : base(cache?.Schema)
         {
             this.Buffer = cache ?? throw new ArgumentException(nameof(cache));
@@ -74,13 +74,13 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
         {
             foreach (Node node in nodeTree.Items)
             {
-                ListWriter writer = new ListWriter()
+                ListWriter writer = new ListWriter(node)
                 {
                     Value = this.CreateReader(result, node),
                 };
 
                 this.AddPrimaryKey(writer);
-                this.AddIndex(result, writer);
+                this.AddChildKey(result, writer);
 
                 result.Lists.Add(writer);
             }
@@ -95,7 +95,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             BaseReader reader = base.CreateReader(result, node);
 
             if (reader is NewReader newReader)
-                this.AddIndex((ListResult)result, newReader);
+                this.AddParentKeys((ListResult)result, newReader);
 
             return reader;
         }
@@ -109,15 +109,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             }
         }
 
-        private ListIndex CreateIndex(BaseReader reader)
-        {
-            return new ListIndex()
-            {
-                BufferIndex = this.Buffer.GetListIndex(reader.Identity),
-            };
-        }
-
-        private ListIndex CreateIndex(KeyReader key, IReference reference)
+        private ListIndex CreateIndex(BaseReader target, KeyReader key, IReference reference)
         {
             ListIndex index = new ListIndex()
             {
@@ -134,7 +126,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
             if (reference != null)
             {
-                Type compositeType = this.GetCompositeKeyType(key.Values.Select(v => v.KeyType));
+                Type compositeType = CompositeKey.Create(key.Values.Select(v => v.KeyType));
 
                 index.Variable = Expression.Variable(typeof(Dictionary<,>).MakeGenericType(compositeType, typeof(ElasticArray)));
                 index.Join = new JoinIndex()
@@ -149,7 +141,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             return index;
         }
 
-        private void AddIndex(ListResult result, NewReader reader)
+        private void AddParentKeys(ListResult result, NewReader reader)
         {
             foreach (IReference reference in this.GetParentReferences(reader.Metadata))
             {
@@ -157,9 +149,11 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
 
                 if (key != null)
                 {
-                    ListReader join = new ListReader()
+                    this.InitializeKey(key, reference);
+
+                    ListReader join = new ListReader(reference)
                     {
-                        Index = this.CreateIndex(key, reference),
+                        Index = this.CreateIndex(reader, key, reference),
                     };
 
                     reader.JoinKeys.Add(key);
@@ -169,8 +163,24 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             }
         }
 
+        private IEnumerable<Type> GetReferenceKeyTypes(IReference reference, bool throwOnInvalid = false)
+        {
+            IReferenceKey parentKey = reference.FindParentKey();
+            IReferenceKey childKey = reference.FindChildKey();
 
-        private void AddIndex(ListResult result, ListWriter writer)
+            foreach (var (childValue, parentValue) in childKey.Properties.Zip(parentKey.Properties))
+            {
+                Type childType = Nullable.GetUnderlyingType(childValue.Type) ?? childValue.Type;
+                Type parentType = Nullable.GetUnderlyingType(parentValue.Type) ?? parentValue.Type;
+
+                if (throwOnInvalid && childType != parentType)
+                    throw BindingException.IncompatibleReference(reference);
+
+                yield return parentType;
+            }
+        }
+
+        private void AddChildKey(ListResult result, ListWriter writer)
         {
             IEnumerable<IReference> references = this.GetChildReferences(writer.Metadata);
 
@@ -178,12 +188,13 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             {
                 foreach (IReference reference in references)
                 {
-                    KeyReader key = this.FindChildKey(reader, r);
+                    KeyReader key = this.FindChildKey(reader, reference);
 
                     if (key != null)
                     {
-                        writer.Index = this.CreateIndex(key, reference);
+                        this.InitializeKey(key, reference, throwOnInvalid: true);
 
+                        writer.Index = this.CreateIndex(writer.Value, key, reference);
                         result.Indices.Add(writer.Index);
 
                         break;
@@ -199,26 +210,21 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             //}
         }
 
-        private void InitializeKeyTypes(KeyReader joinKey)
+        private void InitializeKey(KeyReader key, IReference reference, bool throwOnInvalid = false)
         {
-            List<Type> keyTypes = new List<Type>();
-
-            foreach (var (left, right) in joinKey.Reference.Key.Properties.Zip(joinKey.Reference.Other.Key.Properties))
+            foreach (DataReader value in key.Values)
             {
-                Type leftType = Nullable.GetUnderlyingType(left.Type) ?? left.Type;
-                Type rightType = Nullable.GetUnderlyingType(right.Type) ?? right.Type;
-
-                if (leftType != rightType)
-                    throw BindingException.IncompatibleReference(joinKey.Reference);
-
-                keyTypes.Add(leftType);
+                value.CanBeDbNull = true;
+                value.IsDbNull ??= Expression.Variable(typeof(bool), "kv_isnull");
+                value.Variable ??= Expression.Variable(value.Metadata.Type, "kv");
             }
 
-            foreach (var (reader, keyType) in joinKey.Values.Zip(keyTypes))
-                reader.KeyType = keyType;
+            IList<Type> keyTypes = this.GetReferenceKeyTypes(reference, throwOnInvalid).ToList();
 
-            joinKey.KeyType = this.GetCompositeKeyType(keyTypes);
-            joinKey.List = this.GetListVariable(joinKey);
+            foreach (var (value, keyType) in key.Values.Zip(keyTypes))
+                value.KeyType = keyType;
+
+            key.Variable = Expression.Variable(CompositeKey.Create(keyTypes));
         }
 
         private IReference GetRecursiveReference(IBindingMetadata metadata)
@@ -272,28 +278,5 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                     return 3;
             }
         }
-
-        private Type GetCompositeKeyType(IEnumerable<Type> keyTypes)
-        {
-            Type[] typeArray = keyTypes.ToArray();
-
-            if (typeArray.Length == 0)
-                return null;
-            else if (typeArray.Length == 1)
-                return typeArray[0];
-            else if (typeArray.Length == 2)
-                return typeof(CompositeKey<,>).MakeGenericType(typeArray[0], typeArray[1]);
-            else if (typeArray.Length == 3)
-                return typeof(CompositeKey<,,>).MakeGenericType(typeArray[0], typeArray[1], typeArray[2]);
-            else if (typeArray.Length == 4)
-                return typeof(CompositeKey<,,,>).MakeGenericType(typeArray[0], typeArray[1], typeArray[2], typeArray[3]);
-            else
-            {
-                Type restType = this.GetCompositeKeyType(keyTypes.Skip(4));
-
-                return typeof(CompositeKey<,,,,>).MakeGenericType(typeArray[0], typeArray[1], typeArray[2], typeArray[3], restType);
-            }
-        }
-
     }
 }
