@@ -6,7 +6,6 @@ namespace Jerrycurl.Data.Queries.Internal.IO.Readers
 {
     internal class JoinReader : BaseReader
     {
-        public KeyReader JoinKey { get; set; }
         public JoinIndex Index { get; set; }
         public NewReader List { get; set; }
     }

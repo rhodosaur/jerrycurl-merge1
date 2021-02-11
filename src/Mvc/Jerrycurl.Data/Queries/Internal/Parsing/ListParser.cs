@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using Jerrycurl.Data.Queries.Internal.IO.Readers;
 using Jerrycurl.Data.Queries.Internal.IO.Writers;
+using System.Runtime.CompilerServices;
 
 namespace Jerrycurl.Data.Queries.Internal.Parsing
 {
@@ -127,6 +128,28 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 reader.JoinKeys.Add(joinKey);
                 reader.Properties.Add(join);
             }
+        }
+
+        private ListIndex CreateIndex(BaseReader reader)
+        {
+            return new ListIndex()
+            {
+                BufferIndex = this.Buffer.GetListIndex(reader.Identity),
+            };
+        }
+
+        private JoinIndex CreateIndex(KeyReader key, IReference reference)
+        {
+            return new JoinIndex()
+            {
+                List = new ListIndex()
+                {
+                    BufferIndex = this.Buffer.GetParentIndex(reference),
+                },
+                Buffer = Expression.Variable(typeof(ElasticArray)),
+                BufferIndex = this.Buffer.GetChildIndex(reference),
+                Key = key,
+            };
         }
 
         private void AddChildKey(ListResult result, JoinWriter writer)

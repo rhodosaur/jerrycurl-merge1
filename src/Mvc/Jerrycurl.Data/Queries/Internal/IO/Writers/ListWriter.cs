@@ -12,8 +12,8 @@ namespace Jerrycurl.Data.Queries.Internal.IO.Writers
 
         }
 
-        public KeyReader JoinKey { get; set; }
+        public KeyReader PrimaryKey { get; set; }
         public ListIndex Index { get; set; }
-        public NewReader Value { get; set; }
+        public BaseReader Value { get; set; }
     }
 }
