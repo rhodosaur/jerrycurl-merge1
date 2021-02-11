@@ -12,7 +12,7 @@ namespace Jerrycurl.Mvc.Sql
 {
     public static class ValueExtensions
     {
-        public static IProjectionValues<TModel> Vals<TModel>(this IProjection<TModel> projection)
+        public static IProjectionValues<TModel> Vals<TModel>(this IProjection<TModel> projection, int batchIndex = -1)
         {
             if (projection.Data == null)
                 return new ProjectionValues<TModel>(projection.Context, projection.Identity, Array.Empty<IProjection<TModel>>());
@@ -95,8 +95,8 @@ namespace Jerrycurl.Mvc.Sql
             return attribute;
         }
 
-        public static IEnumerable<IProjection> Vals(this IProjection projection) => projection.Cast<object>().Vals();
-        public static IProjectionValues<TItem> Vals<TModel, TItem>(this IProjection<TModel> projection, Expression<Func<TModel, IEnumerable<TItem>>> expression) => projection.Open(expression).Vals();
+        public static IEnumerable<IProjection> Vals(this IProjection projection, int batchIndex = -1) => projection.Cast<object>().Vals(batchIndex);
+        public static IProjectionValues<TItem> Vals<TModel, TItem>(this IProjection<TModel> projection, Expression<Func<TModel, IEnumerable<TItem>>> expression, int batchIndex = -1) => projection.Open(expression).Vals();
 
         public static IProjection<TProperty> Val<TModel, TProperty>(this IProjection<TModel> projection, Expression<Func<TModel, TProperty>> expression) => projection.For(expression).Val();
         public static IProjection<TModel> Val<TModel>(this IProjection<TModel> projection) => ((IProjection)projection).Val().Cast<TModel>();
