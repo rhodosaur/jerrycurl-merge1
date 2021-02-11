@@ -61,7 +61,6 @@ namespace Jerrycurl.Data.Queries
             {
                 this.Flush();
             }
-
         }
 
         public void Insert(IDataReader dataReader)

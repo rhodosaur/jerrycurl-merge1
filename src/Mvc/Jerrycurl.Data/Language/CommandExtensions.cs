@@ -14,31 +14,23 @@ namespace Jerrycurl.Data.Language
     public static class CommandExtensions
     {
         #region " Add "
-        public static void Add(this CommandBuffer buffer, IRelation targets)
+        public static void Add(this CommandBuffer buffer, IEnumerable<IUpdateBinding> bindings)
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
 
-            if (targets == null)
-                throw new ArgumentNullException(nameof(targets));
+            if (bindings == null)
+                throw new ArgumentNullException(nameof(bindings));
 
-            using IRelationReader reader = targets.GetReader();
-
-            while (reader.Read())
-                buffer.Add(reader);
+            foreach (IUpdateBinding binding in bindings)
+                buffer.Add(binding);
         }
+
+        public static void Add(this CommandBuffer buffer, IRelation targets)
+            => buffer.Add(targets.AsBindings());
 
         public static void Add(this CommandBuffer buffer, ITuple targets)
-        {
-            if (buffer == null)
-                throw new ArgumentNullException(nameof(buffer));
-
-            if (targets == null)
-                throw new ArgumentNullException(nameof(targets));
-
-            foreach (IField target in targets)
-                buffer.Add(new ColumnBinding(target));
-        }
+            => buffer.Add(targets.AsBindings());
 
         #endregion
         #region " Update "
