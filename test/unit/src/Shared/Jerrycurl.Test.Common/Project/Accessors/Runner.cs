@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Jerrycurl.Mvc;
+using Jerrycurl.Mvc.Projections;
+using Jerrycurl.Mvc.Sql;
 using Jerrycurl.Test.Project.Models;
 
 namespace Jerrycurl.Test.Project.Accessors
@@ -12,16 +15,34 @@ namespace Jerrycurl.Test.Project.Accessors
         public static IList<TResult> Query<TModel, TResult>(Runnable<TModel, TResult> runner) => new Runner().QueryInternal(runner);
         public static void Command<TModel, TResult>(Runnable<TModel, TResult> runner) => new Runner().CommandInternal(runner);
 
-        public string Sql<TModel, TResult>(Runnable<TModel, TResult> runner)
+        public string Sql<TModel, TResult>(Runnable<TModel, TResult> model)
         {
             IProcLocator locator = this.Context?.Locator ?? new ProcLocator();
             IProcEngine engine = this.Context?.Engine ?? new ProcEngine(null);
 
             PageDescriptor descriptor = locator.FindPage("Query", this.GetType());
-            ProcArgs args = new ProcArgs(typeof(TModel), typeof(TResult));
+            ProcArgs args = new ProcArgs(typeof(TModel), typeof(List<TResult>));
             ProcFactory factory = engine.Proc(descriptor, args);
 
-            return factory(runner).Buffer.ReadToEnd().Text.Trim();
+            return factory(model).Buffer.ReadToEnd().Text.Trim();
+        }
+
+        public string Sql<TModel>(TModel model, Func<IProjection<TModel>, ISqlWritable> func)
+        {
+            Runnable<TModel, object> runnable = new Runnable<TModel, object>(model);
+
+            runnable.M(p => func(p.With(options: new ProjectionOptions(p.Options) { Separator = "," })));
+
+            return this.Sql(runnable);
+        }
+
+        public string Sql<TResult>(Func<IProjection<TResult>, ISqlWritable> func)
+        {
+            Runnable<object, TResult> runnable = new Runnable<object, TResult>();
+
+            runnable.R(p => func(p.With(options: new ProjectionOptions(p.Options) { Separator = "," })));
+
+            return this.Sql(runnable);
         }
     }
 }

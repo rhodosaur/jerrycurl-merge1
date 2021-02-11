@@ -1,18 +1,19 @@
 ﻿using System.Data;
+using System.Data.Common;
 using Jerrycurl.Data.Sessions;
 
 namespace Jerrycurl.Test
 {
-    public class SqlOperation : IBatch
+    public class MockBatch : IBatch
     {
         private readonly string commandText;
 
         public object Source => null;
 
-        public SqlOperation(string commandText)
+        public MockBatch(string commandText)
         {
             this.commandText = commandText;
-        }       
+        }
 
         public void Build(IDbCommand adoCommand)
         {
