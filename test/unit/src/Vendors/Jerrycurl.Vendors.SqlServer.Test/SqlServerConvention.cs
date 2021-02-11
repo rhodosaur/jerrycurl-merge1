@@ -19,7 +19,7 @@ namespace Jerrycurl.Vendors.SqlServer.Test
             options.UseNewtonsoftJson();
         }
 
-        public static string GetConnectionString() => "SERVER=.;DATABASE=jerry_testdb;TRUSTED_CONNECTION=true"; // GetEnvironmentVariable("JERRY_SQLSERVER_CONN");
+        public static string GetConnectionString() => GetEnvironmentVariable("JERRY_SQLSERVER_CONN");
         public static SqlConnection GetConnection() => new SqlConnection(GetConnectionString());
     }
 }
