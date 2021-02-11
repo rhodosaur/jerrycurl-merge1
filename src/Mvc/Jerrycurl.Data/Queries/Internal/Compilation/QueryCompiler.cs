@@ -204,6 +204,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
             return addValue;
         }
+
         private Expression GetWriterExpression(JoinWriter writer)
         {
             Expression value = this.GetBinderExpression(writer.Value);
@@ -282,22 +283,23 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             return Expression.Assign(reader.Variable, convertedValue);
         }
 
-        private Expression GetKeyInitArrayExpression(JoinIndex index)
+        private Expression GetKeyInitArrayExpression(ListIndex index)
         {
-            Expression newKey = this.GetNewCompositeKeyExpression(index.Key);
-            Expression assignKey = Expression.Assign(index.Key.Variable, newKey);
-            Expression tryGet = this.GetDictionaryTryGetExpression(index.List.Variable, assignKey, index.Buffer);
+            Expression newKey = this.GetNewCompositeKeyExpression(index.Join.Key);
+            Expression assignKey = Expression.Assign(index.Join.Key.Variable, newKey);
+            Expression tryGet = this.GetDictionaryTryGetExpression(index.Variable, assignKey, index.Join.Buffer);
             Expression newBuffer = Expression.New(typeof(ElasticArray));
-            Expression assignBuffer = Expression.Assign(index.Buffer, newBuffer);
-            Expression addArray = this.GetDictionaryAddExpression(index.List.Variable, index.Key.Variable, assignBuffer);
+            Expression bufferIndex = this.GetElasticIndexExpression(index.Join.Buffer, index.Join.BufferIndex);
+            Expression assignBuffer = Expression.Assign(index.Join.Buffer, newBuffer);
+            Expression addArray = this.GetDictionaryAddExpression(index.Variable, index.Join.Key.Variable, assignBuffer);
             Expression getOrAdd = Expression.IfThenElse(tryGet, Expression.Default(typeof(void)), addArray);
 
-            IEnumerable<ParameterExpression> isNullVars = index.Key.Values.Where(v => v.CanBeDbNull).Select(v => v.IsDbNull).ToList();
+            IEnumerable<ParameterExpression> isNullVars = index.Join.Key.Values.Where(v => v.CanBeDbNull).Select(v => v.IsDbNull).ToList();
 
             if (isNullVars.Any())
             {
                 Expression isNull = this.GetAndConditionExpression(isNullVars);
-                Expression setNull = Expression.Assign(reader.Array, Expression.Constant(null, reader.Array.Type));
+                Expression setNull = Expression.Assign(index.Join.Buffer, Expression.Constant(null));
 
                 getOrAdd = Expression.IfThenElse(isNull, setNull, getOrAdd);
             }
@@ -305,12 +307,12 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             return getOrAdd;
         }
 
-        private Expression GetKeyBlockExpression(KeyReader primaryKey, IEnumerable<JoinIndex> joins, Expression body)
+        private Expression GetKeyBlockExpression(KeyReader primaryKey, IEnumerable<ListIndex> indices, Expression body)
         {
             List<Expression> expressions = new List<Expression>();
             List<ParameterExpression> variables = new List<ParameterExpression>();
 
-            foreach (DataReader reader in joins.SelectMany(k => k.Key.Values).Distinct())
+            foreach (DataReader reader in indices.SelectMany(k => k.Join.Key.Values).Distinct())
             {
                 expressions.Add(this.GetKeyInitValueExpression(reader));
 
@@ -320,11 +322,11 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 variables.Add(reader.Variable);
             }
 
-            foreach (JoinIndex join in joins)
+            foreach (ListIndex index in indices)
             {
-                expressions.Add(this.GetKeyInitArrayExpression(join));
+                expressions.Add(this.GetKeyInitArrayExpression(index));
 
-                variables.Add(join.Buffer);
+                variables.Add(index.Join.Buffer);
             }
 
             expressions.Add(body);
