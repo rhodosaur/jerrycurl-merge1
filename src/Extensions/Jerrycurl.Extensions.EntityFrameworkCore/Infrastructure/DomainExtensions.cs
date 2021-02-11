@@ -1,4 +1,4 @@
-﻿using Jerrycurl.Data.Metadata;
+﻿using Jerrycurl.Cqs.Metadata;
 using Jerrycurl.Extensions.EntityFrameworkCore.Metadata;
 using Jerrycurl.Relations.Metadata;
 using Microsoft.EntityFrameworkCore;

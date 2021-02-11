@@ -1,4 +1,4 @@
-﻿using Jerrycurl.Data.Metadata.Annotations;
+﻿using Jerrycurl.Cqs.Metadata.Annotations;
 
 namespace Jerrycurl.Mvc.Test.Project.Models
 {

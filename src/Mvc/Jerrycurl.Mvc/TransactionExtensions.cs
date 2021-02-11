@@ -1,4 +1,4 @@
-﻿using Jerrycurl.Data.Filters;
+﻿using Jerrycurl.Cqs.Filters;
 using System;
 using System.Transactions;
 using IsolationLevel = System.Data.IsolationLevel;

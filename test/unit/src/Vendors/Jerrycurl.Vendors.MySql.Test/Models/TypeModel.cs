@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Text;
-using Jerrycurl.Data.Metadata.Annotations;
+using Jerrycurl.Cqs.Metadata.Annotations;
 
 namespace Jerrycurl.Vendors.MySql.Test.Models
 {

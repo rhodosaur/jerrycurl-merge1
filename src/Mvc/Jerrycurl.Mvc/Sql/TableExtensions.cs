@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
-using Jerrycurl.Data.Metadata;
+using Jerrycurl.Cqs.Metadata;
 using Jerrycurl.Mvc.Projections;
 
 namespace Jerrycurl.Mvc.Sql

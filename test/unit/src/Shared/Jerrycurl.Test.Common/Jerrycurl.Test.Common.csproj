@@ -9,8 +9,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\src\Mvc\Jerrycurl.Data.Abstractions\Jerrycurl.Data.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\Mvc\Jerrycurl.Data\Jerrycurl.Data.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\Mvc\Jerrycurl.Cqs.Abstractions\Jerrycurl.Cqs.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\Mvc\Jerrycurl.Cqs\Jerrycurl.Cqs.csproj" />
     <ProjectReference Include="..\..\..\..\..\src\Mvc\Jerrycurl.Mvc.Abstractions\Jerrycurl.Mvc.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\..\..\src\Mvc\Jerrycurl.Mvc\Jerrycurl.Mvc.csproj" />
     <ProjectReference Include="..\..\..\..\..\src\Mvc\Jerrycurl.Relations.Abstractions\Jerrycurl.Relations.Abstractions.csproj" />

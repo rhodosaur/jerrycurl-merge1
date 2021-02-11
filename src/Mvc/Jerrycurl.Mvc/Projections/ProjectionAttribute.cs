@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using Jerrycurl.Data.Commands;
-using Jerrycurl.Data.Sessions;
+using Jerrycurl.Cqs.Commands;
+using Jerrycurl.Cqs.Sessions;
 using Jerrycurl.Mvc.Metadata;
 
 namespace Jerrycurl.Mvc.Projections

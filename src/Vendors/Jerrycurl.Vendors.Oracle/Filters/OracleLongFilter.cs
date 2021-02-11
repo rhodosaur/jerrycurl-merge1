@@ -1,5 +1,5 @@
 ﻿using System.Data;
-using Jerrycurl.Data.Filters;
+using Jerrycurl.Cqs.Filters;
 using Oracle.ManagedDataAccess.Client;
 
 namespace Jerrycurl.Vendors.Oracle.Filters

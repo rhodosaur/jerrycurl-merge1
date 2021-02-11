@@ -1,4 +1,4 @@
-﻿using Jerrycurl.Data.Metadata.Annotations;
+﻿using Jerrycurl.Cqs.Metadata.Annotations;
 using Jerrycurl.Vendors.MySql.Test.Models;
 
 namespace Jerrycurl.Vendors.MySql.Test.Views

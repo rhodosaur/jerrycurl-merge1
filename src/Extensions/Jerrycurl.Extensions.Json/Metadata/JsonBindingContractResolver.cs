@@ -4,8 +4,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.Json;
-using Jerrycurl.Data.Metadata;
-using Jerrycurl.Data.Metadata.Annotations;
+using Jerrycurl.Cqs.Metadata;
+using Jerrycurl.Cqs.Metadata.Annotations;
 using Jerrycurl.Reflection;
 
 namespace Jerrycurl.Extensions.Json.Metadata

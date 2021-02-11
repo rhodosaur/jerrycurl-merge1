@@ -1,4 +1,4 @@
-﻿using Jerrycurl.Data.Commands;
+﻿using Jerrycurl.Cqs.Commands;
 using Jerrycurl.Mvc.Test.Project.Accessors;
 using Shouldly;
 using System.Linq;

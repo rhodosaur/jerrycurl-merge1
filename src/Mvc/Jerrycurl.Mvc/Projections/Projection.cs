@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Jerrycurl.Collections;
-using Jerrycurl.Data.Commands;
-using Jerrycurl.Data.Metadata;
-using Jerrycurl.Data.Sessions;
+using Jerrycurl.Cqs.Commands;
+using Jerrycurl.Cqs.Metadata;
+using Jerrycurl.Cqs.Sessions;
 using Jerrycurl.Mvc.Metadata;
 using Jerrycurl.Relations.Metadata;
 

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using Jerrycurl.Data.Metadata;
-using Jerrycurl.Data.Commands;
+using Jerrycurl.Cqs.Metadata;
+using Jerrycurl.Cqs.Commands;
 using Jerrycurl.Mvc.Metadata;
 using Jerrycurl.Mvc.Projections;
 using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Collections;
-using Jerrycurl.Data.Sessions;
+using Jerrycurl.Cqs.Sessions;
 
 namespace Jerrycurl.Mvc.Sql
 {

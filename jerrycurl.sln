@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28606.126
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jerrycurl.Data", "src\Mvc\Jerrycurl.Data\Jerrycurl.Data.csproj", "{C48A5B46-921D-424A-AA2E-0A81E55B9ABA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jerrycurl.Cqs", "src\Mvc\Jerrycurl.Cqs\Jerrycurl.Cqs.csproj", "{C48A5B46-921D-424A-AA2E-0A81E55B9ABA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jerrycurl.Data.Abstractions", "src\Mvc\Jerrycurl.Data.Abstractions\Jerrycurl.Data.Abstractions.csproj", "{5D959B12-95D7-47FA-BBF7-1A4A81308194}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jerrycurl.Cqs.Abstractions", "src\Mvc\Jerrycurl.Cqs.Abstractions\Jerrycurl.Cqs.Abstractions.csproj", "{5D959B12-95D7-47FA-BBF7-1A4A81308194}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jerrycurl.Mvc", "src\Mvc\Jerrycurl.Mvc\Jerrycurl.Mvc.csproj", "{E6D917EE-C20A-4C90-AAFB-BC7FC9907BE3}"
 EndProject
@@ -68,7 +68,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jerrycurl.CodeAnalysis", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jerrycurl.CodeAnalysis.Razor", "src\Build\Jerrycurl.CodeAnalysis.Razor\Jerrycurl.CodeAnalysis.Razor.csproj", "{09324D8F-15D8-4CF0-A808-7CB8B9BBC047}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jerrycurl.Data.Test", "test\unit\src\Mvc\Jerrycurl.Data.Test\Jerrycurl.Data.Test.csproj", "{4BBB040A-7EF4-47E5-85F3-FD4FC38BCC17}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jerrycurl.Cqs.Test", "test\unit\src\Mvc\Jerrycurl.Cqs.Test\Jerrycurl.Cqs.Test.csproj", "{4BBB040A-7EF4-47E5-85F3-FD4FC38BCC17}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jerrycurl.Mvc.Test", "test\unit\src\Mvc\Jerrycurl.Mvc.Test\Jerrycurl.Mvc.Test.csproj", "{EC618E3A-A516-4AE1-A872-3A9F73E5287B}"
 EndProject
@@ -100,7 +100,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspec", "nuspec", "{6E68DF
 	ProjectSection(SolutionItems) = preProject
 		nuspec\dotnet-jerry.nuspec = nuspec\dotnet-jerry.nuspec
 		nuspec\Jerrycurl.Build.Razor.nuspec = nuspec\Jerrycurl.Build.Razor.nuspec
-		nuspec\Jerrycurl.Data.nuspec = nuspec\Jerrycurl.Data.nuspec
+		nuspec\Jerrycurl.Cqs.nuspec = nuspec\Jerrycurl.Cqs.nuspec
 		nuspec\Jerrycurl.Extensions.EntityFrameworkCore.nuspec = nuspec\Jerrycurl.Extensions.EntityFrameworkCore.nuspec
 		nuspec\Jerrycurl.Extensions.Json.nuspec = nuspec\Jerrycurl.Extensions.Json.nuspec
 		nuspec\Jerrycurl.Extensions.Newtonsoft.Json.nuspec = nuspec\Jerrycurl.Extensions.Newtonsoft.Json.nuspec

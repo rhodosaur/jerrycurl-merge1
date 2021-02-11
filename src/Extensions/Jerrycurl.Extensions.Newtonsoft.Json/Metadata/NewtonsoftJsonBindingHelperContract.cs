@@ -1,4 +1,4 @@
-﻿using Jerrycurl.Data.Metadata;
+﻿using Jerrycurl.Cqs.Metadata;
 using Newtonsoft.Json;
 
 namespace Jerrycurl.Extensions.Newtonsoft.Json.Metadata

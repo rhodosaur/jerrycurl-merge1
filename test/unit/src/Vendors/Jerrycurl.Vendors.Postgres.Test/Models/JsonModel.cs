@@ -1,4 +1,4 @@
-﻿using Jerrycurl.Data.Metadata.Annotations;
+﻿using Jerrycurl.Cqs.Metadata.Annotations;
 using Newtonsoft.Json;
 
 namespace Jerrycurl.Vendors.Postgres.Test.Models

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using Jerrycurl.Data.Commands;
-using Jerrycurl.Data.Filters;
-using Jerrycurl.Data.Language;
-using Jerrycurl.Data.Queries;
+using Jerrycurl.Cqs.Commands;
+using Jerrycurl.Cqs.Filters;
+using Jerrycurl.Cqs.Language;
+using Jerrycurl.Cqs.Queries;
 using Shouldly;
 
 namespace Jerrycurl.Test

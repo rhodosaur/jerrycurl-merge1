@@ -1,5 +1,5 @@
 ﻿using Jerrycurl.Relations.Metadata;
-using Jerrycurl.Data.Metadata;
+using Jerrycurl.Cqs.Metadata;
 
 namespace Jerrycurl.Mvc.Metadata
 {

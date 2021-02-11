@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
-using Jerrycurl.Data.Commands;
+using Jerrycurl.Cqs.Commands;
 using Jerrycurl.Mvc.Metadata;
 using Jerrycurl.Mvc.Projections;
 using Jerrycurl.Relations.Metadata;

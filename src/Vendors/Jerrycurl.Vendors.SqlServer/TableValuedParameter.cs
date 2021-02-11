@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using Jerrycurl.Data.Metadata;
-using Jerrycurl.Data.Sessions;
+using Jerrycurl.Cqs.Metadata;
+using Jerrycurl.Cqs.Sessions;
 using Jerrycurl.Relations;
 using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Vendors.SqlServer.Internal;
-using BindingException = Jerrycurl.Data.Metadata.BindingException;
+using BindingException = Jerrycurl.Cqs.Metadata.BindingException;
 #if NET20_BASE
 using System.Data.SqlClient;
 using Microsoft.SqlServer.Server;

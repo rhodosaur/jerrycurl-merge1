@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Reflection;
-using Jerrycurl.Data.Metadata;
+using Jerrycurl.Cqs.Metadata;
 using Oracle.ManagedDataAccess.Client;
 
 namespace Jerrycurl.Vendors.Oracle.Metadata

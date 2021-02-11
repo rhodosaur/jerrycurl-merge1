@@ -1,13 +1,13 @@
-﻿using Jerrycurl.Data.Commands;
-using Jerrycurl.Data.Filters;
-using Jerrycurl.Data.Metadata;
-using Jerrycurl.Data.Queries;
+﻿using Jerrycurl.Cqs.Commands;
+using Jerrycurl.Cqs.Filters;
+using Jerrycurl.Cqs.Metadata;
+using Jerrycurl.Cqs.Queries;
 using Jerrycurl.Relations.Language;
 using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Test.Profiling;
 using Jerrycurl.Vendors.Sqlite.Metadata;
 using Microsoft.Data.Sqlite;
-using Jerrycurl.Data.Language;
+using Jerrycurl.Cqs.Language;
 using System;
 using System.Collections.Generic;
 

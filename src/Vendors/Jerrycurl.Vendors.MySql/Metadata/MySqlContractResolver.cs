@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Reflection;
-using Jerrycurl.Data.Metadata;
+using Jerrycurl.Cqs.Metadata;
 using MySql.Data.MySqlClient;
 
 namespace Jerrycurl.Vendors.MySql.Metadata

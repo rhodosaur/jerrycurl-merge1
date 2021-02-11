@@ -9,7 +9,7 @@ using System.Linq.Expressions;
 using System.Linq;
 using Jerrycurl.Mvc.Metadata.Annotations;
 using Jerrycurl.Reflection;
-using Jerrycurl.Data.Metadata;
+using Jerrycurl.Cqs.Metadata;
 using Jerrycurl.Mvc.Sql;
 using Jerrycurl.Mvc.Internal;
 

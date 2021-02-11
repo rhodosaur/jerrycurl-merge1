@@ -4,8 +4,8 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Jerrycurl.Data.Commands;
-using Jerrycurl.Data.Queries;
+using Jerrycurl.Cqs.Commands;
+using Jerrycurl.Cqs.Queries;
 
 namespace Jerrycurl.Mvc
 {

@@ -1,7 +1,7 @@
 ﻿using System.Data.Common;
 using System.Threading.Tasks;
-using Jerrycurl.Data.Commands;
-using Jerrycurl.Data.Filters;
+using Jerrycurl.Cqs.Commands;
+using Jerrycurl.Cqs.Filters;
 using Jerrycurl.Test;
 
 namespace Jerrycurl.Vendors.Postgres.Test

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Jerrycurl.Relations;
 
-namespace Jerrycurl.Data.Queries.Internal
+namespace Jerrycurl.Cqs.Queries.Internal
 {
     internal class FieldArray
     {

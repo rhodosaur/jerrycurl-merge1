@@ -1,5 +1,5 @@
-﻿using Jerrycurl.Data.Commands;
-using Jerrycurl.Data.Sessions;
+﻿using Jerrycurl.Cqs.Commands;
+using Jerrycurl.Cqs.Sessions;
 using System;
 using System.Collections.Generic;
 using System.Linq;

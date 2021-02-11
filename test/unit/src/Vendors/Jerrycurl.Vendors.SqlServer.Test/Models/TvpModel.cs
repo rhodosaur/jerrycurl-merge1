@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Xml.Linq;
-using Jerrycurl.Data.Metadata.Annotations;
+using Jerrycurl.Cqs.Metadata.Annotations;
 
 namespace Jerrycurl.Vendors.SqlServer.Test.Models
 {

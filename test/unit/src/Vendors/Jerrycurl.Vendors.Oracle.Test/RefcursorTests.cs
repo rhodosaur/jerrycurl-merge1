@@ -1,11 +1,11 @@
-﻿using Jerrycurl.Data.Queries;
-using Jerrycurl.Data.Sessions;
+﻿using Jerrycurl.Cqs.Queries;
+using Jerrycurl.Cqs.Sessions;
 using Jerrycurl.Mvc.Sql;
 using Jerrycurl.Mvc.Sql.Oracle;
 using Jerrycurl.Test;
 using Jerrycurl.Test.Project.Accessors;
 using Jerrycurl.Test.Project.Models;
-using Jerrycurl.Data.Language;
+using Jerrycurl.Cqs.Language;
 using Oracle.ManagedDataAccess.Client;
 using Shouldly;
 using System.Collections.Generic;

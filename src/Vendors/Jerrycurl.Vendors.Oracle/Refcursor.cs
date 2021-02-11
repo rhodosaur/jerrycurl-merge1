@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Data;
-using Jerrycurl.Data.Sessions;
+using Jerrycurl.Cqs.Sessions;
 using Jerrycurl.Relations;
 using Oracle.ManagedDataAccess.Client;
 

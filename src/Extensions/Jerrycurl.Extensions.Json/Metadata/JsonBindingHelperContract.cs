@@ -1,5 +1,5 @@
 ﻿using System.Text.Json;
-using Jerrycurl.Data.Metadata;
+using Jerrycurl.Cqs.Metadata;
 
 namespace Jerrycurl.Extensions.Json.Metadata
 {

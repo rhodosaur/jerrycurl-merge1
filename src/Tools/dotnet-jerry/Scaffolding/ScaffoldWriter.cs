@@ -17,7 +17,7 @@ namespace Jerrycurl.Tools.DotNet.Cli.Scaffolding
                     CSharpWriter csharp = new CSharpWriter(stream);
 
                     await csharp.WriteImportAsync("global::System");
-                    await csharp.WriteImportAsync("global::Jerrycurl.Data.Metadata.Annotations");
+                    await csharp.WriteImportAsync("global::Jerrycurl.Cqs.Metadata.Annotations");
                     await csharp.WriteLineAsync();
 
                     foreach (var g in file.Objects.GroupBy(t => t.Namespace).OrderBy(g => g.Key))

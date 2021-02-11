@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Jerrycurl.Data.Queries.Internal;
+using Jerrycurl.Cqs.Queries.Internal;
 using Jerrycurl.Relations.Metadata;
 
 namespace Jerrycurl.Relations.Internal.Queues

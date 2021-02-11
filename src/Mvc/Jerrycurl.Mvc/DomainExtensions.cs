@@ -1,6 +1,6 @@
 ﻿using Jerrycurl.Collections;
-using Jerrycurl.Data.Language;
-using Jerrycurl.Data.Metadata;
+using Jerrycurl.Cqs.Language;
+using Jerrycurl.Cqs.Metadata;
 using Jerrycurl.Mvc.Metadata;
 using Jerrycurl.Relations.Language;
 using Jerrycurl.Relations.Metadata;

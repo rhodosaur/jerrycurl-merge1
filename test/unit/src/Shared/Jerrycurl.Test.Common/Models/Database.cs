@@ -1,5 +1,5 @@
 ﻿using global::System;
-using global::Jerrycurl.Data.Metadata.Annotations;
+using global::Jerrycurl.Cqs.Metadata.Annotations;
 
 namespace Jerrycurl.Test.Models.Database
 {

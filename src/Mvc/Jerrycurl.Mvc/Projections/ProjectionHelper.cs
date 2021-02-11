@@ -1,4 +1,4 @@
-﻿using Jerrycurl.Data.Metadata;
+﻿using Jerrycurl.Cqs.Metadata;
 using Jerrycurl.Mvc.Metadata;
 using System;
 using System.Linq.Expressions;

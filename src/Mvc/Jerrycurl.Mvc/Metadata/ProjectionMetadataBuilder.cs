@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Jerrycurl.Mvc.Metadata;
 using Jerrycurl.Relations.Metadata;
-using Jerrycurl.Data.Metadata;
+using Jerrycurl.Cqs.Metadata;
 using Jerrycurl.Mvc.Metadata.Annotations;
-using Jerrycurl.Data.Metadata.Annotations;
+using Jerrycurl.Cqs.Metadata.Annotations;
 using Jerrycurl.Collections;
 
 namespace Jerrycurl.Mvc.Metadata

@@ -6,7 +6,7 @@ using Jerrycurl.Test.Project.Accessors;
 using Jerrycurl.Test.Project.Models;
 using Shouldly;
 using Jerrycurl.Relations.Language;
-using Jerrycurl.Data.Metadata;
+using Jerrycurl.Cqs.Metadata;
 using System.Linq;
 using Jerrycurl.Extensions.EntityFrameworkCore.Metadata;
 using Jerrycurl.Collections;

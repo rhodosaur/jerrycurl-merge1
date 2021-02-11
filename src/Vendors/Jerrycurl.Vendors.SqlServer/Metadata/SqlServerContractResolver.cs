@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Reflection;
-using Jerrycurl.Data.Metadata;
+using Jerrycurl.Cqs.Metadata;
 #if NET20_BASE
 using System.Data.SqlClient;
 #else

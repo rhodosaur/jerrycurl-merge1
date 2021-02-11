@@ -1,6 +1,6 @@
 ﻿using Jerrycurl.Collections;
-using Jerrycurl.Data.Metadata;
-using Jerrycurl.Data.Metadata.Annotations;
+using Jerrycurl.Cqs.Metadata;
+using Jerrycurl.Cqs.Metadata.Annotations;
 using Jerrycurl.Relations.Metadata;
 using System;
 using System.Collections.ObjectModel;

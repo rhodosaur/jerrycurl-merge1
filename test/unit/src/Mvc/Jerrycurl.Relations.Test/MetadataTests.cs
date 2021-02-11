@@ -1,4 +1,4 @@
-﻿using Jerrycurl.Data.Language;
+﻿using Jerrycurl.Cqs.Language;
 using Jerrycurl.Relations.Language;
 using Jerrycurl.Relations.Metadata;
 using Jerrycurl.Relations.Test.Metadata;

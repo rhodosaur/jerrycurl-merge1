@@ -17,10 +17,10 @@
         <description>MVC framework for Jerrycurl.</description>
         <dependencies>
             <group targetFramework="netstandard2.0">
-                <dependency id="Jerrycurl.Data" version="$PackageVersion$" />
+                <dependency id="Jerrycurl.Cqs" version="$PackageVersion$" />
             </group>
             <group targetFramework="netstandard2.1">
-                <dependency id="Jerrycurl.Data" version="$PackageVersion$" />
+                <dependency id="Jerrycurl.Cqs" version="$PackageVersion$" />
             </group>
         </dependencies>
     </metadata>

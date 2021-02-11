@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Jerrycurl.Data.Commands;
-using Jerrycurl.Data.Queries;
+using Jerrycurl.Cqs.Commands;
+using Jerrycurl.Cqs.Queries;
 
 namespace Jerrycurl.Mvc
 {

@@ -2,7 +2,7 @@
 using Jerrycurl.Mvc;
 using Jerrycurl.Test.Integration.Accessors;
 using Jerrycurl.Test.Integration.Database;
-using Jerrycurl.Data.Metadata.Annotations;
+using Jerrycurl.Cqs.Metadata.Annotations;
 using System.IO;
 using Jerrycurl.Test.Integration.Views;
 using System.Collections.Generic;

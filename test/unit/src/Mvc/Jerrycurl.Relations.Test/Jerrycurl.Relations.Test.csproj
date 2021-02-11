@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\src\Mvc\Jerrycurl.Data.Abstractions\Jerrycurl.Data.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\Mvc\Jerrycurl.Data\Jerrycurl.Data.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\Mvc\Jerrycurl.Cqs.Abstractions\Jerrycurl.Cqs.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\Mvc\Jerrycurl.Cqs\Jerrycurl.Cqs.csproj" />
     <ProjectReference Include="..\..\..\..\..\src\Mvc\Jerrycurl.Relations.Abstractions\Jerrycurl.Relations.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\..\..\src\Mvc\Jerrycurl.Relations\Jerrycurl.Relations.csproj" />
     <ProjectReference Include="..\..\Shared\Jerrycurl.Test.Common\Jerrycurl.Test.Common.csproj" />

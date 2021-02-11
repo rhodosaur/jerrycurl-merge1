@@ -3,8 +3,8 @@ using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
-using Jerrycurl.Data.Metadata;
-using Jerrycurl.Data.Metadata.Annotations;
+using Jerrycurl.Cqs.Metadata;
+using Jerrycurl.Cqs.Metadata.Annotations;
 using Npgsql;
 using NpgsqlTypes;
 

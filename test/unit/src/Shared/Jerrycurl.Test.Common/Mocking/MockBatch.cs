@@ -1,5 +1,5 @@
 ﻿using System.Data;
-using Jerrycurl.Data.Sessions;
+using Jerrycurl.Cqs.Sessions;
 
 namespace Jerrycurl.Test
 {

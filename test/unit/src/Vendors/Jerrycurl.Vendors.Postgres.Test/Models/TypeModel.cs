@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Xml.Linq;
-using Jerrycurl.Data.Metadata.Annotations;
+using Jerrycurl.Cqs.Metadata.Annotations;
 
 namespace Jerrycurl.Vendors.Postgres.Test.Models
 {
