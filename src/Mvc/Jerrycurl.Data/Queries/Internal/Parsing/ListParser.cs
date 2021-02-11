@@ -76,7 +76,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             {
                 ListWriter writer = new ListWriter(node)
                 {
-                    Value = this.CreateReader(result, node),
+                    Source = this.CreateReader(result, node),
                 };
 
                 this.AddPrimaryKey(writer);
@@ -109,9 +109,17 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             }
         }
 
-        private ListIndex CreateIndex(BaseReader target, KeyReader key, IReference reference)
+        private ListTarget CreateTarget(BaseReader source, KeyReader key, IReference reference)
         {
-            ListIndex index = new ListIndex()
+            if (reference == null)
+            {
+                ListTarget target = new ListTarget();
+
+                {
+                    BufferIndex = this.Buffer.GetListIndex()
+                }
+            }
+            ListTarget index = new ListTarget()
             {
                 BufferIndex = this.Buffer.GetParentIndex(reference),
             };
@@ -129,7 +137,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 Type compositeType = CompositeKey.Create(key.Values.Select(v => v.KeyType));
 
                 index.Variable = Expression.Variable(typeof(Dictionary<,>).MakeGenericType(compositeType, typeof(ElasticArray)));
-                index.Join = new JoinIndex()
+                index.Join = new JoinTarget()
                 {
                     Buffer = Expression.Variable(typeof(ElasticArray)),
                     BufferIndex = this.Buffer.GetChildIndex(reference),
@@ -156,7 +164,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                         Index = this.CreateIndex(reader, key, reference),
                     };
 
-                    reader.JoinKeys.Add(key);
+                    reader.Joins.Add(join.Index);
                     reader.Properties.Add(join);
                     result.Indices.Add(join.Index);
                 }
@@ -180,11 +188,13 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             }
         }
 
+        private BaseTarget CreateTarget()
+
         private void AddChildKey(ListResult result, ListWriter writer)
         {
             IEnumerable<IReference> references = this.GetChildReferences(writer.Metadata);
 
-            if (writer.Value is NewReader reader)
+            if (writer.Source is NewReader reader)
             {
                 foreach (IReference reference in references)
                 {

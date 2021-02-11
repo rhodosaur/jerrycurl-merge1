@@ -12,7 +12,7 @@ namespace Jerrycurl.Data.Queries.Internal.IO
     {
         public QueryType QueryType { get; }
         public List<ListWriter> Lists { get; set; } = new List<ListWriter>();
-        public List<ListIndex> Indices { get; set; } = new List<ListIndex>();
+        public List<ListTarget> Indices { get; set; } = new List<ListTarget>();
         public List<AggregateWriter> Aggregates { get; set; } = new List<AggregateWriter>();
 
         public ListResult(ISchema schema, QueryType queryType)

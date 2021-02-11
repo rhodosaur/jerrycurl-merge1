@@ -7,7 +7,7 @@ namespace Jerrycurl.Data.Queries.Internal.IO.Readers
 {
     internal class ListReader : BaseReader
     {
-        public ListIndex Index { get; set; }
+        public ListTarget Index { get; set; }
         public NewReader List { get; set; }
 
         public ListReader(IReference reference)

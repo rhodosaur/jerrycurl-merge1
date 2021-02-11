@@ -7,11 +7,11 @@ using Jerrycurl.Data.Queries.Internal.IO.Readers;
 
 namespace Jerrycurl.Data.Queries.Internal.IO
 {
-    internal class ListIndex
+    internal class JoinTarget : BaseTarget
     {
-        public int BufferIndex { get; set; }
-        public ParameterExpression Variable { get; set; }
-        public NewReader NewList { get; set; }
-        public JoinIndex Join { get; set; }
+        public KeyReader Key { get; set; }
+        public ParameterExpression Joins { get; set; }
+        public int JoinIndex { get; set; }
+        public IReference Reference { get; set; }
     }
 }

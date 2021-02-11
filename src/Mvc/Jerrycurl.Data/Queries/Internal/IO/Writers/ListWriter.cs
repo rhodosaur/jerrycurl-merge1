@@ -13,7 +13,7 @@ namespace Jerrycurl.Data.Queries.Internal.IO.Writers
 
         }
         public KeyReader PrimaryKey { get; set; }
-        public ListIndex Index { get; set; }
-        public BaseReader Value { get; set; }
+        public BaseTarget Target { get; set; }
+        public BaseReader Source { get; set; }
     }
 }

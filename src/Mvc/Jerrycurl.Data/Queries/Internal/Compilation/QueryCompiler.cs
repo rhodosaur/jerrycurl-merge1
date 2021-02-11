@@ -82,7 +82,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
 
             List<Expression> body = new List<Expression>();
 
-            foreach (ListIndex index in result.Indices.DistinctBy(i => i.BufferIndex))
+            foreach (ListTarget index in result.Indices.DistinctBy(i => i.BufferIndex))
             {
                 Expression prepareExpression = this.GetPrepareExpression(index);
                 Expression writeExpresssion = this.GetWriterExpression(writer);
@@ -163,7 +163,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             return dr => reader(dr, helpers, schema);
         }
 
-        private Expression GetBufferGetOrSetExpression(ListIndex index, Expression buffer, Expression defaultExpression)
+        private Expression GetBufferGetOrSetExpression(ListTarget index, Expression buffer, Expression defaultExpression)
         {
             Expression assignNew = Expression.Assign(buffer, Expression.Assign(index.Variable, defaultExpression));
             Expression assignOld = Expression.Assign(index.Variable, Expression.Convert(buffer, defaultExpression.Type));
@@ -173,7 +173,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
         }
 
         #region " Prepare "
-        private Expression GetPrepareExpression(ListIndex index)
+        private Expression GetPrepareExpression(ListTarget index)
         {
             Expression newList;
 
@@ -280,7 +280,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             return Expression.Assign(reader.Variable, convertedValue);
         }
 
-        private Expression GetKeyInitArrayExpression(ListIndex index)
+        private Expression GetKeyInitArrayExpression(ListTarget index)
         {
             Expression newKey = this.GetNewCompositeKeyExpression(index.Join.Key);
             Expression assignKey = Expression.Assign(index.Join.Key.Variable, newKey);
@@ -319,7 +319,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 variables.Add(reader.Variable);
             }
 
-            foreach (ListIndex index in indices)
+            foreach (ListTarget index in indices)
             {
                 expressions.Add(this.GetKeyInitArrayExpression(index));
 
@@ -343,7 +343,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
             return block;
         }
 
-        private Expression GetKeyBlockExpression(KeyReader primaryKey, IEnumerable<ListIndex> indices, Expression body)
+        private Expression GetKeyBlockExpression(KeyReader primaryKey, IEnumerable<ListTarget> indices, Expression body)
         {
             List<Expression> expressions = new List<Expression>();
             List<ParameterExpression> variables = new List<ParameterExpression>();
@@ -358,7 +358,7 @@ namespace Jerrycurl.Data.Queries.Internal.Compilation
                 variables.Add(reader.Variable);
             }
 
-            foreach (ListIndex index in indices)
+            foreach (ListTarget index in indices)
             {
                 expressions.Add(this.GetKeyInitArrayExpression(index));
 
