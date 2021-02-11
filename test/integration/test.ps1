@@ -29,7 +29,7 @@ foreach ($vendor in Get-All-Vendors)
     {
         Write-Host "   Skipped. MySQL not configured for Windows." -ForegroundColor Yellow
     }
-    else if ($connectionString)
+    elseif ($connectionString)
     {
         Test-Integration -Vendor $vendor -Connection $connectionString -PackageSource $PackageSource -Verbosity $Verbosity -TempPath $BuildPath -UserConnectionString $userConnectionString
         
