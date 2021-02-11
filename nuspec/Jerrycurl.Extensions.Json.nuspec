@@ -24,7 +24,7 @@
                 <dependency id="System.Text.Json" version="$JsonPackageVersion$" />
                 <dependency id="Jerrycurl.Mvc" version="$PackageVersion$" />
             </group>
-            <group targetFramework="netcoreapp3.0">
+            <group targetFramework="netcoreapp3.1">
                 <dependency id="Jerrycurl.Mvc" version="$PackageVersion$" />
             </group>
         </dependencies>

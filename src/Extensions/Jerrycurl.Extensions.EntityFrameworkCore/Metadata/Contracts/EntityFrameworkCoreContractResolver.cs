@@ -34,9 +34,9 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Metadata.Builders
             IEntityType parentEntity = this.entities.FirstOrDefault(e => e.ClrType == metadata.Parent?.Type);
             IProperty property = parentEntity?.GetProperties().FirstOrDefault(p => p.Name == metadata.Member?.Name);
             IAnnotation[] propertyAnnotations = property?.GetAnnotations().ToArray() ?? new IAnnotation[0];
-#if NETSTANDARD2_0
+#if NET20_BASE
             IKey primaryKey = property?.GetContainingPrimaryKey();
-#elif NETSTANDARD2_1 || NETCOREAPP3_0
+#elif NET21_BASE
             IKey primaryKey = property?.FindContainingPrimaryKey();
 #endif
             IForeignKey[] foreignKeys = property?.GetContainingForeignKeys().ToArray() ?? new IForeignKey[0];
@@ -45,12 +45,12 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Metadata.Builders
             if (entity == null && property == null)
                 return null;
 
-#if NETSTANDARD2_0
+#if NET20_BASE
             string tableName = entity?.Relational()?.TableName;
             string schemaName = entity?.Relational()?.Schema;
             string columnName = property?.Relational()?.ColumnName;
             string keyName = primaryKey?.Relational()?.Name;
-#elif NETSTANDARD2_1 || NETCOREAPP3_0
+#elif NET21_BASE
             string tableName = entity?.GetTableName() ?? entity?.GetDefaultTableName();
             string schemaName = entity?.GetSchema() ?? entity?.GetDefaultSchema();
             string columnName = property?.GetColumnName() ?? property?.GetDefaultColumnName();
@@ -79,11 +79,11 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Metadata.Builders
 
             foreach (IForeignKey foreignKey in foreignKeys)
             {
-#if NETSTANDARD2_0
+#if NET20_BASE
                 string principalName = foreignKey.PrincipalKey.Relational()?.Name;
                 string foreignName = foreignKey.Relational()?.Name;
                 int index = foreignKey.Properties.ToList().IndexOf(property);
-#elif NETSTANDARD2_1 || NETCOREAPP3_0
+#elif NET21_BASE
                 string principalName = foreignKey.PrincipalKey.GetName();
                 string foreignName = foreignKey.GetConstraintName();
                 int index = foreignKey.Properties.ToList().IndexOf(property);

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Jerrycurl.Data.Metadata.Annotations;
 
 namespace Jerrycurl.Data.Test.Model
@@ -13,5 +14,11 @@ namespace Jerrycurl.Data.Test.Model
 
         public IList<BlogTag> Tags { get; set; }
         public IList<BlogPost> Posts { get; set; }
+
+        public int GetOnly
+        {
+            get => 1;
+            set => throw new NotSupportedException();
+        }
     }
 }

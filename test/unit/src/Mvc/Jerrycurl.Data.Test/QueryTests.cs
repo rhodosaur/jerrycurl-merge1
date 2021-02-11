@@ -164,27 +164,6 @@ namespace Jerrycurl.Data.Test
             verifyResult(result2);
         }
 
-        public async Task Test_Binding_ToReadOnlyProperty_Throws()
-        {
-            SqliteTable table1 = new SqliteTable("Item.ReadOnly")
-            {
-                new object[] { 1 },
-            };
-
-            Should.Throw<BindingException>(() => DatabaseHelper.Default.Query<BigModel>(table1));
-            await Should.ThrowAsync<BindingException>(async () => await DatabaseHelper.Default.QueryAsync<BigModel>(table1));
-        }
-
-        public async Task Test_Binding_OfNonConvertibleValue_Throws()
-        {
-            SqliteTable table1 = new SqliteTable("Item.Value")
-            {
-                new object[] { "String 0" },
-            };
-
-            Should.Throw<BindingException>(() => DatabaseHelper.Default.Query<BigModel>(table1));
-            await Should.ThrowAsync<BindingException>(async () => await DatabaseHelper.Default.QueryAsync<BigModel>(table1));
-        }
 
         public async Task Test_Binding_OfSimpleProperties()
         {
@@ -230,115 +209,6 @@ namespace Jerrycurl.Data.Test
             (await DatabaseHelper.Default.QueryAsync<int?>(table1)).ShouldBe(new int?[] { 1, null, 2 });
         }
 
-        public async Task Test_Binding_OfDynamicScalarIntResult()
-        {
-            SqliteTable table1 = new SqliteTable("Item")
-            {
-                new object[] { 1 },
-                new object[] { 2 },
-                new object[] { null },
-            };
-
-            IList<dynamic> result1 = DatabaseHelper.Default.Query<dynamic>(table1);
-            IList<dynamic> result2 = await DatabaseHelper.Default.QueryAsync<dynamic>(table1);
-            IList<dynamic> result3 = DatabaseHelper.Default.Enumerate<dynamic>(table1).ToList();
-
-            static void verifyResult(IList<dynamic> result)
-            {
-                result.ShouldNotBeNull();
-                result.Cast<long?>().ShouldBe(new long?[] { 1, 2, null });
-            }
-
-            verifyResult(result1);
-            verifyResult(result2);
-            verifyResult(result3);
-        }
-
-        public async Task Test_Binding_OfDynamicProperties()
-        {
-            SqliteTable table1 = new SqliteTable("Item.Value1", "Item.Value2", "Item.Sub.Value3")
-            {
-                new object[] { 1, 2,    9 },
-                new object[] { 3, null, 8 },
-            };
-
-            IList<dynamic> result1 = DatabaseHelper.Default.Query<dynamic>(table1);
-            IList<dynamic> result2 = await DatabaseHelper.Default.QueryAsync<dynamic>(table1);
-            IList<dynamic> result3 = DatabaseHelper.Default.Enumerate<dynamic>(table1).ToList();
-
-            static void verifyResult(IList<dynamic> result)
-            {
-                result.ShouldNotBeNull();
-                result.Count.ShouldBe(2);
-
-                DynamicShould.HaveProperty(result[0], "Value1");
-                DynamicShould.HaveProperty(result[0], "Value2");
-                DynamicShould.HaveProperty(result[0], "Sub");
-                DynamicShould.HaveProperty(result[0].Sub, "Value3");
-
-                DynamicShould.HaveProperty(result[1], "Value1");
-                DynamicShould.HaveProperty(result[1], "Value2");
-                DynamicShould.HaveProperty(result[1], "Sub");
-                DynamicShould.HaveProperty(result[1].Sub, "Value3");
-
-                int v1 = Should.NotThrow(() => (int)result[0].Value1);
-                int v2 = Should.NotThrow(() => (int)result[0].Value2);
-                int v3 = Should.NotThrow(() => (int)result[0].Sub.Value3);
-                int v4 = Should.NotThrow(() => (int)result[1].Value1);
-                int? v5 = Should.NotThrow(() => (int?)result[1].Value2);
-                int? v6 = Should.NotThrow(() => (int?)result[1].Sub.Value3);
-
-                v1.ShouldBe(1);
-                v2.ShouldBe(2);
-                v3.ShouldBe(9);
-                v4.ShouldBe(3);
-                v5.ShouldBe(null);
-                v6.ShouldBe(8);
-            }
-
-            verifyResult(result1);
-            verifyResult(result2);
-            verifyResult(result3);
-        }
-
-        public async Task Test_Binding_OfNativeManyType()
-        {
-            SqliteTable table1 = new SqliteTable("Item.BigKey")
-            {
-                new object[] { 1 },
-                new object[] { 2 },
-                new object[] { 3 },
-            };
-            SqliteTable table2 = new SqliteTable("Item.ManyType.Item.BigKey", "Item.ManyType.Item.Value")
-            {
-                new object[] { 1, 3 },
-                new object[] { 1, 4 },
-                new object[] { 2, 5 },
-            };
-
-            IList<BigModel> result1 = DatabaseHelper.Default.Query<BigModel>(table1, table2);
-            IList<BigModel> result2 = await DatabaseHelper.Default.QueryAsync<BigModel>(table1, table2);
-
-            static void verifyResult(IList<BigModel> result)
-            {
-                result.ShouldNotBeNull();
-                result.Count.ShouldBe(3);
-
-                result[0].ManyType.HasValue.ShouldBeTrue();
-                result[0].ManyType.Value.ShouldNotBeNull();
-                result[0].ManyType.Value.Value.ShouldBe(4);
-
-                result[1].ManyType.HasValue.ShouldBeTrue();
-                result[1].ManyType.Value.ShouldNotBeNull();
-                result[1].ManyType.Value.Value.ShouldBe(5);
-
-                result[2].ManyType.HasValue.ShouldBeFalse();
-                result[2].ManyType.Value.ShouldBeNull();
-            }
-
-            verifyResult(result1);
-            verifyResult(result2);
-        }
         public async Task Test_Binding_OfOneToOneSelfJoins()
         {
             SqliteTable table1 = new SqliteTable("Item.Parent.Id", "Item.Parent.ParentId")
@@ -484,96 +354,6 @@ namespace Jerrycurl.Data.Test
             result2.NotUsedMany.ShouldBeNull();
         }
 
-        public async Task Test_Binding_UsingPrimaryHashJoins()
-        {
-            SqliteTable table1 = new SqliteTable("Item.BigKey", "Item.OneToMany.Item.BigKey", "Item.OneToMany.Item.Value")
-            {
-                new object[] { 1, 2, 2 },
-                new object[] { 2, null, null }
-            };
-            SqliteTable table2 = new SqliteTable("Item.OneToMany.Item.BigKey", "Item.OneToMany.Item.Value")
-            {
-                new object[] { 1, 1 },
-                new object[] { 2, 3 },
-            };
-
-            IList<BigModel> result1 = DatabaseHelper.Default.Query<BigModel>(table1, table2);
-            IList<BigModel> result2 = await DatabaseHelper.Default.QueryAsync<BigModel>(table1, table2);
-
-            result1.ShouldNotBeNull();
-            result2.ShouldNotBeNull();
-
-            result1.Count.ShouldBe(2);
-            result2.Count.ShouldBe(2);
-
-            result1[0].OneToMany.ShouldNotBeNull();
-            result1[0].OneToMany.Count.ShouldBe(1);
-            result1[0].OneToMany[0].ShouldNotBeNull();
-            result1[0].OneToMany[0].Value.ShouldBe(1);
-            result2[0].OneToMany.ShouldNotBeNull();
-            result2[0].OneToMany.Count.ShouldBe(1);
-            result2[0].OneToMany[0].ShouldNotBeNull();
-            result2[0].OneToMany[0].Value.ShouldBe(1);
-
-            result1[1].OneToMany.ShouldNotBeNull();
-            result1[1].OneToMany.Count.ShouldBe(2);
-            result1[1].OneToMany[0].ShouldNotBeNull();
-            result1[1].OneToMany[0].Value.ShouldBe(2);
-            result1[1].OneToMany[1].ShouldNotBeNull();
-            result1[1].OneToMany[1].Value.ShouldBe(3);
-            result2[1].OneToMany.ShouldNotBeNull();
-            result2[1].OneToMany.Count.ShouldBe(2);
-            result2[1].OneToMany[0].ShouldNotBeNull();
-            result2[1].OneToMany[0].Value.ShouldBe(2);
-            result2[1].OneToMany[1].ShouldNotBeNull();
-            result2[1].OneToMany[1].Value.ShouldBe(3);
-        }
-
-        public async Task Test_Binding_UsingNonPrimaryHashJoins()
-        {
-            SqliteTable table1 = new SqliteTable("Item.NonPrimaryKey", "Item.OneToMany.Item.NonPrimaryKey", "Item.OneToMany.Item.Value")
-            {
-                new object[] { 1, 2, 2 },
-                new object[] { 2, null, null }
-            };
-            SqliteTable table2 = new SqliteTable("Item.OneToMany.Item.NonPrimaryKey", "Item.OneToMany.Item.Value")
-            {
-                new object[] { 1, 1 },
-                new object[] { 2, 3 },
-            };
-
-            IList<BigModel> result1 = DatabaseHelper.Default.Query<BigModel>(table1, table2);
-            IList<BigModel> result2 = await DatabaseHelper.Default.QueryAsync<BigModel>(table1, table2);
-
-            result1.ShouldNotBeNull();
-            result2.ShouldNotBeNull();
-
-            result1.Count.ShouldBe(2);
-            result2.Count.ShouldBe(2);
-
-            result1[0].OneToMany.ShouldNotBeNull();
-            result1[0].OneToMany.Count.ShouldBe(1);
-            result1[0].OneToMany[0].ShouldNotBeNull();
-            result1[0].OneToMany[0].Value.ShouldBe(1);
-            result2[0].OneToMany.ShouldNotBeNull();
-            result2[0].OneToMany.Count.ShouldBe(1);
-            result2[0].OneToMany[0].ShouldNotBeNull();
-            result2[0].OneToMany[0].Value.ShouldBe(1);
-
-            result1[1].OneToMany.ShouldNotBeNull();
-            result1[1].OneToMany.Count.ShouldBe(2);
-            result1[1].OneToMany[0].ShouldNotBeNull();
-            result1[1].OneToMany[0].Value.ShouldBe(2);
-            result1[1].OneToMany[1].ShouldNotBeNull();
-            result1[1].OneToMany[1].Value.ShouldBe(3);
-            result2[1].OneToMany.ShouldNotBeNull();
-            result2[1].OneToMany.Count.ShouldBe(2);
-            result2[1].OneToMany[0].ShouldNotBeNull();
-            result2[1].OneToMany[0].Value.ShouldBe(2);
-            result2[1].OneToMany[1].ShouldNotBeNull();
-            result2[1].OneToMany[1].Value.ShouldBe(3);
-        }
-
         public async Task Test_Binding_OfResultsWithoutKey()
         {
             SqliteTable table = new SqliteTable("Item.Value")
@@ -644,18 +424,7 @@ namespace Jerrycurl.Data.Test
             result3[1].ShouldNotBeNull();
         }
 
-        public void Test_Binding_OfCaseInsensitiveColumns()
-        {
-            SqliteTable table = new SqliteTable("item.value")
-            {
-                new object[] { 22 },
-            };
 
-            BigModel result = DatabaseHelper.Default.Query<BigModel>(table).FirstOrDefault();
-
-            result.ShouldNotBeNull();
-            result.Value.ShouldBe(22);
-        }
 
         public void Test_Binding_OfEmptyParameters()
         {

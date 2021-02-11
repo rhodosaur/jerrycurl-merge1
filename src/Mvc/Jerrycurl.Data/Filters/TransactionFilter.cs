@@ -100,7 +100,7 @@ namespace Jerrycurl.Data.Filters
                 return Task.CompletedTask;
             }
 
-            #if !NETSTANDARD2_0
+            #if NET21_BASE
             public override async Task OnExceptionAsync(FilterContext context)
             {
                 if (!this.handled)

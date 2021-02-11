@@ -253,7 +253,7 @@ namespace Jerrycurl.Test.Profiling
             }
         }
 
-#if NETCOREAPP3_0
+#if NETCOREAPP3_1
         public override Task CloseAsync() => this.InnerReader.CloseAsync();
         public async override ValueTask DisposeAsync()
         {

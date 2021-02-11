@@ -97,7 +97,8 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
                 if (this.IsAggregateList(writer))
                     tree.AggregateNames.Add(new AggregateName(writer.Metadata.Identity.Name, useSlot: true));
 
-                writer.Slot = this.AddSlot(tree, writer.Metadata, writer.JoinKey);
+                if (!writer.Metadata.HasFlag(BindingMetadataFlags.Model) || writer.Metadata.HasFlag(BindingMetadataFlags.List))
+                    writer.Slot = this.AddSlot(tree, writer.Metadata, writer.JoinKey);
 
                 tree.Lists.Add(writer);
             }
@@ -134,7 +135,7 @@ namespace Jerrycurl.Data.Queries.Internal.Parsing
             if (joinKey == null)
             {
                 bufferIndex = BindingHelper.IsModelOrModelItem(metadata) ? this.Buffer.GetResultIndex() : this.Buffer.GetListIndex(metadata.Identity);
-                variableType = metadata.Composition.Construct.Type;
+                variableType = metadata.Composition?.Construct?.Type ?? metadata.Type;
                 variableName = $"list_{bufferIndex}";
             }
             else

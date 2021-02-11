@@ -39,7 +39,7 @@
         <CSharpTargetVersion>$(CSharpPackageVersion)</CSharpTargetVersion>
     </PropertyGroup>
 
-    <PropertyGroup Label="Target Versions (.NET Standard 2.0)" Condition="'$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp2.2'">
+    <PropertyGroup Label="Target Versions (.NET Standard 2.0)" Condition="'$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp2.1'">
         <SqliteTargetVersion>$(SqlitePackageVersion_net20)</SqliteTargetVersion>
         <EntityFrameworkCoreTargetVersion>$(EntityFrameworkCorePackageVersion_net20)</EntityFrameworkCoreTargetVersion>
     </PropertyGroup>

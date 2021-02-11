@@ -33,7 +33,7 @@ namespace Jerrycurl.Collections
         public static T FirstOfType<T>(this IEnumerable source) => source.OfType<T>().FirstOrDefault();
         public static T FirstOfType<T>(this IEnumerable source, Func<T, bool> predicate) => source.OfType<T>().FirstOrDefault(predicate);
 
-#if !NETCOREAPP3_0
+#if !NETCOREAPP3_1
         public static IEnumerable<(TFirst First, TSecond Second)> Zip<TFirst, TSecond>(this IEnumerable<TFirst> first, IEnumerable<TSecond> second) => first.Zip(second, (First, Second) => (First, Second));
 #endif
         public static IEnumerable<(TFirst First, TSecond Second)> ZipAll<TFirst, TSecond>(this IEnumerable<TFirst> first, IEnumerable<TSecond> second)
@@ -73,7 +73,7 @@ namespace Jerrycurl.Collections
                 yield return item;
         }
 
-#if !NETSTANDARD2_1 && !NETCOREAPP3_0
+#if NET20_BASE
         public static IEnumerable<T> Append<T>(this IEnumerable<T> source, T value) => source.Concat(new[] { value });
 #endif
     }

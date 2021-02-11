@@ -103,8 +103,8 @@ namespace Jerrycurl.Extensions.Json.Metadata
         }
 
         private bool HasJsonAttribute(IBindingMetadata metadata) => metadata.Relation.Annotations.OfType<JsonAttribute>().Any();
-        private bool IsNativeJsonDocument(IBindingMetadata metadata) => (metadata.Type == typeof(JsonElement));
-        private bool IsNativeJsonElement(IBindingMetadata metadata) => (metadata.Type == typeof(JsonDocument));
+        private bool IsNativeJsonDocument(IBindingMetadata metadata) => (metadata.Type == typeof(JsonDocument));
+        private bool IsNativeJsonElement(IBindingMetadata metadata) => (metadata.Type == typeof(JsonElement));
         private bool IsNativeJsonType(IBindingMetadata metadata) => (this.IsNativeJsonDocument(metadata) || this.IsNativeJsonElement(metadata));
 
         public IBindingParameterContract GetParameterContract(IBindingMetadata metadata)

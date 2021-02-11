@@ -7,13 +7,11 @@ namespace Jerrycurl.Extensions.EntityFrameworkCore.Test
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            if (!optionsBuilder.IsConfigured)
-                optionsBuilder.UseSqlite("whatever");
+
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
             modelBuilder.Entity<Address>(entity =>
             {
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();

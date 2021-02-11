@@ -397,7 +397,7 @@ namespace Jerrycurl.Relations.Internal.Compilation
             Type dataType = typeof(FieldData);
 
             ConstructorInfo newField = fieldType.GetConstructors()[0];
-            ConstructorInfo newData = dataType.GetConstructors().First(c => c.HasSignature(typeof(object), typeof(int), typeof(int)));
+            ConstructorInfo newData = dataType.GetConstructors().First(c => c.HasSignature(typeof(object), typeof(int)));
 
             Expression relation = this.GetFieldDataExpression(writer, "List", nameof(IFieldData.Relation));
             Expression index = this.GetFieldDataExpression(writer, "Index", nameof(IFieldData.Index));

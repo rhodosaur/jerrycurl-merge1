@@ -106,7 +106,7 @@ namespace Jerrycurl.Data.Sessions
             }
             finally
             {
-#if !NETSTANDARD2_0
+#if NET21_BASE
                 await reader.DisposeAsync().ConfigureAwait(false);
 #else
                 reader.Dispose();
@@ -222,7 +222,7 @@ namespace Jerrycurl.Data.Sessions
                     }
                     finally
                     {
-#if !NETSTANDARD2_0
+#if NET21_BASE
                     if (this.connection != null)
                         await this.connection.DisposeAsync().ConfigureAwait(false);
 #else
