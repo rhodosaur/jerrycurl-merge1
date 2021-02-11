@@ -6,7 +6,7 @@ namespace Jerrycurl.Mvc.Test.Conventions.Models
 {
     public class BlogView : Blog
     {
-        public IList<BlogPost> Posts { get; set; }
+        public List<BlogPost> Posts { get; set; }
         public int NumberOfPosts { get; set; }
     }
 }

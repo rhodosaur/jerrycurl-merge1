@@ -21,7 +21,7 @@ namespace Jerrycurl.Test.Project.Accessors
             IProcEngine engine = this.Context?.Engine ?? new ProcEngine(null);
 
             PageDescriptor descriptor = locator.FindPage("Query", this.GetType());
-            ProcArgs args = new ProcArgs(typeof(TModel), typeof(List<TResult>));
+            ProcArgs args = new ProcArgs(typeof(Runnable<TModel, TResult>), typeof(List<TResult>));
             ProcFactory factory = engine.Proc(descriptor, args);
 
             return factory(model).Buffer.ReadToEnd().Text.Trim();

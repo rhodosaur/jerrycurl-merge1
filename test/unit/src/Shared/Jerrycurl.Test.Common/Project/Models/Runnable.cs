@@ -66,7 +66,11 @@ namespace Jerrycurl.Test.Project.Models
 
     public class Runnable : Runnable<object, object>
     {
+        public static Runnable<TModel, object> Command<TModel>(TModel model, string separator = null)
+            => new Runnable<TModel, object>(model);
 
+        public static Runnable<object, TResult> Query<TResult>(object model = null, string separator = null)
+            => new Runnable<object, TResult>(model);
     }
 
     public interface IRunnable

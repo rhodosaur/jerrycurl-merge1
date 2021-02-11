@@ -64,8 +64,11 @@ namespace Jerrycurl.Mvc.Sql
             if (projection.Data == null)
                 throw ProjectionException.ValueNotFound(projection.Metadata);
 
-            using ProjectionReader reader = new ProjectionReader(projection.Data.Source, new[] { projection.Metadata });
-            IProjectionAttribute attribute = projection.Attr();
+            IProjectionMetadata itemMetadata = projection.Metadata?.Item ?? projection.Metadata;
+
+            using ProjectionReader reader = new ProjectionReader(projection.Data.Source, new[] { itemMetadata });
+
+            IProjectionAttribute attribute = new ProjectionAttribute(projection.Identity, projection.Context, itemMetadata, data: null);
 
             if (reader.Read())
             {

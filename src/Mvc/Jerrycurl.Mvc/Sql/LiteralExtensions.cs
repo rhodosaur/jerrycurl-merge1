@@ -15,7 +15,7 @@ namespace Jerrycurl.Mvc.Sql
         /// <returns>A new attribute containing the appended buffer.</returns>
         public static IProjectionAttribute Lit(this IProjectionAttribute attribute)
         {
-            string literal = attribute.Context.Domain.Dialect.Literal(attribute.Data?.Source);
+            string literal = attribute.Context.Domain.Dialect.Literal(attribute.Data?.Source.Snapshot);
 
             if (literal == null)
                 return attribute.Par();
